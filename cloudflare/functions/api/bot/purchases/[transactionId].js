@@ -1,5 +1,5 @@
-import { jsonResponse } from '../../../../_lib/utils.js';
-import { requireBotAuth } from '../../../../_lib/bot.js';
+import { jsonResponse } from '../../../_lib/utils.js';
+import { requireBotAuth } from '../../../_lib/bot.js';
 
 export const onRequestGet = async ({ env, request, params }) => {
   const guard = requireBotAuth(env, request);
