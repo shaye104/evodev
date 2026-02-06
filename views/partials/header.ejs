@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= pageTitle %> | Support</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <a href="/">Evo Support</a>
+    </div>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <% if (user) { %>
+        <a href="/tickets">My Tickets</a>
+      <% } %>
+      <% if (staff) { %>
+        <a href="/staff">Staff</a>
+      <% } %>
+      <% if (staff && staff.is_admin) { %>
+        <a href="/admin">Admin</a>
+      <% } %>
+      <% if (user) { %>
+        <a href="/logout">Logout</a>
+      <% } else { %>
+        <a class="btn" href="/auth/discord">Login with Discord</a>
+      <% } %>
+    </nav>
+  </header>
+  <main class="site-main">

@@ -1,0 +1,44 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Staff</h1>
+    <p>Manage staff access.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h3>Add staff member</h3>
+  <form class="form" method="post" action="/admin/staff">
+    <input type="text" name="discord_id" placeholder="Discord ID" required>
+    <select name="role_id" required>
+      <% roles.forEach((role) => { %>
+        <option value="<%= role.id %>"><%= role.name %></option>
+      <% }) %>
+    </select>
+    <label class="checkbox">
+      <input type="checkbox" name="is_active" value="1" checked>
+      Active
+    </label>
+    <button class="btn" type="submit">Add</button>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Existing staff</h3>
+  <% staffMembers.forEach((staff) => { %>
+    <form class="form inline-form" method="post" action="/admin/staff/<%= staff.id %>">
+      <span><%= staff.discord_username || staff.discord_id %></span>
+      <select name="role_id" required>
+        <% roles.forEach((role) => { %>
+          <option value="<%= role.id %>" <%= String(role.id) === String(staff.role_id) ? 'selected' : '' %>><%= role.name %></option>
+        <% }) %>
+      </select>
+      <label class="checkbox">
+        <input type="checkbox" name="is_active" value="1" <%= staff.is_active ? 'checked' : '' %>>
+        Active
+      </label>
+      <button class="btn secondary" type="submit">Update</button>
+    </form>
+  <% }) %>
+</section>
+<%- include('../partials/footer') %>

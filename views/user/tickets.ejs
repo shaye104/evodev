@@ -1,0 +1,38 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Your tickets</h1>
+    <p>Track open requests and updates.</p>
+  </div>
+  <a class="btn" href="/tickets/new">New Ticket</a>
+</section>
+
+<section class="card">
+  <% if (tickets.length === 0) { %>
+    <p>No tickets yet. Open one when you need help.</p>
+  <% } else { %>
+    <table class="table" data-sse-list>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Subject</th>
+          <th>Panel</th>
+          <th>Status</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% tickets.forEach((ticket) => { %>
+          <tr data-ticket-id="<%= ticket.public_id %>">
+            <td><a href="/tickets/<%= ticket.public_id %>">#<%= ticket.public_id %></a></td>
+            <td><%= ticket.subject || 'Support ticket' %></td>
+            <td><%= ticket.panel_name || 'General' %></td>
+            <td><span class="pill"><%= ticket.status_name || 'Open' %></span></td>
+            <td><%= ticket.last_message_at || ticket.updated_at %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+<%- include('../partials/footer', { useSse: useSse }) %>

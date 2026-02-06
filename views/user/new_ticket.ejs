@@ -1,0 +1,37 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="card">
+  <h1>Open a new ticket</h1>
+  <form class="form" method="post" action="/tickets" enctype="multipart/form-data">
+    <label>
+      Panel
+      <select name="panel_id" required>
+        <option value="">Select a panel</option>
+        <% panels.forEach((panel) => { %>
+          <option value="<%= panel.id %>"><%= panel.name %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>
+      Subject
+      <input type="text" name="subject" required>
+    </label>
+    <label>
+      Contact email
+      <input type="email" name="email" value="<%= user?.email || '' %>" required>
+    </label>
+    <label>
+      Message
+      <textarea name="message" rows="6" required></textarea>
+    </label>
+    <label>
+      Attachments
+      <input type="file" name="attachments" multiple>
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="notifications_enabled" value="1">
+      Notify me on Discord when staff reply
+    </label>
+    <button class="btn" type="submit">Create ticket</button>
+  </form>
+</section>
+<%- include('../partials/footer') %>

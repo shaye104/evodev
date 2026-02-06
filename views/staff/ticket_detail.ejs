@@ -1,0 +1,77 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Ticket #<%= ticket.public_id %></h1>
+    <p><%= ticket.subject || 'Support ticket' %></p>
+  </div>
+  <div class="meta">
+    <span class="pill"><%= ticket.status_name || 'Open' %></span>
+    <span><%= ticket.panel_name || 'General' %></span>
+  </div>
+</section>
+
+<section class="card">
+  <form class="inline" method="post" action="/staff/tickets/<%= ticket.public_id %>/claim">
+    <% if (ticket.assigned_staff_id) { %>
+      <input type="hidden" name="action" value="unclaim">
+      <button class="btn secondary" type="submit">Unclaim</button>
+    <% } else { %>
+      <input type="hidden" name="action" value="claim">
+      <button class="btn" type="submit">Claim</button>
+    <% } %>
+  </form>
+  <form class="inline" method="post" action="/staff/tickets/<%= ticket.public_id %>/status">
+    <select name="status_id">
+      <% statuses.forEach((status) => { %>
+        <option value="<%= status.id %>" <%= String(status.id) === String(ticket.status_id) ? 'selected' : '' %>><%= status.name %></option>
+      <% }) %>
+    </select>
+    <button class="btn secondary" type="submit">Update status</button>
+  </form>
+  <form class="inline" method="post" action="/staff/tickets/<%= ticket.public_id %>/assign">
+    <select name="staff_id">
+      <option value="">Unassigned</option>
+      <% staffMembers.forEach((staff) => { %>
+        <option value="<%= staff.id %>" <%= String(staff.id) === String(ticket.assigned_staff_id) ? 'selected' : '' %>><%= staff.discord_username || staff.discord_id %></option>
+      <% }) %>
+    </select>
+    <button class="btn secondary" type="submit">Assign</button>
+  </form>
+</section>
+
+<section class="thread">
+  <% messages.forEach((msg) => { %>
+    <article class="message">
+      <div class="message-meta">
+        <strong><%= msg.author_type %></strong>
+        <span><%= msg.created_at %></span>
+      </div>
+      <pre class="message-body"><%= msg.body %></pre>
+      <% const attachments = attachmentsByMessage.get(msg.id) || []; %>
+      <% if (attachments.length) { %>
+        <div class="attachments">
+          <% attachments.forEach((att) => { %>
+            <% if (att.storage_url) { %>
+              <a href="<%= att.storage_url %>" target="_blank" rel="noopener">📎 <%= att.filename %></a>
+            <% } else { %>
+              <a href="/attachments/<%= att.id %>" target="_blank" rel="noopener">📎 <%= att.filename %></a>
+            <% } %>
+          <% }) %>
+        </div>
+      <% } %>
+    </article>
+  <% }) %>
+</section>
+
+<section class="card">
+  <h3>Reply</h3>
+  <form class="form" method="post" action="/staff/tickets/<%= ticket.public_id %>/reply" enctype="multipart/form-data">
+    <textarea name="message" rows="4" required></textarea>
+    <label>
+      Attachments
+      <input type="file" name="attachments" multiple>
+    </label>
+    <button class="btn" type="submit">Send reply</button>
+  </form>
+</section>
+<%- include('../partials/footer', { useSse: useSse }) %>

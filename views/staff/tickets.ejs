@@ -1,0 +1,55 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Staff dashboard</h1>
+    <p>Manage open tickets and claims.</p>
+  </div>
+</section>
+
+<section class="card">
+  <form class="filters" method="get" action="/staff">
+    <select name="status_id">
+      <option value="">All statuses</option>
+      <% statuses.forEach((status) => { %>
+        <option value="<%= status.id %>" <%= String(status.id) === String(query?.status_id) ? 'selected' : '' %>><%= status.name %></option>
+      <% }) %>
+    </select>
+    <select name="panel_id">
+      <option value="">All panels</option>
+      <% panels.forEach((panel) => { %>
+        <option value="<%= panel.id %>" <%= String(panel.id) === String(query?.panel_id) ? 'selected' : '' %>><%= panel.name %></option>
+      <% }) %>
+    </select>
+    <button class="btn secondary" type="submit">Filter</button>
+  </form>
+
+  <% if (tickets.length === 0) { %>
+    <p>No tickets found.</p>
+  <% } else { %>
+    <table class="table" data-sse-list>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Subject</th>
+          <th>Panel</th>
+          <th>Status</th>
+          <th>Assigned</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% tickets.forEach((ticket) => { %>
+          <tr data-ticket-id="<%= ticket.public_id %>">
+            <td><a href="/staff/tickets/<%= ticket.public_id %>">#<%= ticket.public_id %></a></td>
+            <td><%= ticket.subject || 'Support ticket' %></td>
+            <td><%= ticket.panel_name || 'General' %></td>
+            <td><span class="pill"><%= ticket.status_name || 'Open' %></span></td>
+            <td><%= ticket.assigned_username || ticket.assigned_discord_id || 'Unassigned' %></td>
+            <td><%= ticket.last_message_at || ticket.updated_at %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+<%- include('../partials/footer', { useSse: useSse }) %>

@@ -1,0 +1,16 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Admin</h1>
+    <p>Manage panels, staff, and permissions.</p>
+  </div>
+</section>
+
+<section class="card grid">
+  <a class="tile" href="/admin/panels">Panels</a>
+  <a class="tile" href="/admin/statuses">Statuses</a>
+  <a class="tile" href="/admin/staff">Staff</a>
+  <a class="tile" href="/admin/roles">Roles</a>
+  <a class="tile" href="/admin/audit">Audit log</a>
+</section>
+<%- include('../partials/footer') %>

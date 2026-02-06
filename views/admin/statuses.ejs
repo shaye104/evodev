@@ -1,0 +1,46 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Statuses</h1>
+    <p>Control status options for tickets.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h3>New status</h3>
+  <form class="form" method="post" action="/admin/statuses">
+    <input type="text" name="name" placeholder="Status name" required>
+    <input type="text" name="slug" placeholder="slug" required>
+    <input type="number" name="sort_order" placeholder="Sort order" value="0">
+    <label class="checkbox">
+      <input type="checkbox" name="is_default_open" value="1">
+      Default open
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="is_closed" value="1">
+      Closed status
+    </label>
+    <button class="btn" type="submit">Create</button>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Existing statuses</h3>
+  <% statuses.forEach((status) => { %>
+    <form class="form inline-form" method="post" action="/admin/statuses/<%= status.id %>">
+      <input type="text" name="name" value="<%= status.name %>" required>
+      <input type="text" name="slug" value="<%= status.slug %>" required>
+      <input type="number" name="sort_order" value="<%= status.sort_order || 0 %>">
+      <label class="checkbox">
+        <input type="checkbox" name="is_default_open" value="1" <%= status.is_default_open ? 'checked' : '' %>>
+        Default open
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" name="is_closed" value="1" <%= status.is_closed ? 'checked' : '' %>>
+        Closed
+      </label>
+      <button class="btn secondary" type="submit">Update</button>
+    </form>
+  <% }) %>
+</section>
+<%- include('../partials/footer') %>

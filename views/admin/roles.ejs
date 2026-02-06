@@ -1,0 +1,94 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Roles</h1>
+    <p>Define staff permissions.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h3>New role</h3>
+  <form class="form" method="post" action="/admin/roles">
+    <input type="text" name="name" placeholder="Role name" required>
+    <input type="hidden" name="permissions" value="">
+    <div class="permissions-row">
+      <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
+      <span class="muted" data-permissions-summary>None selected</span>
+    </div>
+    <label class="checkbox">
+      <input type="checkbox" name="is_admin" value="1">
+      Admin role
+    </label>
+    <button class="btn" type="submit">Create</button>
+    <dialog class="modal" data-permissions-modal aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>Configure permissions</h4>
+        </div>
+        <div class="modal-body permission-grid">
+          <% permissionsList.forEach((perm) => { %>
+            <button
+              class="btn secondary perm-option"
+              type="button"
+              data-permission-option
+              data-permission-value="<%= perm.id %>"
+              aria-pressed="false"
+            >
+              <%= perm.label %>
+            </button>
+          <% }) %>
+        </div>
+        <div class="modal-actions">
+          <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
+          <button class="btn" type="button" data-modal-apply>Apply</button>
+        </div>
+      </div>
+    </dialog>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Existing roles</h3>
+  <% roles.forEach((role) => { %>
+    <% const rolePerms = String(role.permissions_text || '').split(',').map((val) => val.trim()).filter(Boolean); %>
+    <form class="form inline-form" method="post" action="/admin/roles/<%= role.id %>">
+      <input type="text" name="name" value="<%= role.name %>" required>
+      <input type="hidden" name="permissions" value="<%= role.permissions_text %>">
+      <div class="permissions-row">
+        <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
+        <span class="muted" data-permissions-summary><%= rolePerms.length ? `${rolePerms.length} selected` : 'None selected' %></span>
+      </div>
+      <label class="checkbox">
+        <input type="checkbox" name="is_admin" value="1" <%= role.is_admin ? 'checked' : '' %>>
+        Admin
+      </label>
+      <button class="btn secondary" type="submit">Update</button>
+      <dialog class="modal" data-permissions-modal aria-hidden="true">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4>Configure permissions</h4>
+          </div>
+          <div class="modal-body permission-grid">
+            <% permissionsList.forEach((perm) => { %>
+              <button
+                class="btn secondary perm-option <%= rolePerms.includes(perm.id) ? 'is-active' : '' %>"
+                type="button"
+                data-permission-option
+                data-permission-value="<%= perm.id %>"
+                aria-pressed="<%= rolePerms.includes(perm.id) ? 'true' : 'false' %>"
+              >
+                <%= perm.label %>
+              </button>
+            <% }) %>
+          </div>
+          <div class="modal-actions">
+            <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
+            <button class="btn" type="button" data-modal-apply>Apply</button>
+          </div>
+        </div>
+      </dialog>
+    </form>
+  <% }) %>
+</section>
+<script src="/admin.js?v=2" defer></script>
+<%- include('../partials/footer') %>

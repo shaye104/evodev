@@ -1,0 +1,26 @@
+<%- include('partials/header', { pageTitle: pageTitle }) %>
+<section class="hero">
+  <div class="hero-text">
+    <h1>Support without the noise.</h1>
+    <p>Open a ticket, track progress, and keep the conversation in one place.</p>
+    <% if (user) { %>
+      <div class="hero-actions">
+        <a class="btn" href="/tickets/new">Create Ticket</a>
+        <a class="btn secondary" href="/tickets">View Tickets</a>
+      </div>
+    <% } else { %>
+      <div class="hero-actions">
+        <a class="btn" href="/auth/discord">Login with Discord</a>
+      </div>
+    <% } %>
+  </div>
+  <div class="hero-card">
+    <h3>What you can do here</h3>
+    <ul>
+      <li>Create tickets from the website</li>
+      <li>Chat via Discord or the dashboard</li>
+      <li>Get real-time updates</li>
+    </ul>
+  </div>
+</section>
+<%- include('partials/footer') %>

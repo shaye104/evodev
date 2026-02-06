@@ -1,0 +1,38 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Panels</h1>
+    <p>Create and manage ticket panels.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h3>New panel</h3>
+  <form class="form" method="post" action="/admin/panels">
+    <input type="text" name="name" placeholder="Panel name" required>
+    <input type="text" name="description" placeholder="Description">
+    <input type="number" name="sort_order" placeholder="Sort order" value="0">
+    <label class="checkbox">
+      <input type="checkbox" name="is_active" value="1" checked>
+      Active
+    </label>
+    <button class="btn" type="submit">Create</button>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Existing panels</h3>
+  <% panels.forEach((panel) => { %>
+    <form class="form inline-form" method="post" action="/admin/panels/<%= panel.id %>">
+      <input type="text" name="name" value="<%= panel.name %>" required>
+      <input type="text" name="description" value="<%= panel.description || '' %>">
+      <input type="number" name="sort_order" value="<%= panel.sort_order || 0 %>">
+      <label class="checkbox">
+        <input type="checkbox" name="is_active" value="1" <%= panel.is_active ? 'checked' : '' %>>
+        Active
+      </label>
+      <button class="btn secondary" type="submit">Update</button>
+    </form>
+  <% }) %>
+</section>
+<%- include('../partials/footer') %>

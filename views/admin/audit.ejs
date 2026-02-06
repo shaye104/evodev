@@ -1,0 +1,35 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Audit log</h1>
+    <p>Recent admin and staff activity.</p>
+  </div>
+</section>
+
+<section class="card">
+  <% if (logs.length === 0) { %>
+    <p>No audit entries yet.</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Actor</th>
+          <th>Action</th>
+          <th>Entity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% logs.forEach((log) => { %>
+          <tr>
+            <td><%= log.created_at %></td>
+            <td><%= log.actor_discord_id || log.actor_user_id || 'system' %></td>
+            <td><%= log.action %></td>
+            <td><%= log.entity_type %> <%= log.entity_id %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+<%- include('../partials/footer') %>

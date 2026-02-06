@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roles | Evo Support</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/ui.js" defer></script>
+  <script src="/admin-roles.js" defer></script>
+  <script src="/admin.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <a href="/">Evo Support</a>
+    </div>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/tickets.html" data-auth="user">My Tickets</a>
+      <a href="/staff.html" data-auth="staff">Staff</a>
+      <a href="/admin.html" data-auth="admin">Admin</a>
+      <a href="/api/logout" data-auth="user">Logout</a>
+    </nav>
+  </header>
+  <main class="site-main">
+    <section class="page-header">
+      <div>
+        <h1>Roles</h1>
+        <p>Define staff permissions.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>New role</h3>
+      <form class="form" data-create-role>
+        <input type="text" name="name" placeholder="Role name" required>
+        <input type="hidden" name="permissions" value="">
+        <div class="permissions-row">
+          <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
+          <span class="muted" data-permissions-summary>None selected</span>
+        </div>
+        <label class="checkbox">
+          <input type="checkbox" name="is_admin" value="1">
+          Admin role
+        </label>
+        <button class="btn" type="submit">Create</button>
+        <dialog class="modal" data-permissions-modal aria-hidden="true">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4>Configure permissions</h4>
+            </div>
+            <div class="modal-body permission-grid" data-new-permissions></div>
+            <div class="modal-actions">
+              <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
+              <button class="btn" type="button" data-modal-apply>Apply</button>
+            </div>
+          </div>
+        </dialog>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3>Existing roles</h3>
+      <div data-roles-list></div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <span>Need help? Open a ticket and we will get back to you.</span>
+  </footer>
+</body>
+</html>

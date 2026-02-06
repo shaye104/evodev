@@ -1,0 +1,14 @@
+name = "evo-support"
+compatibility_date = "2024-11-01"
+
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "evo_support"
+database_id = ""
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "evo-support-uploads"
+preview_bucket_name = "evo-support-uploads-preview"
