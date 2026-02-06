@@ -10,13 +10,14 @@ const {
   StringSelectMenuBuilder,
   ChannelType,
 } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
 const { CONFIG } = require('../config');
 const payhip = require('../payhip/service');
-const supportService = require('../support/service');
-const sse = require('../support/sse');
-const { isDbConfigured } = require('../db');
+const supportApi = require('./supportApi');
 
 const CUSTOMER_LOUNGE_CHANNEL_ID = '1468663410848698440';
+const BOT_STATE_PATH = path.join(process.cwd(), 'data', 'bot_state.json');
 
 async function startDiscordBot() {
   if (!CONFIG.DISCORD_BOT_TOKEN) {
@@ -67,9 +68,12 @@ async function startDiscordBot() {
         CONFIG.DISCORD_SUPPORT_NOTIFY_CHANNEL_ID
       );
       if (!channel || !channel.isTextBased()) return;
+      const linkBase = CONFIG.SUPPORT_API_BASE || CONFIG.BASE_URL;
       const link = ticket?.public_id
-        ? `${CONFIG.BASE_URL}/staff/tickets/${ticket.public_id}`
-        : CONFIG.BASE_URL;
+        ? CONFIG.SUPPORT_API_BASE
+            ? `${linkBase}/staff-ticket.html?id=${ticket.public_id}`
+            : `${linkBase}/staff/tickets/${ticket.public_id}`
+        : linkBase;
       await channel.send(`${content}\n${link}`);
     } catch (err) {
       console.warn(`[discord] Notify channel failed: ${err.message}`);
@@ -101,6 +105,76 @@ async function startDiscordBot() {
     } catch (err) {
       console.warn(`[discord] DM update failed: ${err.message}`);
     }
+  }
+
+  async function loadBotState() {
+    try {
+      const raw = await fs.promises.readFile(BOT_STATE_PATH, 'utf8');
+      return JSON.parse(raw);
+    } catch {
+      return { last_staff_message_id: null };
+    }
+  }
+
+  async function saveBotState(state) {
+    await fs.promises.mkdir(path.dirname(BOT_STATE_PATH), { recursive: true });
+    await fs.promises.writeFile(
+      BOT_STATE_PATH,
+      JSON.stringify(state, null, 2)
+    );
+  }
+
+  async function syncStaffReplies() {
+    if (!supportApi.isBotAuthReady()) return;
+
+    const state = await loadBotState();
+    if (state.last_staff_message_id == null) {
+      const { messages } = await supportApi.listStaffReplies(0);
+      state.last_staff_message_id = messages.length
+        ? Math.max(...messages.map((msg) => msg.id))
+        : 0;
+      await saveBotState(state);
+      return;
+    }
+
+    const { messages, attachments } = await supportApi.listStaffReplies(
+      state.last_staff_message_id
+    );
+    if (!messages.length) return;
+
+    const attachmentsByMessage = new Map();
+    for (const attachment of attachments) {
+      if (!attachment.ticket_message_id) continue;
+      if (!attachmentsByMessage.has(attachment.ticket_message_id)) {
+        attachmentsByMessage.set(attachment.ticket_message_id, []);
+      }
+      attachmentsByMessage
+        .get(attachment.ticket_message_id)
+        .push(attachment);
+    }
+
+    for (const msg of messages) {
+      if (!msg.creator_discord_id) continue;
+      try {
+        const user = await client.users.fetch(msg.creator_discord_id);
+        if (!user) continue;
+        const files = (attachmentsByMessage.get(msg.id) || [])
+          .filter((att) => att.storage_url)
+          .map((att) => ({
+            attachment: att.storage_url,
+            name: att.filename || 'attachment',
+          }));
+        await user.send({
+          content: `Ticket ${msg.public_id} reply:\n${String(msg.body || '').trim()}`,
+          files: files.length ? files : undefined,
+        });
+      } catch (err) {
+        console.warn(`[discord] DM update failed: ${err.message}`);
+      }
+    }
+
+    state.last_staff_message_id = Math.max(...messages.map((msg) => msg.id));
+    await saveBotState(state);
   }
 
   async function registerSlashCommand() {
@@ -212,6 +286,21 @@ async function startDiscordBot() {
 
     await updatePresence();
     setInterval(updatePresence, 30 * 60 * 1000);
+
+    if (supportApi.isBotAuthReady()) {
+      syncStaffReplies().catch((err) => {
+        console.warn(`[discord] Staff reply sync failed: ${err.message}`);
+      });
+      setInterval(() => {
+        syncStaffReplies().catch((err) => {
+          console.warn(`[discord] Staff reply sync failed: ${err.message}`);
+        });
+      }, CONFIG.BOT_SYNC_INTERVAL_MS);
+    } else {
+      console.warn(
+        '[discord] Support API not configured; staff reply sync disabled.'
+      );
+    }
   });
 
   client.on('interactionCreate', async (interaction) => {
@@ -224,67 +313,53 @@ async function startDiscordBot() {
           flags: MessageFlags.Ephemeral,
         });
       }
-      if (!isDbConfigured()) {
+      if (!supportApi.isBotAuthReady()) {
         return interaction.reply({
-          content: 'Support database is not configured.',
+          content: 'Support system is not configured.',
           flags: MessageFlags.Ephemeral,
         });
       }
 
-      const userRecord = await supportService.ensureUserFromDiscordUser(
-        interaction.user
-      );
-      const ticket = await supportService.createTicket({
-        panel_id: panelId,
-        creator_user_id: userRecord?.id || null,
-        creator_discord_id: interaction.user.id,
-        creator_email: userRecord?.email || '',
-        subject: 'Discord support ticket',
-        source: 'discord',
-      });
+      try {
+        const ticket = await supportApi.createDiscordTicket({
+          discordId: interaction.user.id,
+          panelId,
+          message: 'Ticket created via Discord.',
+          subject: 'Discord support ticket',
+        });
 
-      await supportService.addTicketMessage({
-        ticket_id: ticket.id,
-        author_type: 'system',
-        author_user_id: userRecord?.id || null,
-        author_discord_id: interaction.user.id,
-        body: 'Ticket created via Discord.',
-        source: 'discord',
-      });
-
-      await supportService.logAudit({
-        actor_user_id: userRecord?.id || null,
-        actor_discord_id: interaction.user.id,
-        actor_type: 'user',
-        action: 'ticket.created',
-        entity_type: 'ticket',
-        entity_id: ticket.public_id,
-        metadata: { source: 'discord' },
-      });
-
-      sse.publish({
-        type: 'ticket.created',
-        ticket_id: ticket.id,
-        public_id: ticket.public_id,
-        creator_user_id: userRecord?.id || null,
-      });
-
-      return interaction.update({
-        content: `Ticket ${ticket.public_id} created. Reply here with your issue.`,
-        components: [],
-      });
+        return interaction.update({
+          content: `Ticket ${ticket.public_id} created. Reply here with your issue.`,
+          components: [],
+        });
+      } catch (err) {
+        console.warn(`[discord] Ticket create failed: ${err.message}`);
+        return interaction.update({
+          content: 'Ticket creation failed. Please try again or use the website.',
+          components: [],
+        });
+      }
     }
 
     if (!interaction.isChatInputCommand()) return;
 
     if (interaction.commandName === 'ticket') {
-      if (!isDbConfigured()) {
+      if (!supportApi.isBotAuthReady()) {
         return interaction.reply({
-          content: 'Support database is not configured.',
+          content: 'Support system is not configured.',
           flags: MessageFlags.Ephemeral,
         });
       }
-      const panels = await supportService.listPanels();
+      let panels = [];
+      try {
+        panels = await supportApi.listPanels();
+      } catch (err) {
+        console.warn(`[discord] Panel list failed: ${err.message}`);
+        return interaction.reply({
+          content: 'Unable to load support panels right now.',
+          flags: MessageFlags.Ephemeral,
+        });
+      }
       if (panels.length === 0) {
         return interaction.reply({
           content: 'No ticket panels are configured yet.',
@@ -519,27 +594,50 @@ async function startDiscordBot() {
   client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
     if (message.channel.type !== ChannelType.DM) return;
-    if (!isDbConfigured()) {
-      await message.channel.send('Support database is not configured.');
+    if (!supportApi.isBotAuthReady()) {
+      await message.channel.send('Support system is not configured.');
       return;
     }
 
-    const content = String(message.content || '').trim();
+    const contentRaw = String(message.content || '');
+    const content = contentRaw.trim();
     if (!content && message.attachments.size === 0) return;
 
     const discordId = message.author.id;
-    const userRecord = await supportService.ensureUserFromDiscordUser(
-      message.author
-    );
-
-    let ticket = null;
-    const match = content.match(/^#([A-Z0-9]{6,16})/i);
+    let publicId = null;
+    let body = content;
+    const match = body.match(/^#([A-Z0-9]{6,16})/i);
     if (match) {
-      ticket = await supportService.getTicketByPublicId(match[1].toUpperCase());
-    } else {
-      const tickets = await supportService.listActiveDiscordTickets(discordId);
+      publicId = match[1].toUpperCase();
+      body = body.replace(/^#([A-Z0-9]{6,16})\s*/i, '').trim();
+    }
+
+    const attachments = [...message.attachments.values()].map((attachment) => ({
+      filename: attachment.name || 'attachment',
+      url: attachment.url,
+      mime_type: attachment.contentType || '',
+      size_bytes: attachment.size || 0,
+    }));
+
+    if (!body && attachments.length) {
+      body = 'Attachment';
+    }
+    if (!body) return;
+
+    if (!publicId) {
+      let tickets = [];
+      try {
+        tickets = await supportApi.listActiveDiscordTickets(discordId);
+      } catch (err) {
+        console.warn(`[discord] Ticket lookup failed: ${err.message}`);
+        await message.channel.send(
+          'Unable to load your open tickets. Please try again later.'
+        );
+        return;
+      }
+
       if (tickets.length === 1) {
-        ticket = tickets[0];
+        publicId = tickets[0].public_id;
       } else if (tickets.length > 1) {
         const ids = tickets.map((t) => `#${t.public_id}`).join(', ');
         await message.channel.send(
@@ -549,49 +647,26 @@ async function startDiscordBot() {
       }
     }
 
-    if (!ticket) {
+    if (!publicId) {
       await message.channel.send(
         'No open ticket found. Use /ticket in the server or the website to start one.'
       );
       return;
     }
 
-    const body = content.replace(/^#([A-Z0-9]{6,16})\s*/i, '');
-    const msg = await supportService.addTicketMessage({
-      ticket_id: ticket.id,
-      author_type: 'user',
-      author_user_id: userRecord?.id || null,
-      author_discord_id: discordId,
-      body,
-      source: 'discord',
-    });
-
-    await supportService.logAudit({
-      actor_user_id: userRecord?.id || null,
-      actor_discord_id: discordId,
-      actor_type: 'user',
-      action: 'ticket.reply',
-      entity_type: 'ticket',
-      entity_id: ticket.public_id,
-      metadata: { source: 'discord' },
-    });
-
-    for (const attachment of message.attachments.values()) {
-      await supportService.addAttachmentRecord({
-        ticket_message_id: msg.id,
-        filename: attachment.name || 'attachment',
-        storage_url: attachment.url,
-        mime_type: attachment.contentType || '',
-        size_bytes: attachment.size || 0,
+    try {
+      await supportApi.sendDiscordTicketMessage(publicId, {
+        discordId,
+        message: body,
+        attachments: attachments.length ? attachments : undefined,
       });
+    } catch (err) {
+      console.warn(`[discord] Ticket reply failed: ${err.message}`);
+      const response = err.message.includes('404')
+        ? 'Ticket not found. Please check the ID.'
+        : 'Failed to send your reply. Please try again later.';
+      await message.channel.send(response);
     }
-
-    sse.publish({
-      type: 'ticket.message',
-      ticket_id: ticket.id,
-      public_id: ticket.public_id,
-      creator_user_id: ticket.creator_user_id,
-    });
   });
 
   if (payhip.isDbConfigured()) {

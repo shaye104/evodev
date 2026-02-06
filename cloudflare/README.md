@@ -36,6 +36,7 @@ Use these endpoints from your Discord bot (send `Authorization: Bearer <BOT_API_
 - `POST /api/bot/tickets` (create Discord ticket)
 - `POST /api/bot/tickets/:publicId/messages` (send DM reply into ticket)
 - `GET /api/bot/tickets/active?discord_id=...` (list open Discord tickets)
+- `GET /api/bot/messages?since_id=...` (poll staff replies for Discord tickets)
 
 ## Pages build
 Point Pages to this `cloudflare/` directory.
