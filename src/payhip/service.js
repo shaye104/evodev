@@ -1,6 +1,10 @@
 const crypto = require('crypto');
 const { CONFIG } = require('../config');
-const { getDbPool, initPayhipDb, isDbConfigured } = require('../db');
+const {
+  getDbPool,
+  initPayhipDb: initMysqlPayhipDb,
+  isDbConfigured: isMysqlConfigured,
+} = require('../db');
 const { loadStoreCached, saveStoreCached, STORE_CACHE } = require('../store');
 
 function nowIso() {
@@ -111,7 +115,55 @@ function cleanDbValue(value) {
   return str.length === 0 ? null : str;
 }
 
+function getApiBase() {
+  const base = CONFIG.SUPPORT_API_BASE || CONFIG.BASE_URL || '';
+  return base.replace(/\/$/, '');
+}
+
+function isApiConfigured() {
+  return Boolean(getApiBase() && CONFIG.BOT_API_TOKEN);
+}
+
+async function apiRequest(path, { method = 'GET', body } = {}) {
+  const base = getApiBase();
+  if (!base) throw new Error('Support API base URL is not configured.');
+  if (!CONFIG.BOT_API_TOKEN) throw new Error('BOT_API_TOKEN is not configured.');
+
+  const headers = { Authorization: `Bearer ${CONFIG.BOT_API_TOKEN}` };
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const res = await fetch(`${base}${path}`, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const text = await res.text();
+  let payload = null;
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = { error: text };
+    }
+  }
+
+  if (!res.ok) {
+    const message = payload?.error || res.statusText || 'Request failed';
+    throw new Error(`Payhip API ${res.status}: ${message}`);
+  }
+  return payload || {};
+}
+
 async function dbGetPurchaseById(transactionId) {
+  if (isApiConfigured()) {
+    const data = await apiRequest(
+      `/api/bot/purchases/${encodeURIComponent(transactionId)}`
+    );
+    return data.purchase || null;
+  }
+
   const pool = await getDbPool();
   if (!pool) return null;
   const [rows] = await pool.query(
@@ -122,6 +174,13 @@ async function dbGetPurchaseById(transactionId) {
 }
 
 async function dbGetPurchasesByDiscordId(discordId) {
+  if (isApiConfigured()) {
+    const data = await apiRequest(
+      `/api/bot/purchases?discord_id=${encodeURIComponent(discordId)}`
+    );
+    return data.purchases || [];
+  }
+
   const pool = await getDbPool();
   if (!pool) return [];
   const [rows] = await pool.query(
@@ -132,6 +191,29 @@ async function dbGetPurchasesByDiscordId(discordId) {
 }
 
 async function dbUpsertPurchase(purchase) {
+  if (isApiConfigured()) {
+    await apiRequest('/api/bot/purchases', {
+      method: 'POST',
+      body: {
+        transaction_id: cleanDbValue(purchase.transaction_id),
+        email: cleanDbValue(purchase.email),
+        product_key: cleanDbValue(purchase.product_key),
+        items_in_cart: cleanDbValue(purchase.items_in_cart),
+        status: cleanDbValue(purchase.status),
+        amount_gross: cleanDbValue(purchase.amount_gross),
+        coupon_discount_amount: cleanDbValue(purchase.coupon_discount_amount),
+        amount_net: cleanDbValue(purchase.amount_net),
+        currency: cleanDbValue(purchase.currency),
+        discord_id: cleanDbValue(purchase.discord_id),
+        created_at: cleanDbValue(purchase.created_at),
+        redeemed_at: cleanDbValue(purchase.redeemed_at),
+        discord_user_id: cleanDbValue(purchase.discord_user_id),
+        webhook_sent: purchase.webhook_sent ? 1 : 0,
+      },
+    });
+    return;
+  }
+
   const pool = await getDbPool();
   if (!pool) return;
   await pool.query(
@@ -176,6 +258,7 @@ async function dbUpsertPurchase(purchase) {
 }
 
 async function dbSeedFromJson(store) {
+  if (isApiConfigured()) return;
   const pool = await getDbPool();
   if (!pool) return;
   const [rows] = await pool.query('SELECT COUNT(*) AS count FROM purchases');
@@ -487,6 +570,15 @@ function buildOrderEmbedFromOrder(order) {
 
 function shouldWriteJson() {
   return CONFIG.MYSQL_WRITE_JSON !== '0';
+}
+
+function isDbConfigured() {
+  return isApiConfigured() || isMysqlConfigured();
+}
+
+async function initPayhipDb() {
+  if (isApiConfigured()) return true;
+  return initMysqlPayhipDb();
 }
 
 module.exports = {

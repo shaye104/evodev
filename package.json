@@ -5,7 +5,11 @@
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node index.js"
+    "prestart": "node scripts/audit.js",
+    "start": "node index.js",
+    "update-npm": "node scripts/update-npm.js",
+    "audit": "node scripts/audit.js",
+    "audit-fix": "node scripts/audit-fix.js"
   },
   "dependencies": {
     "ejs": "^3.1.10",
