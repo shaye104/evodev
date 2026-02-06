@@ -1,8 +1,8 @@
-const { jsonResponse } = require('../../_lib/utils');
-const { getUserContext } = require('../../_lib/auth');
-const { requireApiAdmin } = require('../../_lib/api');
+import { jsonResponse } from '../../_lib/utils.js';
+import { getUserContext } from '../../_lib/auth.js';
+import { requireApiAdmin } from '../../_lib/api.js';
 
-exports.onRequestGet = async ({ env, request }) => {
+export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
   const guard = requireApiAdmin(staff);
   if (guard) return guard;

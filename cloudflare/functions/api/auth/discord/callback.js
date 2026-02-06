@@ -1,5 +1,10 @@
-const { encodeSession, getCookie, setCookie, redirect } = require('../../../_lib/utils');
-const { upsertUserFromDiscord, ensureAdminSeed } = require('../../../_lib/db');
+import {
+  encodeSession,
+  getCookie,
+  setCookie,
+  redirect,
+} from '../../../_lib/utils.js';
+import { upsertUserFromDiscord, ensureAdminSeed } from '../../../_lib/db.js';
 
 async function exchangeCode(env, code) {
   const body = new URLSearchParams({
@@ -30,7 +35,7 @@ async function fetchDiscordProfile(token) {
   return res.json();
 }
 
-exports.onRequestGet = async ({ env, request }) => {
+export const onRequestGet = async ({ env, request }) => {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');

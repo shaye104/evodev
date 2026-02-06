@@ -1,5 +1,5 @@
-const { jsonResponse } = require('../../_lib/utils');
-const { requireBotAuth } = require('../../_lib/bot');
+import { jsonResponse } from '../../_lib/utils.js';
+import { requireBotAuth } from '../../_lib/bot.js';
 
 function cleanValue(value) {
   if (value === undefined || value === null) return null;
@@ -7,7 +7,7 @@ function cleanValue(value) {
   return str.length === 0 ? null : str;
 }
 
-exports.onRequestGet = async ({ env, request }) => {
+export const onRequestGet = async ({ env, request }) => {
   const guard = requireBotAuth(env, request);
   if (guard) return guard;
 
@@ -26,7 +26,7 @@ exports.onRequestGet = async ({ env, request }) => {
   return jsonResponse({ purchases: results.results || [] });
 };
 
-exports.onRequestPost = async ({ env, request }) => {
+export const onRequestPost = async ({ env, request }) => {
   const guard = requireBotAuth(env, request);
   if (guard) return guard;
 

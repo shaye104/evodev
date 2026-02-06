@@ -1,8 +1,8 @@
-const { jsonResponse, nowIso } = require('../../_lib/utils');
-const { getUserContext } = require('../../_lib/auth');
-const { requireApiAdmin } = require('../../_lib/api');
+import { jsonResponse, nowIso } from '../../_lib/utils.js';
+import { getUserContext } from '../../_lib/auth.js';
+import { requireApiAdmin } from '../../_lib/api.js';
 
-exports.onRequestGet = async ({ env, request }) => {
+export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
   const guard = requireApiAdmin(staff);
   if (guard) return guard;
@@ -13,7 +13,7 @@ exports.onRequestGet = async ({ env, request }) => {
   return jsonResponse({ statuses: results.results || [] });
 };
 
-exports.onRequestPost = async ({ env, request }) => {
+export const onRequestPost = async ({ env, request }) => {
   const { user, staff } = await getUserContext(env, request);
   const guard = requireApiAdmin(staff);
   if (guard) return guard;

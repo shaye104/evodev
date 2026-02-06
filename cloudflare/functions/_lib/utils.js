@@ -118,7 +118,7 @@ function requireEnv(env, key) {
   return value;
 }
 
-module.exports = {
+export {
   nowIso,
   randomId,
   jsonResponse,

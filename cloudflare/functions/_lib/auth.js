@@ -1,5 +1,11 @@
-const { decodeSession, getCookie, setCookie, clearCookie, redirect } = require('./utils');
-const { getUserById, getStaffByUserId } = require('./db');
+import {
+  decodeSession,
+  getCookie,
+  setCookie,
+  clearCookie,
+  redirect,
+} from './utils.js';
+import { getUserById, getStaffByUserId } from './db.js';
 
 const SESSION_COOKIE = 'evo_session';
 
@@ -60,7 +66,7 @@ function clearSessionCookie() {
   return clearCookie(SESSION_COOKIE);
 }
 
-module.exports = {
+export {
   getUserContext,
   requireAuth,
   requireStaff,

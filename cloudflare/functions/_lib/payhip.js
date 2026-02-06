@@ -195,7 +195,7 @@ async function sendPaidWebhookEmbed(env, order) {
   }
 }
 
-module.exports = {
+export {
   sha256Hex,
   safeEqualHex,
   extractProductKeys,

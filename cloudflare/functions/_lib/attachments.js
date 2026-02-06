@@ -1,4 +1,4 @@
-const { nowIso } = require('./utils');
+import { nowIso } from './utils.js';
 
 async function storeAttachments(env, ticketPublicId, messageId, files = []) {
   const saved = [];
@@ -38,4 +38,4 @@ async function storeAttachments(env, ticketPublicId, messageId, files = []) {
   return saved;
 }
 
-module.exports = { storeAttachments };
+export { storeAttachments };

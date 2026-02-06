@@ -9,7 +9,8 @@
     "start": "node index.js",
     "update-npm": "node scripts/update-npm.js",
     "audit": "node scripts/audit.js",
-    "audit-fix": "node scripts/audit-fix.js"
+    "audit-fix": "node scripts/audit-fix.js",
+    "import-purchases": "node scripts/import-purchases.js"
   },
   "dependencies": {
     "ejs": "^3.1.10",

@@ -1,7 +1,7 @@
-const { jsonResponse } = require('../../_lib/utils');
-const { requireBotAuth } = require('../../_lib/bot');
+import { jsonResponse } from '../../_lib/utils.js';
+import { requireBotAuth } from '../../_lib/bot.js';
 
-exports.onRequestGet = async ({ env, request }) => {
+export const onRequestGet = async ({ env, request }) => {
   const guard = requireBotAuth(env, request);
   if (guard) return guard;
 

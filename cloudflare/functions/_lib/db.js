@@ -1,4 +1,4 @@
-const { nowIso, randomId } = require('./utils');
+import { nowIso, randomId } from './utils.js';
 
 async function getUserById(env, id) {
   if (!id) return null;
@@ -121,7 +121,7 @@ async function generatePublicId(env) {
   return randomId(8);
 }
 
-module.exports = {
+export {
   getUserById,
   getUserByDiscordId,
   upsertUserFromDiscord,

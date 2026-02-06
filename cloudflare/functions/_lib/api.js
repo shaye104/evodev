@@ -1,5 +1,5 @@
-const { jsonResponse } = require('./utils');
-const { hasPermission } = require('./auth');
+import { jsonResponse } from './utils.js';
+import { hasPermission } from './auth.js';
 
 function requireApiUser(user) {
   if (!user) return jsonResponse({ error: 'Unauthorized' }, { status: 401 });
@@ -25,7 +25,7 @@ function requireApiPermission(staff, permission) {
   return null;
 }
 
-module.exports = {
+export {
   requireApiUser,
   requireApiStaff,
   requireApiAdmin,

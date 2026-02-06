@@ -1,4 +1,4 @@
-const { jsonResponse } = require('./utils');
+import { jsonResponse } from './utils.js';
 
 function requireBotAuth(env, request) {
   const header = request.headers.get('Authorization') || '';
@@ -9,4 +9,4 @@ function requireBotAuth(env, request) {
   return null;
 }
 
-module.exports = { requireBotAuth };
+export { requireBotAuth };

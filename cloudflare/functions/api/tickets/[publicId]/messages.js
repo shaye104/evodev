@@ -1,9 +1,9 @@
-const { jsonResponse, parseFormData, nowIso } = require('../../../_lib/utils');
-const { getUserContext } = require('../../../_lib/auth');
-const { requireApiUser } = require('../../../_lib/api');
-const { storeAttachments } = require('../../../_lib/attachments');
+import { jsonResponse, parseFormData, nowIso } from '../../../_lib/utils.js';
+import { getUserContext } from '../../../_lib/auth.js';
+import { requireApiUser } from '../../../_lib/api.js';
+import { storeAttachments } from '../../../_lib/attachments.js';
 
-exports.onRequestPost = async ({ env, request, params }) => {
+export const onRequestPost = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
   const guard = requireApiUser(user);
   if (guard) return guard;

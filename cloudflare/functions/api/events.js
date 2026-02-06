@@ -1,11 +1,11 @@
-const { getUserContext } = require('../_lib/auth');
-const { requireApiUser } = require('../_lib/api');
+import { getUserContext } from '../_lib/auth.js';
+import { requireApiUser } from '../_lib/api.js';
 
 function formatEvent(type, data) {
   return `event: ${type}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 
-exports.onRequestGet = async ({ env, request }) => {
+export const onRequestGet = async ({ env, request }) => {
   const { user, staff } = await getUserContext(env, request);
   const guard = requireApiUser(user);
   if (guard) return guard;

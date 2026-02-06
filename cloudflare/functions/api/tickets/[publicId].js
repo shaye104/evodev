@@ -1,8 +1,8 @@
-const { jsonResponse } = require('../../_lib/utils');
-const { getUserContext } = require('../../_lib/auth');
-const { requireApiUser } = require('../../_lib/api');
+import { jsonResponse } from '../../_lib/utils.js';
+import { getUserContext } from '../../_lib/auth.js';
+import { requireApiUser } from '../../_lib/api.js';
 
-exports.onRequestGet = async ({ env, request, params }) => {
+export const onRequestGet = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
   const guard = requireApiUser(user);
   if (guard) return guard;

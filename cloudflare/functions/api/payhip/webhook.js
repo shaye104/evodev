@@ -1,5 +1,5 @@
-const { jsonResponse, nowIso } = require('../../_lib/utils');
-const {
+import { jsonResponse, nowIso } from '../../_lib/utils.js';
+import {
   sha256Hex,
   safeEqualHex,
   extractProductKeys,
@@ -7,7 +7,7 @@ const {
   extractDiscordIdFromPayload,
   isAllowedProduct,
   sendPaidWebhookEmbed,
-} = require('../../_lib/payhip');
+} from '../../_lib/payhip.js';
 
 function cleanValue(value) {
   if (value === undefined || value === null) return null;
@@ -15,7 +15,7 @@ function cleanValue(value) {
   return str.length === 0 ? null : str;
 }
 
-exports.onRequestPost = async ({ env, request }) => {
+export const onRequestPost = async ({ env, request }) => {
   if (!env.PAYHIP_API_KEY) {
     return jsonResponse(
       { error: 'PAYHIP_API_KEY is not configured' },

@@ -1,10 +1,10 @@
-const { jsonResponse, parseFormData, nowIso } = require('../_lib/utils');
-const { getUserContext } = require('../_lib/auth');
-const { requireApiUser } = require('../_lib/api');
-const { getDefaultStatusId, generatePublicId } = require('../_lib/db');
-const { storeAttachments } = require('../_lib/attachments');
+import { jsonResponse, parseFormData, nowIso } from '../_lib/utils.js';
+import { getUserContext } from '../_lib/auth.js';
+import { requireApiUser } from '../_lib/api.js';
+import { getDefaultStatusId, generatePublicId } from '../_lib/db.js';
+import { storeAttachments } from '../_lib/attachments.js';
 
-exports.onRequestGet = async ({ env, request }) => {
+export const onRequestGet = async ({ env, request }) => {
   const { user } = await getUserContext(env, request);
   const guard = requireApiUser(user);
   if (guard) return guard;
@@ -25,7 +25,7 @@ exports.onRequestGet = async ({ env, request }) => {
   return jsonResponse({ tickets: tickets.results || [] });
 };
 
-exports.onRequestPost = async ({ env, request }) => {
+export const onRequestPost = async ({ env, request }) => {
   const { user } = await getUserContext(env, request);
   const guard = requireApiUser(user);
   if (guard) return guard;

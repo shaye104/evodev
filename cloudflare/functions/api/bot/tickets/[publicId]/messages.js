@@ -1,7 +1,7 @@
-const { jsonResponse, nowIso } = require('../../../../_lib/utils');
-const { requireBotAuth } = require('../../../../_lib/bot');
+import { jsonResponse, nowIso } from '../../../../_lib/utils.js';
+import { requireBotAuth } from '../../../../_lib/bot.js';
 
-exports.onRequestPost = async ({ env, request, params }) => {
+export const onRequestPost = async ({ env, request, params }) => {
   const guard = requireBotAuth(env, request);
   if (guard) return guard;
 

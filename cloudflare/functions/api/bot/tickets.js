@@ -1,6 +1,6 @@
-const { jsonResponse, nowIso } = require('../../_lib/utils');
-const { requireBotAuth } = require('../../_lib/bot');
-const { getDefaultStatusId, generatePublicId } = require('../../_lib/db');
+import { jsonResponse, nowIso } from '../../_lib/utils.js';
+import { requireBotAuth } from '../../_lib/bot.js';
+import { getDefaultStatusId, generatePublicId } from '../../_lib/db.js';
 
 async function ensureUser(env, discordId) {
   const existing = await env.DB.prepare('SELECT * FROM users WHERE discord_id = ? LIMIT 1')
@@ -18,7 +18,7 @@ async function ensureUser(env, discordId) {
     .first();
 }
 
-exports.onRequestPost = async ({ env, request }) => {
+export const onRequestPost = async ({ env, request }) => {
   const guard = requireBotAuth(env, request);
   if (guard) return guard;
 

@@ -1,6 +1,6 @@
-const { randomId, redirect, setCookie } = require('../../_lib/utils');
+import { randomId, redirect, setCookie } from '../../_lib/utils.js';
 
-exports.onRequestGet = async ({ env }) => {
+export const onRequestGet = async ({ env }) => {
   const state = randomId(12);
   const params = new URLSearchParams({
     client_id: env.DISCORD_CLIENT_ID,
