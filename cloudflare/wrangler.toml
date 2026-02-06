@@ -6,7 +6,7 @@ pages_build_output_dir = "public"
 [[d1_databases]]
 binding = "DB"
 database_name = "evo_support"
-database_id = ""
+database_id = "fcdcf0d4-81d7-4cf4-b1cb-96394ed976df"
 
 [[r2_buckets]]
 binding = "R2"
