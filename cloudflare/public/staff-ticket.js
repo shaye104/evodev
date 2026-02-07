@@ -27,6 +27,70 @@ const getRoleInfo = (msg) => {
   return { label: 'User', className: 'role-user' };
 };
 
+const getOrdinal = (value) => {
+  const mod10 = value % 10;
+  const mod100 = value % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${value}th`;
+  if (mod10 === 1) return `${value}st`;
+  if (mod10 === 2) return `${value}nd`;
+  if (mod10 === 3) return `${value}rd`;
+  return `${value}th`;
+};
+
+const formatClock = (date) => {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+const formatLongDate = (date) => {
+  const monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  const day = getOrdinal(date.getDate());
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${month} ${year} at ${formatClock(date)}`;
+};
+
+const formatRelativeTime = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const now = new Date();
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return 'just now';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin} min${diffMin === 1 ? '' : 's'} ago`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) {
+    return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+  }
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  if (dateDay.getTime() === yesterday.getTime()) {
+    return `yesterday at ${formatClock(date)}`;
+  }
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) {
+    return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+  }
+  return formatLongDate(date);
+};
+
 const renderTicket = (payload) => {
   const { ticket, messages, attachments } = payload;
   document.querySelector('[data-ticket-title]').textContent = `Ticket #${ticket.public_id}`;
@@ -70,7 +134,7 @@ const renderTicket = (payload) => {
     author.appendChild(info);
     const time = document.createElement('span');
     time.className = 'message-time';
-    time.textContent = msg.created_at;
+    time.textContent = formatRelativeTime(msg.created_at);
     meta.appendChild(author);
     meta.appendChild(time);
     const body = document.createElement('pre');
