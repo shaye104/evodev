@@ -34,8 +34,10 @@
       <h3>New panel</h3>
       <form class="form" data-create-panel>
         <label>
-          Panel name
-          <span class="hint-icon" tabindex="0" data-hint="Shown to users in the panel dropdown."></span>
+          <span class="label-row">
+            Panel name
+            <span class="hint-icon" tabindex="0" data-hint="Shown to users in the panel dropdown."></span>
+          </span>
           <input type="text" name="name" placeholder="e.g. Bug report" required>
         </label>
         <label>
@@ -43,15 +45,16 @@
           <input type="text" name="description" placeholder="Optional short hint for users">
         </label>
         <label>
-          Sort order
-          <span class="hint-icon" tabindex="0" data-hint="Lower numbers show first."></span>
+          <span class="label-row">
+            Sort order
+            <span class="hint-icon" tabindex="0" data-hint="Lower numbers show first."></span>
+          </span>
           <input type="number" name="sort_order" placeholder="0" value="0">
         </label>
 
         <input type="hidden" name="allowed_role_ids" value="">
         <div class="permissions-row">
           <button class="btn secondary" type="button" data-permissions-button>Panel visibility (staff)</button>
-          <span class="muted" data-permissions-summary>All staff</span>
           <span class="hint-icon" tabindex="0" data-hint="Leave empty to allow all staff roles. Select roles to restrict which staff can see tickets in this panel."></span>
         </div>
 

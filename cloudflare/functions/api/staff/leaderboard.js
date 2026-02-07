@@ -1,7 +1,7 @@
 import { jsonResponse } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
 import { requireApiStaff, requireApiPermission } from '../../_lib/api.js';
-import { ensureStaffPaySchema } from '../../_lib/db.js';
+import { ensureStaffPayAdjustmentsSchema, ensureStaffPaySchema } from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
@@ -10,6 +10,9 @@ export const onRequestGet = async ({ env, request }) => {
 
   try {
     await ensureStaffPaySchema(env);
+  } catch {}
+  try {
+    await ensureStaffPayAdjustmentsSchema(env);
   } catch {}
 
   // "Same group" is interpreted as staff with the same role.
@@ -58,7 +61,18 @@ export const onRequestGet = async ({ env, request }) => {
 
   const claimedTickets = Number(myClaimsRow?.claimed_tickets || 0) || 0;
   const payPerTicket = Number(staff.pay_per_ticket || 0) || 0;
-  const earnings = claimedTickets * payPerTicket;
+  const bonusRow = await env.DB.prepare(
+    `
+    SELECT COALESCE(SUM(amount), 0) AS bonus_total
+    FROM staff_pay_adjustments
+    WHERE staff_id = ?
+      AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+    `
+  )
+    .bind(staff.id)
+    .first();
+  const bonusTotal = Number(bonusRow?.bonus_total || 0) || 0;
+  const earnings = claimedTickets * payPerTicket + bonusTotal;
 
   return jsonResponse({
     month: new Date().toISOString().slice(0, 7),
@@ -70,9 +84,9 @@ export const onRequestGet = async ({ env, request }) => {
       pay_per_ticket: payPerTicket,
       claimed_tickets: claimedTickets,
       answered_tickets: Number(myAnswered) || 0,
+      bonus_total: bonusTotal,
       earnings,
       currency: 'R$',
     },
   });
 };
-

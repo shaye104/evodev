@@ -36,23 +36,22 @@
       <a class="tile" href="/staff-transcripts.html">View transcripts</a>
     </section>
 
-    <section class="card">
-      <div class="page-header" style="margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <h3 style="margin: 0;">This month</h3>
-          <span class="hint-icon" tabindex="0" data-hint="Leaderboard shows staff in your role (group) and how many tickets they replied to this calendar month. Earnings are based on the tickets you claimed this month multiplied by your pay rate set by admins."></span>
-        </div>
+    <section class="page-header" style="margin-top: 24px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <h3 style="margin: 0;">This month</h3>
+        <span class="hint-icon" tabindex="0" data-hint="Leaderboard shows staff in your role (group) and how many tickets they replied to this calendar month. Earnings are based on the tickets you claimed this month multiplied by your pay rate set by admins."></span>
       </div>
-      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
-        <div>
-          <h4 style="margin-bottom: 10px;">Leaderboard</h4>
-          <div data-leaderboard class="muted">Loading…</div>
-        </div>
-        <div>
-          <h4 style="margin-bottom: 10px;">Your earnings</h4>
-          <div data-earnings class="muted">Loading…</div>
-        </div>
-      </div>
+    </section>
+
+    <section class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+      <section class="card">
+        <h3 style="margin-top: 0;">Leaderboard</h3>
+        <div data-leaderboard class="muted">Loading…</div>
+      </section>
+      <section class="card">
+        <h3 style="margin-top: 0;">Your earnings</h3>
+        <div data-earnings class="muted">Loading…</div>
+      </section>
     </section>
   </main>
   <footer class="site-footer">

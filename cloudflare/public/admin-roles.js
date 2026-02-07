@@ -6,6 +6,7 @@ const PERMISSIONS = [
   { id: 'tickets.status', label: 'Change ticket status' },
   { id: 'tickets.escalate', label: 'Escalate/move tickets' },
   { id: 'tickets.subject', label: 'Edit ticket subject' },
+  { id: 'staff.manage_pay', label: 'Manage pay' },
 ];
 
 const renderAdminToggle = (isAdmin) => {
@@ -107,7 +108,6 @@ const renderRoles = (roles) => {
       <input type="hidden" name="is_admin" value="${role.is_admin ? '1' : '0'}">
       <div class="permissions-row">
         <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
-        <span class="muted" data-permissions-summary>${selected.length ? `${selected.length} selected` : 'None selected'}</span>
       </div>
       <div class="inline">
         <button class="btn secondary small" type="submit">Update</button>

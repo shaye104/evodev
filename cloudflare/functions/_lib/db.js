@@ -66,6 +66,53 @@ async function ensureStaffPaySchema(env) {
   } catch {}
 }
 
+async function ensureStaffNotificationsSchema(env) {
+  await env.DB.prepare(
+    `
+    CREATE TABLE IF NOT EXISTS staff_notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      staff_id INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      message TEXT NOT NULL,
+      metadata TEXT,
+      created_at TEXT,
+      read_at TEXT
+    )
+    `
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_staff_notifications_staff_id ON staff_notifications (staff_id)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_staff_notifications_read_at ON staff_notifications (read_at)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_staff_notifications_created_at ON staff_notifications (created_at)'
+  ).run();
+}
+
+async function ensureStaffPayAdjustmentsSchema(env) {
+  await env.DB.prepare(
+    `
+    CREATE TABLE IF NOT EXISTS staff_pay_adjustments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      staff_id INTEGER NOT NULL,
+      amount INTEGER NOT NULL,
+      reason TEXT,
+      created_by_user_id INTEGER,
+      created_by_staff_id INTEGER,
+      created_at TEXT
+    )
+    `
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_staff_pay_adjustments_staff_id ON staff_pay_adjustments (staff_id)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_staff_pay_adjustments_created_at ON staff_pay_adjustments (created_at)'
+  ).run();
+}
+
 async function getUserById(env, id) {
   if (!id) return null;
   return env.DB.prepare('SELECT * FROM users WHERE id = ? LIMIT 1')
@@ -206,6 +253,8 @@ export {
   ensureRoleColorsSchema,
   ensureTicketTranscriptsSchema,
   ensureStaffPaySchema,
+  ensureStaffNotificationsSchema,
+  ensureStaffPayAdjustmentsSchema,
   staffCanAccessPanel,
   getAccessiblePanelsForStaff,
 };

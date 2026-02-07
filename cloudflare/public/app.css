@@ -593,6 +593,13 @@ a:hover {
   background: rgba(52, 132, 255, 0.08);
 }
 
+.pill.warning {
+  background: var(--warning);
+  border-color: var(--warning);
+  color: var(--text-strong);
+  font-weight: 800;
+}
+
 .form {
   display: grid;
   gap: 12px;
@@ -603,6 +610,13 @@ a:hover {
   gap: 6px;
   font-weight: 700;
   color: var(--text-strong);
+}
+
+.label-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
 }
 
 .form label .muted {

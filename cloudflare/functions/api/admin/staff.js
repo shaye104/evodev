@@ -17,7 +17,7 @@ export const onRequestGet = async ({ env, request }) => {
 
   const staffMembers = await env.DB.prepare(
     `
-    SELECT sm.*, sr.name AS role_name, sr.is_admin, u.discord_username
+    SELECT sm.*, sr.name AS role_name, sr.is_admin, sr.color_bg, sr.color_text, u.discord_username
     FROM staff_members sm
     LEFT JOIN staff_roles sr ON sm.role_id = sr.id
     LEFT JOIN users u ON sm.user_id = u.id
@@ -26,7 +26,7 @@ export const onRequestGet = async ({ env, request }) => {
   ).all();
   const roles = await env.DB.prepare('SELECT * FROM staff_roles ORDER BY name ASC').all();
 
-  return jsonResponse({ staff: staffMembers.results || [], roles: roles.results || [] });
+  return jsonResponse({ staff: staffMembers.results || [], roles: roles.results || [], me: staff });
 };
 
 export const onRequestPost = async ({ env, request }) => {

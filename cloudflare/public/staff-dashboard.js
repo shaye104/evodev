@@ -6,6 +6,36 @@ const safeJson = async (res) => {
   }
 };
 
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.className = 'toast show';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 250);
+  }, 6000);
+}
+
+async function loadNotifications() {
+  const res = await fetch('/api/staff/notifications');
+  if (!res.ok) return;
+  const data = await safeJson(res);
+  const notifications = data?.notifications || [];
+  if (!notifications.length) return;
+
+  notifications
+    .slice()
+    .reverse()
+    .forEach((n) => showToast(n.message || 'Notification'));
+
+  await fetch('/api/staff/notifications', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids: notifications.map((n) => n.id) }),
+  }).catch(() => null);
+}
+
 const renderLeaderboard = (payload) => {
   const el = document.querySelector('[data-leaderboard]');
   if (!el) return;
@@ -49,11 +79,13 @@ const renderEarnings = (payload) => {
   const pay = Number(me.pay_per_ticket || 0) || 0;
   const claimed = Number(me.claimed_tickets || 0) || 0;
   const answered = Number(me.answered_tickets || 0) || 0;
+  const bonus = Number(me.bonus_total || 0) || 0;
   const earnings = Number(me.earnings || 0) || 0;
   el.innerHTML = `
     <div class="inline" style="margin-right: 0;">
       <span class="pill">Answered: ${answered}</span>
       <span class="pill">Claimed: ${claimed}</span>
+      <span class="pill">Bonus: ${currency}${bonus}</span>
     </div>
     <div style="margin-top: 10px;">
       <div class="muted">Pay rate</div>
@@ -94,5 +126,5 @@ const loadDashboardStats = async () => {
 
 document.addEventListener('DOMContentLoaded', () => {
   loadDashboardStats();
+  loadNotifications();
 });
-

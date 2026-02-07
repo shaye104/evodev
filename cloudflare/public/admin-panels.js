@@ -83,16 +83,14 @@ const loadPanels = async () => {
       <input type="hidden" name="allowed_role_ids" value="${selected.join(', ')}">
       <div class="permissions-row">
         <button class="btn secondary" type="button" data-permissions-button>Visibility</button>
-        <span class="muted" data-permissions-summary>${
-          selected.length ? `Restricted: ${selected.length} role(s)` : 'All staff'
-        }</span>
+        <span class="hint-icon" tabindex="0" data-hint="Leave empty to allow all staff roles. Select roles to restrict which staff can see tickets in this panel."></span>
       </div>
       <input type="hidden" name="is_active" value="${panel.is_active ? '1' : '0'}">
       <div class="permissions-row">
         <button class="btn ${panel.is_active ? 'danger' : 'success'}" type="button" data-active-toggle aria-pressed="${panel.is_active ? 'true' : 'false'}">
           ${panel.is_active ? 'Deactivate' : 'Activate'}
         </button>
-        <span class="muted">A deactivated panel is hidden for users when creating a new ticket.</span>
+        <span class="hint-icon" tabindex="0" data-hint="A deactivated panel is hidden for users when creating a new ticket."></span>
       </div>
       <button class="btn secondary" type="submit">Update</button>
       <dialog
@@ -155,9 +153,7 @@ const handleCreate = async (event) => {
   });
   form.reset();
   const hidden = form.querySelector('input[name="allowed_role_ids"]');
-  const summary = form.querySelector('[data-permissions-summary]');
   if (hidden) hidden.value = '';
-  if (summary) summary.textContent = 'All staff';
   const activeHidden = form.querySelector('input[name="is_active"]');
   if (activeHidden) activeHidden.value = '1';
   syncActiveToggle(form);
