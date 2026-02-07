@@ -1,7 +1,7 @@
 import { jsonResponse, nowIso } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
 import { requireApiAdmin } from '../../_lib/api.js';
-import { ensureRoleColorsSchema } from '../../_lib/db.js';
+import { ensureRoleColorsSchema, ensureStaffPaySchema } from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
@@ -10,6 +10,9 @@ export const onRequestGet = async ({ env, request }) => {
 
   try {
     await ensureRoleColorsSchema(env);
+  } catch {}
+  try {
+    await ensureStaffPaySchema(env);
   } catch {}
 
   const staffMembers = await env.DB.prepare(
@@ -33,6 +36,9 @@ export const onRequestPost = async ({ env, request }) => {
 
   const body = await request.json().catch(() => ({}));
   const now = nowIso();
+  try {
+    await ensureStaffPaySchema(env);
+  } catch {}
   const discordId = String(body.discord_id || '').trim();
   const existingUser = discordId
     ? await env.DB.prepare('SELECT id FROM users WHERE discord_id = ? LIMIT 1')
@@ -41,9 +47,15 @@ export const onRequestPost = async ({ env, request }) => {
     : null;
 
   const result = await env.DB.prepare(
-    'INSERT INTO staff_members (discord_id, role_id, is_active, created_at) VALUES (?, ?, ?, ?)'
+    'INSERT INTO staff_members (discord_id, role_id, is_active, pay_per_ticket, created_at) VALUES (?, ?, ?, ?, ?)'
   )
-    .bind(discordId, body.role_id || null, body.is_active ? 1 : 0, now)
+    .bind(
+      discordId,
+      body.role_id || null,
+      body.is_active ? 1 : 0,
+      Number(body.pay_per_ticket || 0) || 0,
+      now
+    )
     .run();
 
   if (existingUser?.id) {

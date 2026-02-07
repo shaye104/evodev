@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/app.css?v=20260207h">
   <script src="/ui.js" defer></script>
   <script src="/staff.js" defer></script>
+  <script src="/staff-dashboard.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -33,6 +34,25 @@
     <section class="card grid">
       <a class="tile" href="/staff-open.html">Open tickets</a>
       <a class="tile" href="/staff-transcripts.html">View transcripts</a>
+    </section>
+
+    <section class="card">
+      <div class="page-header" style="margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h3 style="margin: 0;">This month</h3>
+          <span class="hint-icon" tabindex="0" data-hint="Leaderboard shows staff in your role (group) and how many tickets they replied to this calendar month. Earnings are based on the tickets you claimed this month multiplied by your pay rate set by admins."></span>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+        <div>
+          <h4 style="margin-bottom: 10px;">Leaderboard</h4>
+          <div data-leaderboard class="muted">Loading…</div>
+        </div>
+        <div>
+          <h4 style="margin-bottom: 10px;">Your earnings</h4>
+          <div data-earnings class="muted">Loading…</div>
+        </div>
+      </div>
     </section>
   </main>
   <footer class="site-footer">

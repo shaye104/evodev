@@ -38,6 +38,11 @@
           <input type="text" name="discord_id" placeholder="User Discord ID (numbers only)" required>
         </label>
         <label>
+          Pay per ticket (R$)
+          <span class="hint-icon" tabindex="0" data-hint="Used for the staff dashboard earnings tracker. Set to 0 to disable earnings."></span>
+          <input type="number" name="pay_per_ticket" placeholder="0" value="0" min="0" step="1">
+        </label>
+        <label>
           Role
           <select name="role_id" data-staff-role></select>
         </label>

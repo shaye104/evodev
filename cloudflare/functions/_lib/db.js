@@ -59,6 +59,13 @@ async function ensureTicketTranscriptsSchema(env) {
   ).run();
 }
 
+async function ensureStaffPaySchema(env) {
+  // Safe to call multiple times (ALTER will fail if column already exists).
+  try {
+    await env.DB.prepare('ALTER TABLE staff_members ADD COLUMN pay_per_ticket INTEGER').run();
+  } catch {}
+}
+
 async function getUserById(env, id) {
   if (!id) return null;
   return env.DB.prepare('SELECT * FROM users WHERE id = ? LIMIT 1')
@@ -198,6 +205,7 @@ export {
   ensurePanelRoleAccessSchema,
   ensureRoleColorsSchema,
   ensureTicketTranscriptsSchema,
+  ensureStaffPaySchema,
   staffCanAccessPanel,
   getAccessiblePanelsForStaff,
 };

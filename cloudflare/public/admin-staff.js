@@ -19,6 +19,7 @@ const loadStaff = async () => {
       .join('');
     form.innerHTML = `
       <span>${member.discord_username || member.discord_id}</span>
+      <input type="number" name="pay_per_ticket" min="0" step="1" value="${Number(member.pay_per_ticket || 0) || 0}" placeholder="0" aria-label="Pay per ticket (R$)">
       <select name="role_id">${options}</select>
       <label class="checkbox">
         <input type="checkbox" name="is_active" value="1" ${member.is_active ? 'checked' : ''}>
@@ -35,6 +36,7 @@ const loadStaff = async () => {
         body: JSON.stringify({
           role_id: formData.get('role_id'),
           is_active: formData.get('is_active') === '1',
+          pay_per_ticket: Number(formData.get('pay_per_ticket') || 0) || 0,
         }),
       });
       loadStaff();
@@ -62,6 +64,7 @@ const handleCreate = async (event) => {
       discord_id: formData.get('discord_id'),
       role_id: formData.get('role_id'),
       is_active: formData.get('is_active') === '1',
+      pay_per_ticket: Number(formData.get('pay_per_ticket') || 0) || 0,
     }),
   });
   event.target.reset();
