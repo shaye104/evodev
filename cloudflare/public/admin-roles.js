@@ -427,8 +427,8 @@ const renderRoles = (roles) => {
     form.innerHTML = `
       <div class="role-main">
         <div class="order-arrows" aria-label="Role order">
-          <button class="btn secondary tiny" type="button" data-move-up aria-label="Move role up">▲</button>
-          <button class="btn secondary tiny" type="button" data-move-down aria-label="Move role down">▼</button>
+          <button class="btn secondary tiny" type="button" data-move-up aria-label="Move role up">&uarr;</button>
+          <button class="btn secondary tiny" type="button" data-move-down aria-label="Move role down">&darr;</button>
         </div>
         <input type="text" name="name" value="${role.name || ''}" required ${mayEdit ? '' : 'disabled'}>
         <button
