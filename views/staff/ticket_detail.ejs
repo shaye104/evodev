@@ -43,8 +43,19 @@
   <% messages.forEach((msg) => { %>
     <article class="message">
       <div class="message-meta">
-        <strong><%= msg.author_type %></strong>
-        <span><%= msg.created_at %></span>
+        <% const authorName = msg.author_username || (msg.author_type === 'staff' ? 'Staff' : 'User'); %>
+        <% const roleName = msg.author_type === 'staff' ? (msg.author_role_name || (msg.author_is_admin ? 'Admin' : 'Staff')) : 'User'; %>
+        <% const roleClass = msg.author_type === 'staff' ? (msg.author_is_admin ? 'role-admin' : 'role-staff') : 'role-user'; %>
+        <% const avatarIndex = msg.author_discord_id ? (parseInt(String(msg.author_discord_id).slice(-1), 10) || 0) % 5 : 0; %>
+        <% const avatarUrl = msg.author_avatar && msg.author_discord_id ? `https://cdn.discordapp.com/avatars/${msg.author_discord_id}/${msg.author_avatar}.png?size=64` : `https://cdn.discordapp.com/embed/avatars/${avatarIndex}.png`; %>
+        <div class="message-author">
+          <img class="message-avatar" src="<%= avatarUrl %>" alt="<%= authorName %> avatar" loading="lazy">
+          <div class="author-info">
+            <span class="author-name"><%= authorName %></span>
+            <span class="role-pill <%= roleClass %>"><%= roleName %></span>
+          </div>
+        </div>
+        <span class="message-time"><%= msg.created_at %></span>
       </div>
       <pre class="message-body"><%= msg.body %></pre>
       <% const attachments = attachmentsByMessage.get(msg.id) || []; %>

@@ -1,5 +1,32 @@
 const getTicketId = () => new URLSearchParams(window.location.search).get('id');
 
+const getAvatarUrl = (msg) => {
+  const discordId = msg.author_discord_id;
+  const avatarHash = msg.author_avatar;
+  if (discordId && avatarHash) {
+    return `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.png?size=64`;
+  }
+  const index = discordId
+    ? (parseInt(String(discordId).slice(-1), 10) || 0) % 5
+    : 0;
+  return `https://cdn.discordapp.com/embed/avatars/${index}.png`;
+};
+
+const getAuthorName = (msg) => {
+  if (msg.author_username) return msg.author_username;
+  return msg.author_type === 'staff' ? 'Staff' : 'User';
+};
+
+const getRoleInfo = (msg) => {
+  if (msg.author_type === 'staff') {
+    const label =
+      msg.author_role_name || (msg.author_is_admin ? 'Admin' : 'Staff');
+    const className = msg.author_is_admin ? 'role-admin' : 'role-staff';
+    return { label, className };
+  }
+  return { label: 'User', className: 'role-user' };
+};
+
 const renderTicket = (payload) => {
   const { ticket, messages, attachments } = payload;
   document.querySelector('[data-ticket-title]').textContent = `Ticket #${ticket.public_id}`;
@@ -21,7 +48,31 @@ const renderTicket = (payload) => {
     article.className = 'message';
     const meta = document.createElement('div');
     meta.className = 'message-meta';
-    meta.innerHTML = `<strong>${msg.author_type}</strong><span>${msg.created_at}</span>`;
+    const author = document.createElement('div');
+    author.className = 'message-author';
+    const avatar = document.createElement('img');
+    avatar.className = 'message-avatar';
+    avatar.src = getAvatarUrl(msg);
+    avatar.alt = `${getAuthorName(msg)} avatar`;
+    avatar.loading = 'lazy';
+    const info = document.createElement('div');
+    info.className = 'author-info';
+    const name = document.createElement('span');
+    name.className = 'author-name';
+    name.textContent = getAuthorName(msg);
+    const role = getRoleInfo(msg);
+    const roleBadge = document.createElement('span');
+    roleBadge.className = `role-pill ${role.className}`;
+    roleBadge.textContent = role.label;
+    info.appendChild(name);
+    info.appendChild(roleBadge);
+    author.appendChild(avatar);
+    author.appendChild(info);
+    const time = document.createElement('span');
+    time.className = 'message-time';
+    time.textContent = msg.created_at;
+    meta.appendChild(author);
+    meta.appendChild(time);
     const body = document.createElement('pre');
     body.className = 'message-body';
     body.textContent = msg.body;

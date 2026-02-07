@@ -27,7 +27,16 @@ export const onRequestGet = async ({ env, request, params }) => {
   if (!ticket) return jsonResponse({ error: 'Not found' }, { status: 404 });
 
   const messages = await env.DB.prepare(
-    'SELECT * FROM ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC'
+    `
+    SELECT tm.*, u.discord_username AS author_username, u.discord_avatar AS author_avatar,
+      sm.id AS author_staff_id, sr.name AS author_role_name, sr.is_admin AS author_is_admin
+    FROM ticket_messages tm
+    LEFT JOIN users u ON tm.author_user_id = u.id
+    LEFT JOIN staff_members sm ON sm.user_id = u.id AND sm.is_active = 1
+    LEFT JOIN staff_roles sr ON sm.role_id = sr.id
+    WHERE tm.ticket_id = ?
+    ORDER BY tm.created_at ASC
+    `
   )
     .bind(ticket.id)
     .all();

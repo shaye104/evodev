@@ -511,9 +511,12 @@ async function listTicketMessages(ticketId) {
   if (!pool) return [];
   const [rows] = await pool.query(
     `
-    SELECT tm.*, u.discord_username AS author_username
+    SELECT tm.*, u.discord_username AS author_username, u.discord_avatar AS author_avatar,
+      sr.name AS author_role_name, sr.is_admin AS author_is_admin
     FROM ticket_messages tm
     LEFT JOIN users u ON tm.author_user_id = u.id
+    LEFT JOIN staff_members sm ON sm.user_id = u.id AND sm.is_active = 1
+    LEFT JOIN staff_roles sr ON sm.role_id = sr.id
     WHERE tm.ticket_id = ?
     ORDER BY tm.created_at ASC
     `,
