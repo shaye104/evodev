@@ -1,4 +1,8 @@
-window.addEventListener('DOMContentLoaded', () => {
+const initAdminModals = () => {
+  // Guard against double-init if this script is re-executed or if init is called twice.
+  if (window.__evoAdminModalsInit) return;
+  window.__evoAdminModalsInit = true;
+
   const openModal = (modal) => {
     if (!modal) return;
     const selected = getSelectedValues(modal);
@@ -181,4 +185,12 @@ window.addEventListener('DOMContentLoaded', () => {
       closeModal(modal);
     }
   });
-});
+};
+
+// Defer isn't always guaranteed (cached HTML, injected scripts, etc.). Ensure we init even if
+// DOMContentLoaded has already fired.
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', initAdminModals);
+} else {
+  initAdminModals();
+}
