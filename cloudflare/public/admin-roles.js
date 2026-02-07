@@ -17,6 +17,110 @@ const ADMIN_PERMISSIONS = [
   { id: 'staff.manage_pay', label: 'Manage pay' },
 ];
 
+const clamp255 = (n) => Math.max(0, Math.min(255, Number(n) || 0));
+
+const normalizeHex = (raw) => {
+  const s = String(raw || '').trim().toLowerCase();
+  if (!s) return null;
+
+  // Allow rgb(r,g,b) input in the hex box for convenience.
+  const rgb = s.match(/^rgb\\s*\\(\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*,\\s*(\\d{1,3})\\s*\\)$/i);
+  if (rgb) {
+    const r = clamp255(rgb[1]);
+    const g = clamp255(rgb[2]);
+    const b = clamp255(rgb[3]);
+    return (
+      '#' +
+      [r, g, b]
+        .map((v) => v.toString(16).padStart(2, '0'))
+        .join('')
+    );
+  }
+
+  const h = s.startsWith('#') ? s.slice(1) : s;
+  if (/^[0-9a-f]{3}$/.test(h)) {
+    return (
+      '#' +
+      h
+        .split('')
+        .map((c) => c + c)
+        .join('')
+    );
+  }
+  if (/^[0-9a-f]{6}$/.test(h)) return `#${h}`;
+  return null;
+};
+
+const hexToRgb = (hex) => {
+  const h = normalizeHex(hex);
+  if (!h) return null;
+  const x = h.slice(1);
+  return {
+    r: parseInt(x.slice(0, 2), 16),
+    g: parseInt(x.slice(2, 4), 16),
+    b: parseInt(x.slice(4, 6), 16),
+  };
+};
+
+const rgbToHex = (r, g, b) =>
+  '#' +
+  [clamp255(r), clamp255(g), clamp255(b)]
+    .map((v) => v.toString(16).padStart(2, '0'))
+    .join('');
+
+const setupColorTools = (root, fieldName, onChange) => {
+  const container = root?.querySelector?.(`[data-color-tools="${fieldName}"]`);
+  if (!container) return null;
+
+  const picker = container.querySelector(`input[name="${fieldName}"]`);
+  const hexInput = container.querySelector('[data-color-hex]');
+  const rInput = container.querySelector('[data-color-r]');
+  const gInput = container.querySelector('[data-color-g]');
+  const bInput = container.querySelector('[data-color-b]');
+  if (!picker || !hexInput || !rInput || !gInput || !bInput) return null;
+
+  const applyHex = (nextHex) => {
+    const h = normalizeHex(nextHex);
+    if (!h) return false;
+    picker.value = h;
+    hexInput.value = h;
+    const rgb = hexToRgb(h);
+    if (rgb) {
+      rInput.value = String(rgb.r);
+      gInput.value = String(rgb.g);
+      bInput.value = String(rgb.b);
+    }
+    if (typeof onChange === 'function') onChange();
+    return true;
+  };
+
+  // Allow callers to re-sync after form.reset().
+  container.__applyHex = applyHex;
+
+  // Initialize from picker value.
+  applyHex(picker.value);
+
+  picker.addEventListener('input', () => applyHex(picker.value));
+
+  const onHexEdit = () => {
+    const ok = applyHex(hexInput.value);
+    if (ok) hexInput.classList.remove('is-invalid');
+    else hexInput.classList.add('is-invalid');
+  };
+  hexInput.addEventListener('input', onHexEdit);
+  hexInput.addEventListener('blur', onHexEdit);
+
+  const onRgbEdit = () => {
+    const h = rgbToHex(rInput.value, gInput.value, bInput.value);
+    applyHex(h);
+  };
+  rInput.addEventListener('input', onRgbEdit);
+  gInput.addEventListener('input', onRgbEdit);
+  bInput.addEventListener('input', onRgbEdit);
+
+  return { applyHex };
+};
+
 const renderAdminToggle = (isAdmin) => {
   const on = Boolean(isAdmin);
   return `
@@ -107,17 +211,35 @@ const renderRoles = (roles) => {
     const deleteBtnDisabled = isAdminRole ? 'disabled' : '';
     const deleteBtnTitle = isAdminRole ? 'Admin role cannot be deleted.' : 'Delete role';
     form.innerHTML = `
-      <input type="text" name="name" value="${role.name || ''}" required>
-      <div class="role-form-top">
-        <label>
-          Badge background
-          <input type="color" name="color_bg" value="${bg}">
-        </label>
-        <label>
-          Badge text
-          <input type="color" name="color_text" value="${text}">
-        </label>
+      <div class="role-name-row">
+        <input type="text" name="name" value="${role.name || ''}" required>
         <span class="role-pill role-staff" data-role-preview>Preview</span>
+      </div>
+      <div class="role-color-row">
+        <div class="color-block" data-color-tools="color_bg">
+          <div class="color-block-title">Badge background</div>
+          <div class="color-tools">
+            <input type="color" name="color_bg" value="${bg}" aria-label="Badge background color">
+            <input type="text" class="mono" data-color-hex value="${bg}" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge background hex">
+            <div class="rgb-row" aria-label="Badge background RGB">
+              <input type="number" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
+              <input type="number" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
+              <input type="number" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
+            </div>
+          </div>
+        </div>
+        <div class="color-block" data-color-tools="color_text">
+          <div class="color-block-title">Badge text</div>
+          <div class="color-tools">
+            <input type="color" name="color_text" value="${text}" aria-label="Badge text color">
+            <input type="text" class="mono" data-color-hex value="${text}" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge text hex">
+            <div class="rgb-row" aria-label="Badge text RGB">
+              <input type="number" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
+              <input type="number" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
+              <input type="number" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
+            </div>
+          </div>
+        </div>
       </div>
       <input type="hidden" name="permissions" value="${selected.join(', ')}">
       <input type="hidden" name="is_admin" value="${role.is_admin ? '1' : '0'}">
@@ -146,8 +268,8 @@ const renderRoles = (roles) => {
       preview.style.color = textVal || '#ffffff';
     };
     form.querySelector('input[name="name"]').addEventListener('input', updatePreview);
-    form.querySelector('input[name="color_bg"]').addEventListener('input', updatePreview);
-    form.querySelector('input[name="color_text"]').addEventListener('input', updatePreview);
+    setupColorTools(form, 'color_bg', updatePreview);
+    setupColorTools(form, 'color_text', updatePreview);
     updatePreview();
 
     form.addEventListener('submit', async (event) => {
@@ -218,6 +340,14 @@ const handleCreate = async (event) => {
     }),
   });
   form.reset();
+  try {
+    form.querySelector('[data-color-tools="color_bg"]')?.__applyHex?.(
+      form.querySelector('input[name="color_bg"]')?.value
+    );
+    form.querySelector('[data-color-tools="color_text"]')?.__applyHex?.(
+      form.querySelector('input[name="color_text"]')?.value
+    );
+  } catch {}
   const bgVal = String(form.querySelector('input[name="color_bg"]')?.value || '').trim();
   const textVal = String(form.querySelector('input[name="color_text"]')?.value || '').trim();
   const preview = form.querySelector('[data-role-preview]');
@@ -248,8 +378,8 @@ document.addEventListener('DOMContentLoaded', () => {
       preview.style.color = textVal || '#ffffff';
     };
     createForm.querySelector('input[name="name"]').addEventListener('input', updatePreview);
-    createForm.querySelector('input[name="color_bg"]').addEventListener('input', updatePreview);
-    createForm.querySelector('input[name="color_text"]').addEventListener('input', updatePreview);
+    setupColorTools(createForm, 'color_bg', updatePreview);
+    setupColorTools(createForm, 'color_text', updatePreview);
     updatePreview();
   }
   loadRoles();

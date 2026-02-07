@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Roles | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207i">
+  <link rel="stylesheet" href="/app.css?v=20260207j">
   <script src="/ui.js" defer></script>
-  <script src="/admin-roles.js" defer></script>
-  <script src="/admin.js" defer></script>
+  <script src="/admin-roles.js?v=20260207j" defer></script>
+  <script src="/admin.js?v=20260207j" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -33,19 +33,37 @@
     <section class="card">
       <h3>New role</h3>
       <form class="form" data-create-role>
-        <input type="text" name="name" placeholder="Role name" required>
+        <div class="role-name-row">
+          <input type="text" name="name" placeholder="Role name" required>
+          <span class="role-pill role-staff" data-role-preview>Preview</span>
+        </div>
         <input type="hidden" name="permissions" value="">
         <input type="hidden" name="is_admin" value="0">
-        <div class="inline">
-          <label>
-            Badge background
-            <input type="color" name="color_bg" value="#3484ff">
-          </label>
-          <label>
-            Badge text
-            <input type="color" name="color_text" value="#ffffff">
-          </label>
-          <span class="role-pill role-staff" data-role-preview>Preview</span>
+        <div class="role-color-row">
+          <div class="color-block" data-color-tools="color_bg">
+            <div class="color-block-title">Badge background</div>
+            <div class="color-tools">
+              <input type="color" name="color_bg" value="#3484ff" aria-label="Badge background color">
+              <input type="text" class="mono" data-color-hex value="#3484ff" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge background hex">
+              <div class="rgb-row" aria-label="Badge background RGB">
+                <input type="number" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
+                <input type="number" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
+                <input type="number" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
+              </div>
+            </div>
+          </div>
+          <div class="color-block" data-color-tools="color_text">
+            <div class="color-block-title">Badge text</div>
+            <div class="color-tools">
+              <input type="color" name="color_text" value="#ffffff" aria-label="Badge text color">
+              <input type="text" class="mono" data-color-hex value="#ffffff" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge text hex">
+              <div class="rgb-row" aria-label="Badge text RGB">
+                <input type="number" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
+                <input type="number" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
+                <input type="number" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
+              </div>
+            </div>
+          </div>
         </div>
         <div class="permissions-row">
           <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
