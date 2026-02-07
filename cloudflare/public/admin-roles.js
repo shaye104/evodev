@@ -278,16 +278,22 @@ const renderRoles = (roles) => {
     const deleteBtnDisabled = isAdminRole ? 'disabled' : '';
     const deleteBtnTitle = isAdminRole ? 'Admin role cannot be deleted.' : 'Delete role';
     form.innerHTML = `
-      <div class="role-name-row">
+      <div class="role-main">
         <input type="text" name="name" value="${role.name || ''}" required>
-        <button class="role-pill role-staff role-pill-button" type="button" data-role-preview data-color-trigger>Preview</button>
+        <button
+          class="role-pill role-staff role-pill-button"
+          type="button"
+          data-role-preview
+          data-color-trigger
+          title="Edit badge colours"
+        >Preview</button>
       </div>
-      <input type="hidden" name="permissions" value="${selected.join(', ')}">
-      <input type="hidden" name="is_admin" value="${role.is_admin ? '1' : '0'}">
-      <div class="role-actions-row">
+      <div class="role-actions">
         <button class="btn secondary small" type="button" data-permissions-button>Permissions</button>
         <button class="${deleteBtnClass}" type="button" data-delete-role ${deleteBtnDisabled} title="${deleteBtnTitle}">Delete</button>
       </div>
+      <input type="hidden" name="permissions" value="${selected.join(', ')}">
+      <input type="hidden" name="is_admin" value="${role.is_admin ? '1' : '0'}">
 
       <dialog class="modal" data-colors-modal aria-hidden="true">
         <div class="modal-content">

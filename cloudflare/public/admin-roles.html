@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Roles | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207l">
+  <link rel="stylesheet" href="/app.css?v=20260207m">
   <script src="/ui.js" defer></script>
-  <script src="/admin-roles.js?v=20260207l" defer></script>
-  <script src="/admin.js?v=20260207l" defer></script>
+  <script src="/admin-roles.js?v=20260207m" defer></script>
+  <script src="/admin.js?v=20260207m" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -32,17 +32,23 @@
 
     <section class="card">
       <h3>New role</h3>
-      <form class="form" data-create-role>
-        <div class="role-name-row">
+      <form class="form role-form role-form-new" data-create-role>
+        <div class="role-main">
           <input type="text" name="name" placeholder="Role name" required>
-          <button class="role-pill role-staff role-pill-button" type="button" data-role-preview data-color-trigger>Preview</button>
+          <button
+            class="role-pill role-staff role-pill-button"
+            type="button"
+            data-role-preview
+            data-color-trigger
+            title="Edit badge colours"
+          >Preview</button>
+        </div>
+        <div class="role-actions">
+          <button class="btn secondary" type="button" data-permissions-button>Permissions</button>
+          <button class="btn" type="submit">Create</button>
         </div>
         <input type="hidden" name="permissions" value="">
         <input type="hidden" name="is_admin" value="0">
-        <div class="permissions-row">
-          <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
-        </div>
-        <button class="btn" type="submit">Create</button>
 
         <dialog class="modal" data-colors-modal aria-hidden="true">
           <div class="modal-content">

@@ -764,23 +764,37 @@ a:hover {
 
 .role-form {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
+  grid-template-columns: 1fr 200px;
+  gap: 14px;
   align-items: center;
   margin-bottom: 18px;
+  padding: 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
 }
 
-.role-name-row {
+.role-form.role-form-new {
+  grid-template-columns: 1fr 220px;
+}
+
+.role-main {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
 }
 
-.role-name-row input[type="text"] {
-  flex: 1;
-  min-width: 0;
-  max-width: 320px;
+.role-main input[type="text"] {
+  width: 280px;
+  max-width: 100%;
+}
+
+.role-actions {
+  display: grid;
+  gap: 10px;
+  justify-items: stretch;
+  align-items: center;
 }
 
 .role-color-row {
@@ -791,16 +805,9 @@ a:hover {
   flex-wrap: wrap;
 }
 
-.role-actions-row {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.role-actions-row .btn {
+.role-actions .btn {
   white-space: nowrap;
+  width: 100%;
 }
 
 .color-block {
@@ -856,8 +863,12 @@ a:hover {
   .role-form {
     grid-template-columns: 1fr;
   }
-  .role-color-row {
-    justify-content: flex-start;
+  .role-main {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .role-actions {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
