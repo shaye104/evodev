@@ -199,27 +199,52 @@ async function getStaffByUserId(env, userId) {
   try {
     await ensureStaffNicknamesSchema(env);
   } catch {}
-  return env.DB.prepare(
-    `
-    SELECT sm.*,
-      sm.nickname AS nickname,
-      u.discord_username AS discord_username,
-      u.discord_avatar AS discord_avatar,
-      sr.name AS role_name,
-      sr.permissions,
-      sr.is_admin,
-      sr.color_bg,
-      sr.color_text,
-      sr.sort_order AS role_sort_order
-    FROM staff_members sm
-    LEFT JOIN users u ON sm.user_id = u.id
-    LEFT JOIN staff_roles sr ON sm.role_id = sr.id
-    WHERE sm.user_id = ? AND sm.is_active = 1
-    LIMIT 1
-    `
-  )
-    .bind(userId)
-    .first();
+  try {
+    return await env.DB.prepare(
+      `
+      SELECT sm.*,
+        sm.nickname AS nickname,
+        u.discord_username AS discord_username,
+        u.discord_avatar AS discord_avatar,
+        sr.name AS role_name,
+        sr.permissions,
+        sr.is_admin,
+        sr.color_bg,
+        sr.color_text,
+        sr.sort_order AS role_sort_order
+      FROM staff_members sm
+      LEFT JOIN users u ON sm.user_id = u.id
+      LEFT JOIN staff_roles sr ON sm.role_id = sr.id
+      WHERE sm.user_id = ? AND sm.is_active = 1
+      LIMIT 1
+      `
+    )
+      .bind(userId)
+      .first();
+  } catch {
+    // Legacy fallback if new columns don't exist yet (or runtime ALTER failed).
+    return env.DB.prepare(
+      `
+      SELECT sm.*,
+        NULL AS nickname,
+        u.discord_username AS discord_username,
+        u.discord_avatar AS discord_avatar,
+        sr.name AS role_name,
+        sr.permissions,
+        sr.is_admin,
+        NULL AS color_bg,
+        NULL AS color_text,
+        sr.id AS role_sort_order
+      FROM staff_members sm
+      LEFT JOIN users u ON sm.user_id = u.id
+      LEFT JOIN staff_roles sr ON sm.role_id = sr.id
+      WHERE sm.user_id = ? AND sm.is_active = 1
+      LIMIT 1
+      `
+    )
+      .bind(userId)
+      .first();
+  }
 }
 
 async function getStaffByDiscordId(env, discordId) {
@@ -233,27 +258,52 @@ async function getStaffByDiscordId(env, discordId) {
   try {
     await ensureStaffNicknamesSchema(env);
   } catch {}
-  return env.DB.prepare(
-    `
-    SELECT sm.*,
-      sm.nickname AS nickname,
-      u.discord_username AS discord_username,
-      u.discord_avatar AS discord_avatar,
-      sr.name AS role_name,
-      sr.permissions,
-      sr.is_admin,
-      sr.color_bg,
-      sr.color_text,
-      sr.sort_order AS role_sort_order
-    FROM staff_members sm
-    LEFT JOIN users u ON sm.user_id = u.id
-    LEFT JOIN staff_roles sr ON sm.role_id = sr.id
-    WHERE sm.discord_id = ? AND sm.is_active = 1
-    LIMIT 1
-    `
-  )
-    .bind(discordId)
-    .first();
+  try {
+    return await env.DB.prepare(
+      `
+      SELECT sm.*,
+        sm.nickname AS nickname,
+        u.discord_username AS discord_username,
+        u.discord_avatar AS discord_avatar,
+        sr.name AS role_name,
+        sr.permissions,
+        sr.is_admin,
+        sr.color_bg,
+        sr.color_text,
+        sr.sort_order AS role_sort_order
+      FROM staff_members sm
+      LEFT JOIN users u ON sm.user_id = u.id
+      LEFT JOIN staff_roles sr ON sm.role_id = sr.id
+      WHERE sm.discord_id = ? AND sm.is_active = 1
+      LIMIT 1
+      `
+    )
+      .bind(discordId)
+      .first();
+  } catch {
+    // Legacy fallback if new columns don't exist yet (or runtime ALTER failed).
+    return env.DB.prepare(
+      `
+      SELECT sm.*,
+        NULL AS nickname,
+        u.discord_username AS discord_username,
+        u.discord_avatar AS discord_avatar,
+        sr.name AS role_name,
+        sr.permissions,
+        sr.is_admin,
+        NULL AS color_bg,
+        NULL AS color_text,
+        sr.id AS role_sort_order
+      FROM staff_members sm
+      LEFT JOIN users u ON sm.user_id = u.id
+      LEFT JOIN staff_roles sr ON sm.role_id = sr.id
+      WHERE sm.discord_id = ? AND sm.is_active = 1
+      LIMIT 1
+      `
+    )
+      .bind(discordId)
+      .first();
+  }
 }
 
 async function ensureAdminSeed(env) {

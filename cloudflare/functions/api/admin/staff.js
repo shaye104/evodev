@@ -43,17 +43,38 @@ export const onRequestGet = async ({ env, request }) => {
     await ensureStaffPaySchema(env);
   } catch {}
 
-  const staffMembers = await env.DB.prepare(
-    `
-    SELECT sm.*, sr.name AS role_name, sr.is_admin, sr.sort_order AS role_sort_order,
-      sr.color_bg, sr.color_text, u.discord_username
-    FROM staff_members sm
-    LEFT JOIN staff_roles sr ON sm.role_id = sr.id
-    LEFT JOIN users u ON sm.user_id = u.id
-    ORDER BY sm.created_at DESC
-    `
-  ).all();
-  const roles = await env.DB.prepare('SELECT * FROM staff_roles ORDER BY sort_order ASC, name ASC').all();
+  let staffMembers = null;
+  try {
+    staffMembers = await env.DB.prepare(
+      `
+      SELECT sm.*, sr.name AS role_name, sr.is_admin, sr.sort_order AS role_sort_order,
+        sr.color_bg, sr.color_text, u.discord_username
+      FROM staff_members sm
+      LEFT JOIN staff_roles sr ON sm.role_id = sr.id
+      LEFT JOIN users u ON sm.user_id = u.id
+      ORDER BY sm.created_at DESC
+      `
+    ).all();
+  } catch {
+    staffMembers = await env.DB.prepare(
+      `
+      SELECT sm.*, sr.name AS role_name, sr.is_admin, sr.id AS role_sort_order,
+        NULL AS color_bg, NULL AS color_text, u.discord_username
+      FROM staff_members sm
+      LEFT JOIN staff_roles sr ON sm.role_id = sr.id
+      LEFT JOIN users u ON sm.user_id = u.id
+      ORDER BY sm.created_at DESC
+      `
+    ).all();
+  }
+
+  let roles = null;
+  try {
+    roles = await env.DB.prepare('SELECT * FROM staff_roles ORDER BY sort_order ASC, name ASC').all();
+  } catch {
+    // Legacy fallback if sort_order doesn't exist yet.
+    roles = await env.DB.prepare('SELECT *, id AS sort_order FROM staff_roles ORDER BY id ASC, name ASC').all();
+  }
 
   return jsonResponse({ staff: staffMembers.results || [], roles: roles.results || [], me: staff });
 };

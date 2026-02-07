@@ -796,6 +796,25 @@ a:hover {
   min-width: 0;
 }
 
+.order-arrows {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn.tiny {
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  width: 38px;
+  height: 18px;
+  border-radius: 10px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .role-main input[type="text"] {
   width: 280px;
   max-width: 100%;

@@ -29,9 +29,17 @@ export const onRequestGet = async ({ env, request }) => {
   const results = await env.DB.prepare(
     'SELECT * FROM ticket_panels ORDER BY sort_order ASC, name ASC'
   ).all();
-  const roles = await env.DB.prepare(
-    'SELECT id, name, is_admin, color_bg, color_text, sort_order FROM staff_roles ORDER BY sort_order ASC, name ASC'
-  ).all();
+
+  let roles = null;
+  try {
+    roles = await env.DB.prepare(
+      'SELECT id, name, is_admin, color_bg, color_text, sort_order FROM staff_roles ORDER BY sort_order ASC, name ASC'
+    ).all();
+  } catch {
+    roles = await env.DB.prepare(
+      'SELECT id, name, is_admin, NULL AS color_bg, NULL AS color_text, id AS sort_order FROM staff_roles ORDER BY id ASC, name ASC'
+    ).all();
+  }
   const accessRows = await env.DB.prepare('SELECT panel_id, role_id FROM ticket_panel_role_access').all().catch(() => ({ results: [] }));
   return jsonResponse({
     panels: results.results || [],

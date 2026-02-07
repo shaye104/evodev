@@ -1,5 +1,5 @@
 import { jsonResponse, nowIso } from '../../../_lib/utils.js';
-import { getUserContext } from '../../../_lib/auth.js';
+import { getUserContext, hasPermission } from '../../../_lib/auth.js';
 import { requireApiPermission, requireApiStaff } from '../../../_lib/api.js';
 import {
   ensurePanelRoleAccessSchema,
@@ -33,11 +33,37 @@ export const onRequestPut = async ({ env, request, params }) => {
   } catch {}
 
   const existing = await env.DB.prepare(
-    'SELECT id, name, is_admin, sort_order FROM staff_roles WHERE id = ? LIMIT 1'
+    'SELECT id, name, permissions, is_admin, sort_order FROM staff_roles WHERE id = ? LIMIT 1'
   )
     .bind(params.id)
     .first();
   if (!existing) return jsonResponse({ error: 'Not found' }, { status: 404 });
+
+  // Non-admins cannot add permissions they don't already have themselves.
+  if (!staff.is_admin) {
+    const requested = Array.isArray(body.permissions) ? body.permissions : [];
+    let existingPerms = [];
+    try {
+      const parsed = JSON.parse(existing.permissions || '[]');
+      if (Array.isArray(parsed)) existingPerms = parsed.map((v) => String(v || '').trim()).filter(Boolean);
+    } catch {
+      existingPerms = String(existing.permissions || '')
+        .split(',')
+        .map((v) => v.trim())
+        .filter(Boolean);
+    }
+
+    const nextPerms = requested.map((v) => String(v || '').trim()).filter(Boolean);
+    const oldSet = new Set(existingPerms);
+    const added = nextPerms.filter((p) => !oldSet.has(p));
+    const denied = added.filter((p) => !hasPermission(staff, p));
+    if (denied.length) {
+      return jsonResponse(
+        { error: `Cannot grant permission(s): ${denied.join(', ')}` },
+        { status: 403 }
+      );
+    }
+  }
 
   // Discord-like hierarchy: non-admin staff cannot manage roles at/above their own role.
   if (!staff.is_admin) {

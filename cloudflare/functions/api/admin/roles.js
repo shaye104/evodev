@@ -1,5 +1,5 @@
 import { jsonResponse, nowIso } from '../../_lib/utils.js';
-import { getUserContext } from '../../_lib/auth.js';
+import { getUserContext, hasPermission } from '../../_lib/auth.js';
 import { requireApiPermission, requireApiStaff } from '../../_lib/api.js';
 import { ensureRoleColorsSchema, ensureRoleSortSchema } from '../../_lib/db.js';
 
@@ -17,9 +17,15 @@ export const onRequestGet = async ({ env, request }) => {
     await ensureRoleSortSchema(env);
   } catch {}
 
-  const roles = await env.DB.prepare(
-    'SELECT * FROM staff_roles ORDER BY sort_order ASC, name ASC'
-  ).all();
+  let roles = null;
+  try {
+    roles = await env.DB.prepare(
+      'SELECT * FROM staff_roles ORDER BY sort_order ASC, name ASC'
+    ).all();
+  } catch {
+    // Legacy fallback if sort_order doesn't exist yet.
+    roles = await env.DB.prepare('SELECT *, id AS sort_order FROM staff_roles ORDER BY id ASC, name ASC').all();
+  }
   return jsonResponse({ roles: roles.results || [], me: staff });
 };
 
@@ -33,6 +39,18 @@ export const onRequestPost = async ({ env, request }) => {
   const body = await request.json().catch(() => ({}));
   if (!staff.is_admin && body.is_admin) {
     return jsonResponse({ error: 'Cannot grant Admin access' }, { status: 403 });
+  }
+
+  // Non-admins can only grant permissions they currently have themselves.
+  if (!staff.is_admin) {
+    const requested = Array.isArray(body.permissions) ? body.permissions : [];
+    const denied = requested.filter((p) => !hasPermission(staff, String(p || '').trim()));
+    if (denied.length) {
+      return jsonResponse(
+        { error: `Cannot grant permission(s): ${denied.join(', ')}` },
+        { status: 403 }
+      );
+    }
   }
   const now = nowIso();
   try {

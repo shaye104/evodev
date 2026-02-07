@@ -18,13 +18,30 @@ async function getSession(env, request) {
 async function getUserContext(env, request) {
   const session = await getSession(env, request);
   if (!session?.user_id) return { user: null, staff: null };
-  const user = await getUserById(env, session.user_id);
-  let staff = user ? await getStaffByUserId(env, user.id) : null;
+
+  // Auth must stay resilient: a transient DB/schema error should not break the whole site.
+  let user = null;
+  try {
+    user = await getUserById(env, session.user_id);
+  } catch {
+    return { user: null, staff: null };
+  }
+
+  let staff = null;
+  try {
+    staff = user ? await getStaffByUserId(env, user.id) : null;
+  } catch {
+    staff = null;
+  }
 
   // Staff members created by an admin might not have user_id set yet.
   // Once the user logs in, link their staff record by discord_id.
   if (!staff && user?.discord_id) {
-    staff = await getStaffByDiscordId(env, user.discord_id);
+    try {
+      staff = await getStaffByDiscordId(env, user.discord_id);
+    } catch {
+      staff = null;
+    }
     if (staff?.id && !staff.user_id) {
       try {
         await env.DB.prepare('UPDATE staff_members SET user_id = ? WHERE id = ?')

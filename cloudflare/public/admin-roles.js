@@ -78,6 +78,27 @@ const state = {
   actorPos: 999999,
 };
 
+const parsePermissionsValue = (value) => {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.map((v) => String(v || '').trim()).filter(Boolean) : [];
+  } catch {
+    return String(value || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
+};
+
+const canGrantPermission = (permissionId) => {
+  if (!state.me) return true; // re-render after loadRoles() for accurate gating
+  if (state.me.is_admin) return true;
+  const perms = parsePermissionsValue(state.me.permissions);
+  if (perms.includes('*')) return true;
+  return perms.includes(permissionId);
+};
+
 const setupColorTools = (root, fieldName, onChange) => {
   const container = root?.querySelector?.(`[data-color-tools="${fieldName}"]`);
   if (!container) return null;
@@ -210,6 +231,7 @@ const wireColorModal = (form, updatePreview) => {
 
 const renderAdminToggle = (isAdmin) => {
   const on = Boolean(isAdmin);
+  const actorIsAdmin = Boolean(state.me && state.me.is_admin);
   return `
     <div class="permissions-row" style="align-items: flex-start;">
       <button
@@ -217,6 +239,7 @@ const renderAdminToggle = (isAdmin) => {
         type="button"
         data-admin-toggle
         aria-pressed="${on ? 'true' : 'false'}"
+        ${actorIsAdmin ? '' : 'disabled'}
       >
         Admin access: ${on ? 'ON' : 'OFF'}
       </button>
@@ -228,6 +251,7 @@ const renderAdminToggle = (isAdmin) => {
 const renderPermissionButtons = (permissionDefs, selected = []) => {
   return permissionDefs.map((perm) => {
     const isActive = selected.includes(perm.id);
+    const locked = !isActive && !canGrantPermission(perm.id);
     return `
       <button
         class="btn secondary perm-option ${isActive ? 'is-active' : ''}"
@@ -235,6 +259,7 @@ const renderPermissionButtons = (permissionDefs, selected = []) => {
         data-permission-option
         data-permission-value="${perm.id}"
         aria-pressed="${isActive ? 'true' : 'false'}"
+        ${locked ? 'disabled title="You cannot grant this permission (you do not have it)."' : ''}
       >
         ${perm.label}
       </button>
@@ -285,70 +310,88 @@ const canManageRole = (role) => {
 
 const canReorderRole = (role) => canManageRole(role);
 
-let draggingForm = null;
-
-const getDragAfterElement = (container, y) => {
-  const els = Array.from(container.querySelectorAll('form.role-form:not(.dragging)'));
-  let closest = { offset: Number.NEGATIVE_INFINITY, element: null };
-  for (const el of els) {
-    const box = el.getBoundingClientRect();
-    const offset = y - box.top - box.height / 2;
-    if (offset < 0 && offset > closest.offset) {
-      closest = { offset, element: el };
-    }
-  }
-  return closest.element;
-};
-
 const syncSortOrders = () => {
   const list = document.querySelector('[data-roles-list]');
   if (!list) return;
   const forms = Array.from(list.querySelectorAll('form.role-form'));
+  // Admins can reorder the entire list. Non-admins can only reorder roles below their own role,
+  // and we must not renumber roles above the actor (avoids "accidental" updates that will be denied).
+  if (state.me && !state.me.is_admin) {
+    const anchorIdx = forms.findIndex((f) => f.dataset.roleId === String(state.me.role_id));
+    if (anchorIdx < 0) {
+      // Fallback: if we can't find the actor role, keep behavior deterministic.
+      forms.forEach((form, idx) => {
+        const input = form.querySelector('input[name="sort_order"]');
+        if (input) input.value = String(idx + 1);
+      });
+      return;
+    }
+
+    const anchorForm = forms[anchorIdx];
+    const anchorInput = anchorForm?.querySelector('input[name="sort_order"]');
+    const anchorSort = toPos(Number(anchorInput?.value || state.me.role_sort_order || 0) || 0);
+    let next = anchorSort + 1;
+    for (let i = anchorIdx + 1; i < forms.length; i += 1) {
+      const input = forms[i].querySelector('input[name="sort_order"]');
+      if (input) input.value = String(next);
+      next += 1;
+    }
+    return;
+  }
+
   forms.forEach((form, idx) => {
     const input = form.querySelector('input[name="sort_order"]');
     if (input) input.value = String(idx + 1);
   });
 };
 
-const ensureRoleReorderWired = () => {
-  if (window.__evoRoleReorderInit) return;
-  window.__evoRoleReorderInit = true;
+const getReorderAnchorIndex = (forms) => {
+  if (!state.me || state.me.is_admin) return -1;
+  return forms.findIndex((f) => f.dataset.roleId === String(state.me.role_id));
+};
 
+const moveRole = (form, direction) => {
+  const list = document.querySelector('[data-roles-list]');
+  if (!list || !form) return;
+  const forms = Array.from(list.querySelectorAll('form.role-form'));
+  const idx = forms.indexOf(form);
+  if (idx < 0) return;
+
+  const anchorIdx = getReorderAnchorIndex(forms);
+  const minIdx = anchorIdx >= 0 ? anchorIdx + 1 : 0;
+
+  if (direction === 'up') {
+    if (idx <= 0) return;
+    if (idx <= minIdx) return;
+    list.insertBefore(form, forms[idx - 1]);
+  } else if (direction === 'down') {
+    if (idx >= forms.length - 1) return;
+    if (idx < minIdx) return;
+    // Moving down: insert the next element before the current one.
+    list.insertBefore(forms[idx + 1], form);
+  }
+
+  syncSortOrders();
+  updateMoveButtons();
+};
+
+const updateMoveButtons = () => {
   const list = document.querySelector('[data-roles-list]');
   if (!list) return;
+  const forms = Array.from(list.querySelectorAll('form.role-form'));
+  const anchorIdx = getReorderAnchorIndex(forms);
+  const minIdx = anchorIdx >= 0 ? anchorIdx + 1 : 0;
 
-  list.addEventListener('dragover', (e) => {
-    if (!draggingForm) return;
-    e.preventDefault();
-    const afterEl = getDragAfterElement(list, e.clientY);
+  forms.forEach((form, idx) => {
+    const mayReorder = form.dataset.mayReorder === '1';
+    const up = form.querySelector('[data-move-up]');
+    const down = form.querySelector('[data-move-down]');
+    if (!up || !down) return;
 
-    // Non-admins can only reorder roles below their own role.
-    if (state.me && !state.me.is_admin) {
-      const forms = Array.from(list.querySelectorAll('form.role-form'));
-      const anchorIdx = forms.findIndex((f) => f.dataset.roleId === String(state.me.role_id));
-      if (anchorIdx < 0) return;
-      const minIdx = anchorIdx + 1;
-
-      const currentIdx = forms.indexOf(draggingForm);
-      const afterIdx = afterEl ? forms.indexOf(afterEl) : forms.length;
-
-      // Clamp movement to the region below the actor role.
-      if (currentIdx < minIdx) return;
-      if (afterIdx < minIdx) {
-        const firstAllowed = forms[minIdx] || null;
-        if (firstAllowed) list.insertBefore(draggingForm, firstAllowed);
-        else list.appendChild(draggingForm);
-        return;
-      }
-    }
-
-    if (!afterEl) list.appendChild(draggingForm);
-    else list.insertBefore(draggingForm, afterEl);
-  });
-
-  list.addEventListener('drop', () => {
-    if (!draggingForm) return;
-    syncSortOrders();
+    const upDisabled = !mayReorder || idx <= minIdx;
+    const downDisabled = !mayReorder || idx >= forms.length - 1 || idx < minIdx;
+    up.disabled = upDisabled;
+    down.disabled = downDisabled;
   });
 };
 
@@ -375,7 +418,7 @@ const renderRoles = (roles) => {
     const rolePos = getRolePos(role);
     const mayEdit = canManageRole(role);
     const mayReorder = canReorderRole(role);
-    form.draggable = Boolean(mayReorder);
+    form.dataset.mayReorder = mayReorder ? '1' : '0';
     const bg = role.color_bg || '#3484ff';
     const text = role.color_text || '#ffffff';
     const deleteBtnClass = isAdminRole ? 'btn secondary small' : 'btn danger small';
@@ -383,9 +426,10 @@ const renderRoles = (roles) => {
     const deleteBtnTitle = isAdminRole ? 'Admin role cannot be deleted.' : 'Delete role';
     form.innerHTML = `
       <div class="role-main">
-        <button class="drag-handle" type="button" data-drag-handle aria-label="Drag to reorder" ${
-          mayReorder ? '' : 'disabled'
-        }></button>
+        <div class="order-arrows" aria-label="Role order">
+          <button class="btn secondary tiny" type="button" data-move-up aria-label="Move role up">▲</button>
+          <button class="btn secondary tiny" type="button" data-move-down aria-label="Move role down">▼</button>
+        </div>
         <input type="text" name="name" value="${role.name || ''}" required ${mayEdit ? '' : 'disabled'}>
         <button
           class="role-pill role-staff role-pill-button"
@@ -496,32 +540,13 @@ const renderRoles = (roles) => {
       loadRoles();
     });
 
-    form.addEventListener('dragstart', (e) => {
-      if (!mayReorder) {
-        e.preventDefault();
-        return;
-      }
-      if (!e.target.closest('[data-drag-handle]')) {
-        e.preventDefault();
-        return;
-      }
-      draggingForm = form;
-      form.classList.add('dragging');
-      try {
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', String(role.id));
-      } catch {}
-    });
-    form.addEventListener('dragend', () => {
-      form.classList.remove('dragging');
-      draggingForm = null;
-      syncSortOrders();
-    });
+    form.querySelector('[data-move-up]')?.addEventListener('click', () => moveRole(form, 'up'));
+    form.querySelector('[data-move-down]')?.addEventListener('click', () => moveRole(form, 'down'));
 
     list.appendChild(form);
   });
-
-  ensureRoleReorderWired();
+  // Ensure buttons reflect boundaries after render.
+  updateMoveButtons();
 };
 
 const loadRoles = async () => {
@@ -533,6 +558,13 @@ const loadRoles = async () => {
   const data = await res.json();
   state.me = data.me || null;
   state.actorPos = state.me && state.me.is_admin ? -1 : toPos(state.me?.role_sort_order ?? 999999);
+
+  // Re-render the "New role" permission grids with correct grant-locking.
+  const newTicketPerms = document.querySelector('[data-new-ticket-permissions]');
+  if (newTicketPerms) newTicketPerms.innerHTML = renderPermissionButtons(TICKET_PERMISSIONS, []);
+  const newAdminPerms = document.querySelector('[data-new-admin-permissions]');
+  if (newAdminPerms) newAdminPerms.innerHTML = renderPermissionButtons(ADMIN_PERMISSIONS, []);
+
   renderRoles(data.roles || []);
 };
 
@@ -640,10 +672,6 @@ const handleCreate = async (event) => {
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('[data-create-role]').addEventListener('submit', handleCreate);
   document.querySelector('[data-save-roles]')?.addEventListener('click', handleSaveAll);
-  const newTicketPerms = document.querySelector('[data-new-ticket-permissions]');
-  if (newTicketPerms) newTicketPerms.innerHTML = renderPermissionButtons(TICKET_PERMISSIONS, []);
-  const newAdminPerms = document.querySelector('[data-new-admin-permissions]');
-  if (newAdminPerms) newAdminPerms.innerHTML = renderPermissionButtons(ADMIN_PERMISSIONS, []);
   const createForm = document.querySelector('[data-create-role]');
   if (createForm) {
     const updatePreview = () => {
