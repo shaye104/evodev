@@ -39,10 +39,14 @@ export const onRequestDelete = async ({ env, request, params }) => {
   const guard = requireApiAdmin(staff);
   if (guard) return guard;
 
-  const role = await env.DB.prepare('SELECT id, name FROM staff_roles WHERE id = ? LIMIT 1')
+  const role = await env.DB.prepare('SELECT id, name, is_admin FROM staff_roles WHERE id = ? LIMIT 1')
     .bind(params.id)
     .first();
   if (!role) return jsonResponse({ error: 'Not found' }, { status: 404 });
+
+  if (role.is_admin || String(role.name || '').trim().toLowerCase() === 'admin') {
+    return jsonResponse({ error: 'Admin role cannot be deleted.' }, { status: 403 });
+  }
 
   // Prevent deleting roles that are still referenced.
   const usedByStaff = await env.DB.prepare(

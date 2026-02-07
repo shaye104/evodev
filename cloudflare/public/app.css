@@ -435,6 +435,15 @@ a:hover {
   box-shadow: 0 0 0 0.2rem var(--focus);
 }
 
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.25);
+  pointer-events: none;
+  transform: none;
+}
+
 .btn.secondary {
   background: #ffffff;
   color: var(--accent);

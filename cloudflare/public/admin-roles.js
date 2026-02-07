@@ -69,6 +69,9 @@ const renderRoles = (roles) => {
   const list = document.querySelector('[data-roles-list]');
   list.innerHTML = '';
   roles.forEach((role) => {
+    const isAdminRole =
+      Boolean(role.is_admin) || String(role.name || '').trim().toLowerCase() === 'admin';
+
     const selected = [];
     try {
       const parsed = JSON.parse(role.permissions || '[]');
@@ -83,6 +86,9 @@ const renderRoles = (roles) => {
     form.className = 'form inline-form';
     const bg = role.color_bg || '#3484ff';
     const text = role.color_text || '#ffffff';
+    const deleteBtnClass = isAdminRole ? 'btn secondary small' : 'btn danger small';
+    const deleteBtnDisabled = isAdminRole ? 'disabled' : '';
+    const deleteBtnTitle = isAdminRole ? 'Admin role cannot be deleted.' : 'Delete role';
     form.innerHTML = `
       <input type="text" name="name" value="${role.name || ''}" required>
       <div class="inline">
@@ -104,7 +110,9 @@ const renderRoles = (roles) => {
       </div>
       <div class="inline">
         <button class="btn secondary small" type="submit">Update</button>
-        <button class="btn danger small" type="button" data-delete-role>Delete</button>
+        <button class="${deleteBtnClass}" type="button" data-delete-role ${deleteBtnDisabled} title="${deleteBtnTitle}">
+          Delete
+        </button>
       </div>
       ${createModal(selected, role.is_admin)}
     `;
