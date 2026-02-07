@@ -13,15 +13,18 @@ const formatDateTimeUtc = (value) => {
   if (!value) return '';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return String(value);
-  const fmt = new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
+  const dateFmt = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'long',
     year: 'numeric',
+    timeZone: 'UTC',
+  });
+  const timeFmt = new Intl.DateTimeFormat('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'UTC',
   });
-  return `${fmt.format(d)} UTC`;
+  return `${dateFmt.format(d)} at ${timeFmt.format(d)} UTC`;
 };
 
 async function buildTicketTranscriptSnapshot(env, ticketPublicId) {
@@ -257,4 +260,3 @@ function renderTranscriptHtml(snapshot) {
 }
 
 export { buildTicketTranscriptSnapshot, renderTranscriptHtml };
-

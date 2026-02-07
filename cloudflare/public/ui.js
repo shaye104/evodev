@@ -38,7 +38,7 @@
     return Number.isNaN(d.getTime()) ? null : d;
   };
 
-  const formatDateTime = (value, opts = {}) => {
+  const formatLongDateTime = (value, opts = {}) => {
     const d = parseDateTime(value);
     if (!d) return value || '';
 
@@ -47,16 +47,17 @@
       document.documentElement.getAttribute('lang') ||
       'en-GB';
 
-    // Deliberately omit seconds/milliseconds for readability.
-    const formatter = new Intl.DateTimeFormat(locale, {
-      day: '2-digit',
-      month: 'short',
+    // e.g. "7 February 2026 at 11:10"
+    const dateFormatter = new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'long',
       year: 'numeric',
+    });
+    const timeFormatter = new Intl.DateTimeFormat(locale, {
       hour: '2-digit',
       minute: '2-digit',
     });
-
-    return formatter.format(d);
+    return `${dateFormatter.format(d)} at ${timeFormatter.format(d)}`;
   };
 
   const updateNav = () => {
@@ -92,5 +93,6 @@
   document.addEventListener('DOMContentLoaded', fetchMe);
   window.__supportState = state;
   window.supportParseDateTime = parseDateTime;
-  window.supportFormatDateTime = formatDateTime;
+  window.supportFormatDateTime = formatLongDateTime;
+  window.supportFormatLongDateTime = formatLongDateTime;
 })();

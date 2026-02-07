@@ -63,15 +63,23 @@ const formatLongDate = (date) => {
     'November',
     'December',
   ];
-  const day = getOrdinal(date.getDate());
+  const day = String(date.getDate());
   const month = monthNames[date.getMonth()];
   const year = date.getFullYear();
   return `${day} ${month} ${year} at ${formatClock(date)}`;
 };
 
 const formatRelativeTime = (value) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
+  const parsed =
+    typeof window.supportParseDateTime === 'function'
+      ? window.supportParseDateTime(value)
+      : new Date(value);
+  const date = parsed instanceof Date ? parsed : null;
+  if (!date || Number.isNaN(date.getTime())) {
+    return typeof window.supportFormatDateTime === 'function'
+      ? window.supportFormatDateTime(value)
+      : value;
+  }
   const now = new Date();
   const diffMs = now - date;
   const diffSec = Math.floor(diffMs / 1000);
@@ -93,7 +101,9 @@ const formatRelativeTime = (value) => {
   if (diffDays < 7) {
     return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
   }
-  return formatLongDate(date);
+  return typeof window.supportFormatLongDateTime === 'function'
+    ? window.supportFormatLongDateTime(date)
+    : formatLongDate(date);
 };
 
 const renderTicket = (payload) => {
