@@ -28,11 +28,24 @@ export const onRequestPost = async ({ env, request }) => {
 
   const body = await request.json().catch(() => ({}));
   const now = nowIso();
+  const discordId = String(body.discord_id || '').trim();
+  const existingUser = discordId
+    ? await env.DB.prepare('SELECT id FROM users WHERE discord_id = ? LIMIT 1')
+        .bind(discordId)
+        .first()
+    : null;
+
   const result = await env.DB.prepare(
     'INSERT INTO staff_members (discord_id, role_id, is_active, created_at) VALUES (?, ?, ?, ?)'
   )
-    .bind(body.discord_id || '', body.role_id || null, body.is_active ? 1 : 0, now)
+    .bind(discordId, body.role_id || null, body.is_active ? 1 : 0, now)
     .run();
+
+  if (existingUser?.id) {
+    await env.DB.prepare('UPDATE staff_members SET user_id = ? WHERE id = ?')
+      .bind(existingUser.id, result.meta.last_row_id)
+      .run();
+  }
 
   await env.DB.prepare(
     'INSERT INTO audit_logs (actor_user_id, actor_discord_id, actor_type, action, entity_type, entity_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'

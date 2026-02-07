@@ -5,7 +5,7 @@ import {
   clearCookie,
   redirect,
 } from './utils.js';
-import { getUserById, getStaffByUserId } from './db.js';
+import { getUserById, getStaffByDiscordId, getStaffByUserId } from './db.js';
 
 const SESSION_COOKIE = 'evo_session';
 
@@ -19,7 +19,23 @@ async function getUserContext(env, request) {
   const session = await getSession(env, request);
   if (!session?.user_id) return { user: null, staff: null };
   const user = await getUserById(env, session.user_id);
-  const staff = user ? await getStaffByUserId(env, user.id) : null;
+  let staff = user ? await getStaffByUserId(env, user.id) : null;
+
+  // Staff members created by an admin might not have user_id set yet.
+  // Once the user logs in, link their staff record by discord_id.
+  if (!staff && user?.discord_id) {
+    staff = await getStaffByDiscordId(env, user.discord_id);
+    if (staff?.id && !staff.user_id) {
+      try {
+        await env.DB.prepare('UPDATE staff_members SET user_id = ? WHERE id = ?')
+          .bind(user.id, staff.id)
+          .run();
+        staff.user_id = user.id;
+      } catch {
+        // If linking fails, still return the staff row so permissions/nav work.
+      }
+    }
+  }
   return { user, staff };
 }
 
