@@ -648,6 +648,99 @@ a:hover {
   gap: 10px;
 }
 
+.switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.switch input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch .switch-track {
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(77, 77, 77, 0.18);
+  position: relative;
+  flex: 0 0 auto;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.switch .switch-track::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  transform: translateY(-50%);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  transition: left 140ms ease;
+}
+
+.switch input[type="checkbox"]:checked + .switch-track {
+  background: rgba(52, 132, 255, 0.85);
+  border-color: rgba(52, 132, 255, 0.95);
+}
+
+.switch input[type="checkbox"]:checked + .switch-track::after {
+  left: 23px;
+}
+
+.switch:focus-within {
+  border-color: rgba(52, 132, 255, 0.65);
+  box-shadow: 0 0 0 4px rgba(52, 132, 255, 0.12);
+}
+
+.role-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(360px, 2fr);
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.role-form .role-form-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.role-form .role-form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.role-form .role-form-actions .inline {
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .role-form {
+    grid-template-columns: 1fr;
+  }
+  .role-form .role-form-top {
+    flex-wrap: wrap;
+  }
+}
+
 .inline {
   display: inline-flex;
   gap: 10px;

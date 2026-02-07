@@ -43,16 +43,17 @@
         </label>
         <label>
           Sort order
-          <span class="hint-icon" tabindex="0" data-hint="Lower numbers show first."></span>
           <input type="number" name="sort_order" placeholder="0" value="0">
         </label>
-        <label class="checkbox">
+        <label class="switch">
+          <span>Default open</span>
           <input type="checkbox" name="is_default_open" value="1">
-          Default open
+          <span class="switch-track" aria-hidden="true"></span>
         </label>
-        <label class="checkbox">
+        <label class="switch">
+          <span>Closed status</span>
           <input type="checkbox" name="is_closed" value="1">
-          Closed status
+          <span class="switch-track" aria-hidden="true"></span>
         </label>
         <button class="btn" type="submit">Create</button>
       </form>

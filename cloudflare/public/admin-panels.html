@@ -36,7 +36,6 @@
         <label>
           <span class="label-row">
             Panel name
-            <span class="hint-icon" tabindex="0" data-hint="Shown to users in the panel dropdown."></span>
           </span>
           <input type="text" name="name" placeholder="e.g. Bug report" required>
         </label>
@@ -47,7 +46,6 @@
         <label>
           <span class="label-row">
             Sort order
-            <span class="hint-icon" tabindex="0" data-hint="Lower numbers show first."></span>
           </span>
           <input type="number" name="sort_order" placeholder="0" value="0">
         </label>
@@ -55,13 +53,6 @@
         <input type="hidden" name="allowed_role_ids" value="">
         <div class="permissions-row">
           <button class="btn secondary" type="button" data-permissions-button>Panel visibility (staff)</button>
-          <span class="hint-icon" tabindex="0" data-hint="Leave empty to allow all staff roles. Select roles to restrict which staff can see tickets in this panel."></span>
-        </div>
-
-        <input type="hidden" name="is_active" value="1">
-        <div class="permissions-row">
-          <button class="btn danger" type="button" data-active-toggle aria-pressed="true">Deactivate</button>
-          <span class="hint-icon" tabindex="0" data-hint="A deactivated panel is hidden for users when creating a new ticket."></span>
         </div>
         <button class="btn" type="submit">Create</button>
 
@@ -90,10 +81,6 @@
 
     <section class="card">
       <h3>Existing panels</h3>
-      <div class="inline" style="margin-bottom: 12px;">
-        <span class="muted">Tip</span>
-        <span class="hint-icon" tabindex="0" data-hint="Use Sort order to control display order. Use Panel visibility to restrict staff access."></span>
-      </div>
       <div data-panels-list></div>
     </section>
   </main>

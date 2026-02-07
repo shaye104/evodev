@@ -83,7 +83,6 @@ const loadPanels = async () => {
       <input type="hidden" name="allowed_role_ids" value="${selected.join(', ')}">
       <div class="permissions-row">
         <button class="btn secondary" type="button" data-permissions-button>Visibility</button>
-        <span class="hint-icon" tabindex="0" data-hint="Leave empty to allow all staff roles. Select roles to restrict which staff can see tickets in this panel."></span>
       </div>
       <input type="hidden" name="is_active" value="${panel.is_active ? '1' : '0'}">
       <div class="permissions-row">
@@ -147,21 +146,18 @@ const handleCreate = async (event) => {
       name: formData.get('name'),
       description: formData.get('description'),
       sort_order: Number(formData.get('sort_order') || 0),
-      is_active: String(formData.get('is_active') || '') === '1',
+      // Panels start deactivated. Activate them from the "Existing panels" section.
+      is_active: false,
       allowed_role_ids: parseIds(formData.get('allowed_role_ids')).map((v) => Number(v || 0)).filter(Boolean),
     }),
   });
   form.reset();
   const hidden = form.querySelector('input[name="allowed_role_ids"]');
   if (hidden) hidden.value = '';
-  const activeHidden = form.querySelector('input[name="is_active"]');
-  if (activeHidden) activeHidden.value = '1';
-  syncActiveToggle(form);
   loadPanels();
 };
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('[data-create-panel]').addEventListener('submit', handleCreate);
-  bindActiveToggle(document.querySelector('[data-create-panel]'));
   loadPanels();
 });

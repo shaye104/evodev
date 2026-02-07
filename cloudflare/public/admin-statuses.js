@@ -14,13 +14,15 @@ const loadStatuses = async () => {
       <input type="text" name="name" value="${status.name || ''}" required>
       <input type="text" name="slug" value="${status.slug || ''}" required>
       <input type="number" name="sort_order" value="${status.sort_order || 0}">
-      <label class="checkbox">
+      <label class="switch">
+        <span>Default open</span>
         <input type="checkbox" name="is_default_open" value="1" ${status.is_default_open ? 'checked' : ''}>
-        Default open
+        <span class="switch-track" aria-hidden="true"></span>
       </label>
-      <label class="checkbox">
+      <label class="switch">
+        <span>Closed</span>
         <input type="checkbox" name="is_closed" value="1" ${status.is_closed ? 'checked' : ''}>
-        Closed
+        <span class="switch-track" aria-hidden="true"></span>
       </label>
       <button class="btn secondary" type="submit">Update</button>
     `;

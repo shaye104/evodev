@@ -100,7 +100,7 @@ const renderRoles = (roles) => {
     }
 
     const form = document.createElement('form');
-    form.className = 'form inline-form';
+    form.className = 'form role-form';
     const bg = role.color_bg || '#3484ff';
     const text = role.color_text || '#ffffff';
     const deleteBtnClass = isAdminRole ? 'btn secondary small' : 'btn danger small';
@@ -108,7 +108,7 @@ const renderRoles = (roles) => {
     const deleteBtnTitle = isAdminRole ? 'Admin role cannot be deleted.' : 'Delete role';
     form.innerHTML = `
       <input type="text" name="name" value="${role.name || ''}" required>
-      <div class="inline">
+      <div class="role-form-top">
         <label>
           Badge background
           <input type="color" name="color_bg" value="${bg}">
@@ -121,14 +121,16 @@ const renderRoles = (roles) => {
       </div>
       <input type="hidden" name="permissions" value="${selected.join(', ')}">
       <input type="hidden" name="is_admin" value="${role.is_admin ? '1' : '0'}">
-      <div class="permissions-row">
-        <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
-      </div>
-      <div class="inline">
-        <button class="btn secondary small" type="submit">Update</button>
-        <button class="${deleteBtnClass}" type="button" data-delete-role ${deleteBtnDisabled} title="${deleteBtnTitle}">
-          Delete
-        </button>
+      <div class="role-form-actions">
+        <div class="permissions-row">
+          <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
+        </div>
+        <div class="inline">
+          <button class="btn secondary small" type="submit">Update</button>
+          <button class="${deleteBtnClass}" type="button" data-delete-role ${deleteBtnDisabled} title="${deleteBtnTitle}">
+            Delete
+          </button>
+        </div>
       </div>
       ${createModal(selected, role.is_admin)}
     `;
