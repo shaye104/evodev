@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Roles | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207g">
+  <link rel="stylesheet" href="/app.css?v=20260207h">
   <script src="/ui.js" defer></script>
   <script src="/admin-roles.js" defer></script>
   <script src="/admin.js" defer></script>
@@ -26,7 +26,7 @@
     <section class="page-header">
       <div>
         <h1>Roles</h1>
-        <p>Define staff permissions.</p>
+        <p>Roles control what staff are allowed to do (reply, claim, assign, etc).</p>
       </div>
     </section>
 
@@ -43,6 +43,7 @@
           <input type="checkbox" name="is_admin" value="1">
           Admin role
         </label>
+        <div class="muted">Admins can access all panels and tickets regardless of panel visibility rules.</div>
         <button class="btn" type="submit">Create</button>
         <dialog class="modal" data-permissions-modal aria-hidden="true">
           <div class="modal-content">

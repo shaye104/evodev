@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panels | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207g">
+  <link rel="stylesheet" href="/app.css?v=20260207h">
   <script src="/ui.js" defer></script>
   <script src="/admin-panels.js" defer></script>
+  <script src="/admin.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -25,26 +26,67 @@
     <section class="page-header">
       <div>
         <h1>Panels</h1>
-        <p>Create and manage ticket panels.</p>
+        <p>Panels are the categories users pick when opening a ticket.</p>
       </div>
     </section>
 
     <section class="card">
       <h3>New panel</h3>
       <form class="form" data-create-panel>
-        <input type="text" name="name" placeholder="Panel name" required>
-        <input type="text" name="description" placeholder="Description">
-        <input type="number" name="sort_order" placeholder="Sort order" value="0">
+        <label>
+          Panel name
+          <input type="text" name="name" placeholder="e.g. Bug report" required>
+          <span class="muted">Shown to users in the panel dropdown.</span>
+        </label>
+        <label>
+          Description
+          <input type="text" name="description" placeholder="Optional short hint for users">
+        </label>
+        <label>
+          Sort order
+          <input type="number" name="sort_order" placeholder="0" value="0">
+          <span class="muted">Lower numbers show first.</span>
+        </label>
+
+        <input type="hidden" name="allowed_role_ids" value="">
+        <div class="permissions-row">
+          <button class="btn secondary" type="button" data-permissions-button>Panel visibility (staff)</button>
+          <span class="muted" data-permissions-summary>All staff</span>
+        </div>
+        <span class="muted">Leave empty to allow all staff roles. Select roles to restrict which staff can see tickets in this panel.</span>
+
         <label class="checkbox">
           <input type="checkbox" name="is_active" value="1" checked>
           Active
         </label>
         <button class="btn" type="submit">Create</button>
+
+        <dialog
+          class="modal"
+          data-permissions-modal
+          data-target-input="allowed_role_ids"
+          data-empty-label="All staff"
+          data-selected-label="Restricted: {n} role(s)"
+          aria-hidden="true"
+        >
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4>Panel visibility (staff)</h4>
+              <p class="muted">Choose which staff roles can see this panel in staff views. Admins can always see all panels.</p>
+            </div>
+            <div class="modal-body permission-grid" data-panel-roles-grid></div>
+            <div class="modal-actions">
+              <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
+              <button class="btn" type="button" data-modal-apply>Apply</button>
+            </div>
+          </div>
+        </dialog>
       </form>
     </section>
 
     <section class="card">
       <h3>Existing panels</h3>
+      <div class="muted" style="margin-bottom: 12px;">Tip: Use Sort order to control display order. Use Panel visibility to restrict staff access.</div>
       <div data-panels-list></div>
     </section>
   </main>

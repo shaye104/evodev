@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Staff | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207g">
+  <link rel="stylesheet" href="/app.css?v=20260207h">
   <script src="/ui.js" defer></script>
   <script src="/admin-staff.js" defer></script>
 </head>
@@ -25,15 +25,22 @@
     <section class="page-header">
       <div>
         <h1>Staff</h1>
-        <p>Manage staff access.</p>
+        <p>Add people who can view and reply to tickets.</p>
       </div>
     </section>
 
     <section class="card">
       <h3>Add staff member</h3>
       <form class="form" data-create-staff>
-        <input type="text" name="discord_id" placeholder="Discord ID" required>
-        <select name="role_id" data-staff-role></select>
+        <label>
+          Discord ID
+          <input type="text" name="discord_id" placeholder="User Discord ID (numbers only)" required>
+          <span class="muted">This must match their Discord account ID.</span>
+        </label>
+        <label>
+          Role
+          <select name="role_id" data-staff-role></select>
+        </label>
         <label class="checkbox">
           <input type="checkbox" name="is_active" value="1" checked>
           Active

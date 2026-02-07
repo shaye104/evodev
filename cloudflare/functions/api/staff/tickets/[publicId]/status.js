@@ -1,6 +1,7 @@
 import { jsonResponse, nowIso } from '../../../../_lib/utils.js';
 import { getUserContext } from '../../../../_lib/auth.js';
 import { requireApiStaff, requireApiPermission } from '../../../../_lib/api.js';
+import { staffCanAccessPanel } from '../../../../_lib/db.js';
 
 export const onRequestPost = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
@@ -11,6 +12,9 @@ export const onRequestPost = async ({ env, request, params }) => {
     .bind(params.publicId)
     .first();
   if (!ticket) return jsonResponse({ error: 'Not found' }, { status: 404 });
+  if (!(await staffCanAccessPanel(env, staff, ticket.panel_id))) {
+    return jsonResponse({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const body = await request.json().catch(() => ({}));
   const statusId = Number(body.status_id || 0) || null;

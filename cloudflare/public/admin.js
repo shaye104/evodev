@@ -33,6 +33,24 @@ window.addEventListener('DOMContentLoaded', () => {
       (btn) => btn.dataset.permissionValue
     );
 
+  const getSummaryConfig = (modal) => {
+    const cfg = {
+      targetInputName: 'permissions',
+      emptyLabel: 'None selected',
+      selectedLabel: '{n} selected',
+    };
+    if (!modal) return cfg;
+    if (modal.dataset.targetInput) cfg.targetInputName = modal.dataset.targetInput;
+    if (modal.dataset.emptyLabel) cfg.emptyLabel = modal.dataset.emptyLabel;
+    if (modal.dataset.selectedLabel) cfg.selectedLabel = modal.dataset.selectedLabel;
+    return cfg;
+  };
+
+  const formatSelectedLabel = (tpl, count) => {
+    if (!tpl) return `${count} selected`;
+    return tpl.replace('{n}', String(count));
+  };
+
   const restoreModalSelections = (modal) => {
     if (!modal?.dataset?.initial) return;
     let initial = [];
@@ -69,14 +87,15 @@ window.addEventListener('DOMContentLoaded', () => {
       const modal = applyButton.closest('[data-permissions-modal]');
       const form = applyButton.closest('form');
       if (!modal || !form) return;
-      const hidden = form.querySelector('input[name="permissions"]');
+      const cfg = getSummaryConfig(modal);
+      const hidden = form.querySelector(`input[name="${cfg.targetInputName}"]`);
       const summary = form.querySelector('[data-permissions-summary]');
       const values = getSelectedValues(modal);
       if (hidden) hidden.value = values.join(', ');
       if (summary) {
         summary.textContent = values.length
-          ? `${values.length} selected`
-          : 'None selected';
+          ? formatSelectedLabel(cfg.selectedLabel, values.length)
+          : cfg.emptyLabel;
       }
       modal.dataset.initial = JSON.stringify(values);
       closeModal(modal);

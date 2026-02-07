@@ -1,6 +1,7 @@
 import { jsonResponse } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
 import { requireApiStaff } from '../../_lib/api.js';
+import { ensurePanelRoleAccessSchema } from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
@@ -14,6 +15,26 @@ export const onRequestGet = async ({ env, request }) => {
 
   const clauses = [];
   const values = [];
+  if (!staff.is_admin) {
+    try {
+      await ensurePanelRoleAccessSchema(env);
+      clauses.push(
+        `(
+          NOT EXISTS (
+            SELECT 1 FROM ticket_panel_role_access a
+            WHERE a.panel_id = t.panel_id
+          )
+          OR EXISTS (
+            SELECT 1 FROM ticket_panel_role_access a
+            WHERE a.panel_id = t.panel_id AND a.role_id = ?
+          )
+        )`
+      );
+      values.push(staff.role_id);
+    } catch {
+      // If schema can't be ensured, fall back to showing all tickets.
+    }
+  }
   if (statusId) {
     clauses.push('t.status_id = ?');
     values.push(statusId);

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Statuses | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207g">
+  <link rel="stylesheet" href="/app.css?v=20260207h">
   <script src="/ui.js" defer></script>
   <script src="/admin-statuses.js" defer></script>
 </head>
@@ -25,16 +25,27 @@
     <section class="page-header">
       <div>
         <h1>Statuses</h1>
-        <p>Control status options for tickets.</p>
+        <p>Status is what stage a ticket is in (Open, Pending, Closed).</p>
       </div>
     </section>
 
     <section class="card">
       <h3>New status</h3>
       <form class="form" data-create-status>
-        <input type="text" name="name" placeholder="Status name" required>
-        <input type="text" name="slug" placeholder="slug" required>
-        <input type="number" name="sort_order" placeholder="Sort order" value="0">
+        <label>
+          Name
+          <input type="text" name="name" placeholder="e.g. Open" required>
+        </label>
+        <label>
+          Slug
+          <input type="text" name="slug" placeholder="e.g. open" required>
+          <span class="muted">Internal ID. Use lowercase and hyphens.</span>
+        </label>
+        <label>
+          Sort order
+          <input type="number" name="sort_order" placeholder="0" value="0">
+          <span class="muted">Lower numbers show first.</span>
+        </label>
         <label class="checkbox">
           <input type="checkbox" name="is_default_open" value="1">
           Default open

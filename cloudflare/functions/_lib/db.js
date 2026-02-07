@@ -1,5 +1,26 @@
 import { nowIso, randomId } from './utils.js';
 
+async function ensurePanelRoleAccessSchema(env) {
+  // Keep runtime resilient even if migrations weren't applied yet.
+  // Safe to call multiple times.
+  await env.DB.prepare(
+    `
+    CREATE TABLE IF NOT EXISTS ticket_panel_role_access (
+      panel_id INTEGER NOT NULL,
+      role_id INTEGER NOT NULL,
+      created_at TEXT,
+      PRIMARY KEY (panel_id, role_id)
+    )
+    `
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_panel_role_access_panel_id ON ticket_panel_role_access (panel_id)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_panel_role_access_role_id ON ticket_panel_role_access (role_id)'
+  ).run();
+}
+
 async function getUserById(env, id) {
   if (!id) return null;
   return env.DB.prepare('SELECT * FROM users WHERE id = ? LIMIT 1')
@@ -130,4 +151,76 @@ export {
   ensureAdminSeed,
   getDefaultStatusId,
   generatePublicId,
+  ensurePanelRoleAccessSchema,
+  staffCanAccessPanel,
+  getAccessiblePanelsForStaff,
 };
+
+async function staffCanAccessPanel(env, staff, panelId) {
+  if (!staff) return false;
+  if (staff.is_admin) return true;
+  if (!panelId) return true;
+
+  try {
+    await ensurePanelRoleAccessSchema(env);
+  } catch {
+    // If schema can't be ensured for some reason, treat as unrestricted.
+    return true;
+  }
+
+  // No rows => unrestricted for staff.
+  const isRestricted = await env.DB.prepare(
+    'SELECT 1 FROM ticket_panel_role_access WHERE panel_id = ? LIMIT 1'
+  )
+    .bind(panelId)
+    .first();
+  if (!isRestricted) return true;
+
+  const allowed = await env.DB.prepare(
+    'SELECT 1 FROM ticket_panel_role_access WHERE panel_id = ? AND role_id = ? LIMIT 1'
+  )
+    .bind(panelId, staff.role_id)
+    .first();
+
+  return Boolean(allowed);
+}
+
+async function getAccessiblePanelsForStaff(env, staff) {
+  if (!staff) return [];
+  if (staff.is_admin) {
+    const results = await env.DB.prepare(
+      'SELECT * FROM ticket_panels WHERE is_active = 1 ORDER BY sort_order ASC, name ASC'
+    ).all();
+    return results.results || [];
+  }
+
+  try {
+    await ensurePanelRoleAccessSchema(env);
+  } catch {
+    const results = await env.DB.prepare(
+      'SELECT * FROM ticket_panels WHERE is_active = 1 ORDER BY sort_order ASC, name ASC'
+    ).all();
+    return results.results || [];
+  }
+
+  const results = await env.DB.prepare(
+    `
+    SELECT p.*
+    FROM ticket_panels p
+    WHERE p.is_active = 1 AND (
+      NOT EXISTS (
+        SELECT 1 FROM ticket_panel_role_access a
+        WHERE a.panel_id = p.id
+      )
+      OR EXISTS (
+        SELECT 1 FROM ticket_panel_role_access a
+        WHERE a.panel_id = p.id AND a.role_id = ?
+      )
+    )
+    ORDER BY p.sort_order ASC, p.name ASC
+    `
+  )
+    .bind(staff.role_id)
+    .all();
+  return results.results || [];
+}

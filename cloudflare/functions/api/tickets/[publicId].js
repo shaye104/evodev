@@ -1,6 +1,7 @@
 import { jsonResponse } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
 import { requireApiUser } from '../../_lib/api.js';
+import { staffCanAccessPanel } from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
@@ -22,6 +23,9 @@ export const onRequestGet = async ({ env, request, params }) => {
 
   if (!ticket) return jsonResponse({ error: 'Not found' }, { status: 404 });
   if (!staff && ticket.creator_user_id !== user.id) {
+    return jsonResponse({ error: 'Forbidden' }, { status: 403 });
+  }
+  if (staff && !(await staffCanAccessPanel(env, staff, ticket.panel_id))) {
     return jsonResponse({ error: 'Forbidden' }, { status: 403 });
   }
 
