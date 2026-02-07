@@ -22,7 +22,12 @@ const getRoleInfo = (msg) => {
     const label =
       msg.author_role_name || (msg.author_is_admin ? 'Admin' : 'Staff');
     const className = msg.author_is_admin ? 'role-admin' : 'role-staff';
-    return { label, className };
+    return {
+      label,
+      className,
+      colorBg: msg.author_role_color_bg || null,
+      colorText: msg.author_role_color_text || null,
+    };
   }
   return { label: 'User', className: 'role-user' };
 };
@@ -128,6 +133,11 @@ const renderTicket = (payload) => {
     const roleBadge = document.createElement('span');
     roleBadge.className = `role-pill ${role.className}`;
     roleBadge.textContent = role.label;
+    if (role.colorBg) {
+      roleBadge.style.backgroundColor = role.colorBg;
+      roleBadge.style.borderColor = role.colorBg;
+      roleBadge.style.color = role.colorText || '#ffffff';
+    }
     info.appendChild(name);
     info.appendChild(roleBadge);
     author.appendChild(avatar);
@@ -203,6 +213,7 @@ const fetchTicket = async () => {
   renderTicket(data);
   document.querySelector('[data-status-select]').value = data.ticket.status_id || '';
   document.querySelector('[data-assign-select]').value = data.ticket.assigned_staff_id || '';
+  loadTranscripts();
 };
 
 const handleReply = async (event) => {
@@ -255,11 +266,90 @@ const handleAssign = async () => {
   fetchTicket();
 };
 
+const renderTranscripts = (rows) => {
+  const el = document.querySelector('[data-transcripts-list]');
+  if (!el) return;
+  if (!rows.length) {
+    el.textContent = 'No transcripts yet.';
+    return;
+  }
+  const id = getTicketId();
+  const formatTime = (v) => window.supportFormatDateTime?.(v) || v || '';
+  el.innerHTML = `
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Created</th>
+          <th>Trigger</th>
+          <th>Download</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows
+          .map((t) => {
+            const created = formatTime(t.created_at);
+            const trigger = t.trigger || 'manual';
+            const htmlUrl = `/api/staff/tickets/${id}/transcripts/${t.id}?format=html`;
+            const jsonUrl = `/api/staff/tickets/${id}/transcripts/${t.id}?format=json`;
+            return `
+              <tr>
+                <td>${created}</td>
+                <td>${trigger}</td>
+                <td class="inline">
+                  <a class="btn secondary" target="_blank" rel="noopener" href="${htmlUrl}">HTML</a>
+                  <a class="btn secondary" target="_blank" rel="noopener" href="${jsonUrl}">JSON</a>
+                </td>
+              </tr>
+            `;
+          })
+          .join('')}
+      </tbody>
+    </table>
+  `;
+};
+
+const loadTranscripts = async () => {
+  const id = getTicketId();
+  const el = document.querySelector('[data-transcripts-list]');
+  if (!id || !el) return;
+  el.textContent = 'Loading…';
+  const res = await fetch(`/api/staff/tickets/${id}/transcripts`);
+  if (!res.ok) {
+    el.textContent = 'Unable to load transcripts.';
+    return;
+  }
+  const data = await res.json();
+  renderTranscripts(data.transcripts || []);
+};
+
+const handleGenerateTranscript = async () => {
+  const id = getTicketId();
+  const btn = document.querySelector('[data-transcript-generate]');
+  if (!id || !btn) return;
+  btn.disabled = true;
+  const res = await fetch(`/api/staff/tickets/${id}/transcripts`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ trigger: 'manual' }),
+  });
+  btn.disabled = false;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    alert(data.error || 'Failed to generate transcript');
+    return;
+  }
+  loadTranscripts();
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadDropdowns();
   await fetchTicket();
+  await loadTranscripts();
   document.querySelector('[data-reply-form]').addEventListener('submit', handleReply);
   document.querySelector('[data-claim-button]').addEventListener('click', handleClaim);
   document.querySelector('[data-status-button]').addEventListener('click', handleStatus);
   document.querySelector('[data-assign-button]').addEventListener('click', handleAssign);
+  document
+    .querySelector('[data-transcript-generate]')
+    .addEventListener('click', handleGenerateTranscript);
 });

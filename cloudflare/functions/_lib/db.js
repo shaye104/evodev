@@ -21,6 +21,44 @@ async function ensurePanelRoleAccessSchema(env) {
   ).run();
 }
 
+async function ensureRoleColorsSchema(env) {
+  // Safe to call multiple times (ALTER will fail if column already exists).
+  try {
+    await env.DB.prepare('ALTER TABLE staff_roles ADD COLUMN color_bg TEXT').run();
+  } catch {}
+  try {
+    await env.DB.prepare('ALTER TABLE staff_roles ADD COLUMN color_text TEXT').run();
+  } catch {}
+}
+
+async function ensureTicketTranscriptsSchema(env) {
+  await env.DB.prepare(
+    `
+    CREATE TABLE IF NOT EXISTS ticket_transcripts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_id INTEGER NOT NULL,
+      ticket_public_id TEXT NOT NULL,
+      format TEXT NOT NULL DEFAULT 'json',
+      content TEXT NOT NULL,
+      trigger TEXT,
+      created_by_actor_type TEXT,
+      created_by_user_id INTEGER,
+      created_by_staff_id INTEGER,
+      created_at TEXT
+    )
+    `
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_transcripts_ticket_id ON ticket_transcripts (ticket_id)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_transcripts_ticket_public_id ON ticket_transcripts (ticket_public_id)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_transcripts_created_at ON ticket_transcripts (created_at)'
+  ).run();
+}
+
 async function getUserById(env, id) {
   if (!id) return null;
   return env.DB.prepare('SELECT * FROM users WHERE id = ? LIMIT 1')
@@ -61,9 +99,12 @@ async function upsertUserFromDiscord(env, profile) {
 
 async function getStaffByUserId(env, userId) {
   if (!userId) return null;
+  try {
+    await ensureRoleColorsSchema(env);
+  } catch {}
   return env.DB.prepare(
     `
-    SELECT sm.*, sr.name AS role_name, sr.permissions, sr.is_admin
+    SELECT sm.*, sr.name AS role_name, sr.permissions, sr.is_admin, sr.color_bg, sr.color_text
     FROM staff_members sm
     LEFT JOIN staff_roles sr ON sm.role_id = sr.id
     WHERE sm.user_id = ? AND sm.is_active = 1
@@ -76,9 +117,12 @@ async function getStaffByUserId(env, userId) {
 
 async function getStaffByDiscordId(env, discordId) {
   if (!discordId) return null;
+  try {
+    await ensureRoleColorsSchema(env);
+  } catch {}
   return env.DB.prepare(
     `
-    SELECT sm.*, sr.name AS role_name, sr.permissions, sr.is_admin
+    SELECT sm.*, sr.name AS role_name, sr.permissions, sr.is_admin, sr.color_bg, sr.color_text
     FROM staff_members sm
     LEFT JOIN staff_roles sr ON sm.role_id = sr.id
     WHERE sm.discord_id = ? AND sm.is_active = 1
@@ -152,6 +196,8 @@ export {
   getDefaultStatusId,
   generatePublicId,
   ensurePanelRoleAccessSchema,
+  ensureRoleColorsSchema,
+  ensureTicketTranscriptsSchema,
   staffCanAccessPanel,
   getAccessiblePanelsForStaff,
 };

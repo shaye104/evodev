@@ -1,7 +1,7 @@
 import { jsonResponse } from '../../../_lib/utils.js';
 import { getUserContext } from '../../../_lib/auth.js';
 import { requireApiStaff } from '../../../_lib/api.js';
-import { staffCanAccessPanel } from '../../../_lib/db.js';
+import { staffCanAccessPanel, ensureRoleColorsSchema } from '../../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request, params }) => {
   const { staff } = await getUserContext(env, request);
@@ -30,10 +30,16 @@ export const onRequestGet = async ({ env, request, params }) => {
     return jsonResponse({ error: 'Forbidden' }, { status: 403 });
   }
 
+  try {
+    await ensureRoleColorsSchema(env);
+  } catch {}
+
   const messages = await env.DB.prepare(
     `
     SELECT tm.*, u.discord_username AS author_username, u.discord_avatar AS author_avatar,
-      sm.id AS author_staff_id, sr.name AS author_role_name, sr.is_admin AS author_is_admin
+      sm.id AS author_staff_id,
+      sr.name AS author_role_name, sr.is_admin AS author_is_admin,
+      sr.color_bg AS author_role_color_bg, sr.color_text AS author_role_color_text
     FROM ticket_messages tm
     LEFT JOIN users u ON tm.author_user_id = u.id
     LEFT JOIN staff_members sm ON sm.user_id = u.id AND sm.is_active = 1

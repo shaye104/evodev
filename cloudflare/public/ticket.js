@@ -22,7 +22,12 @@ const getRoleInfo = (msg) => {
     const label =
       msg.author_role_name || (msg.author_is_admin ? 'Admin' : 'Staff');
     const className = msg.author_is_admin ? 'role-admin' : 'role-staff';
-    return { label, className };
+    return {
+      label,
+      className,
+      colorBg: msg.author_role_color_bg || null,
+      colorText: msg.author_role_color_text || null,
+    };
   }
   return { label: 'User', className: 'role-user' };
 };
@@ -128,6 +133,11 @@ const renderTicket = (payload) => {
     const roleBadge = document.createElement('span');
     roleBadge.className = `role-pill ${role.className}`;
     roleBadge.textContent = role.label;
+    if (role.colorBg) {
+      roleBadge.style.backgroundColor = role.colorBg;
+      roleBadge.style.borderColor = role.colorBg;
+      roleBadge.style.color = role.colorText || '#ffffff';
+    }
     info.appendChild(name);
     info.appendChild(roleBadge);
     author.appendChild(avatar);

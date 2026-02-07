@@ -35,6 +35,17 @@
       <form class="form" data-create-role>
         <input type="text" name="name" placeholder="Role name" required>
         <input type="hidden" name="permissions" value="">
+        <div class="inline">
+          <label>
+            Badge background
+            <input type="color" name="color_bg" value="#3484ff">
+          </label>
+          <label>
+            Badge text
+            <input type="color" name="color_text" value="#ffffff">
+          </label>
+          <span class="role-pill role-staff" data-role-preview>Preview</span>
+        </div>
         <div class="permissions-row">
           <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
           <span class="muted" data-permissions-summary>None selected</span>

@@ -1,11 +1,16 @@
 import { jsonResponse, nowIso } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
 import { requireApiAdmin } from '../../_lib/api.js';
+import { ensureRoleColorsSchema } from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
   const guard = requireApiAdmin(staff);
   if (guard) return guard;
+
+  try {
+    await ensureRoleColorsSchema(env);
+  } catch {}
 
   const staffMembers = await env.DB.prepare(
     `

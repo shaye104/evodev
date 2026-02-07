@@ -58,8 +58,21 @@ const renderRoles = (roles) => {
 
     const form = document.createElement('form');
     form.className = 'form inline-form';
+    const bg = role.color_bg || '#3484ff';
+    const text = role.color_text || '#ffffff';
     form.innerHTML = `
       <input type="text" name="name" value="${role.name || ''}" required>
+      <div class="inline">
+        <label>
+          Badge background
+          <input type="color" name="color_bg" value="${bg}">
+        </label>
+        <label>
+          Badge text
+          <input type="color" name="color_text" value="${text}">
+        </label>
+        <span class="role-pill role-staff" data-role-preview>Preview</span>
+      </div>
       <input type="hidden" name="permissions" value="${selected.join(', ')}">
       <div class="permissions-row">
         <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
@@ -72,6 +85,18 @@ const renderRoles = (roles) => {
       <button class="btn secondary" type="submit">Update</button>
       ${createModal(selected)}
     `;
+
+    const updatePreview = () => {
+      const bgVal = String(form.querySelector('input[name="color_bg"]').value || '').trim();
+      const textVal = String(form.querySelector('input[name="color_text"]').value || '').trim();
+      const preview = form.querySelector('[data-role-preview]');
+      preview.style.backgroundColor = bgVal || '#3484ff';
+      preview.style.borderColor = bgVal || '#3484ff';
+      preview.style.color = textVal || '#ffffff';
+    };
+    form.querySelector('input[name="color_bg"]').addEventListener('input', updatePreview);
+    form.querySelector('input[name="color_text"]').addEventListener('input', updatePreview);
+    updatePreview();
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -87,6 +112,8 @@ const renderRoles = (roles) => {
           name: formData.get('name'),
           permissions,
           is_admin: formData.get('is_admin') === '1',
+          color_bg: formData.get('color_bg'),
+          color_text: formData.get('color_text'),
         }),
       });
       loadRoles();
@@ -121,9 +148,19 @@ const handleCreate = async (event) => {
       name: formData.get('name'),
       permissions,
       is_admin: formData.get('is_admin') === '1',
+      color_bg: formData.get('color_bg'),
+      color_text: formData.get('color_text'),
     }),
   });
   form.reset();
+  const bgVal = String(form.querySelector('input[name="color_bg"]')?.value || '').trim();
+  const textVal = String(form.querySelector('input[name="color_text"]')?.value || '').trim();
+  const preview = form.querySelector('[data-role-preview]');
+  if (preview) {
+    preview.style.backgroundColor = bgVal || '#3484ff';
+    preview.style.borderColor = bgVal || '#3484ff';
+    preview.style.color = textVal || '#ffffff';
+  }
   loadRoles();
 };
 
@@ -132,6 +169,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const newPerms = document.querySelector('[data-new-permissions]');
   if (newPerms) {
     newPerms.innerHTML = renderPermissionButtons([]);
+  }
+  const createForm = document.querySelector('[data-create-role]');
+  if (createForm) {
+    const updatePreview = () => {
+      const bgVal = String(createForm.querySelector('input[name="color_bg"]').value || '').trim();
+      const textVal = String(createForm.querySelector('input[name="color_text"]').value || '').trim();
+      const preview = createForm.querySelector('[data-role-preview]');
+      preview.style.backgroundColor = bgVal || '#3484ff';
+      preview.style.borderColor = bgVal || '#3484ff';
+      preview.style.color = textVal || '#ffffff';
+    };
+    createForm.querySelector('input[name="color_bg"]').addEventListener('input', updatePreview);
+    createForm.querySelector('input[name="color_text"]').addEventListener('input', updatePreview);
+    updatePreview();
   }
   loadRoles();
 });
