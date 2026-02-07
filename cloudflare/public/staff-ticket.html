@@ -32,21 +32,64 @@
     </section>
 
     <section class="card">
-      <button class="btn secondary" type="button" data-claim-button data-action="claim">Claim</button>
-      <div class="inline">
-        <input type="text" data-subject-input placeholder="Ticket subject">
-        <button class="btn secondary" type="button" data-subject-save>Save subject</button>
+      <div class="ticket-controls" data-ticket-controls>
+        <button class="btn secondary small" type="button" data-claim-button data-action="claim">Claim</button>
+        <button class="btn secondary small" type="button" data-subject-edit>Edit subject</button>
+        <button class="btn secondary small" type="button" data-escalate-open>Escalate</button>
+        <button class="btn danger small" type="button" data-close-open>Close ticket</button>
       </div>
-      <p class="muted">Only staff with the "Edit ticket subject" permission can change this.</p>
-      <div class="inline">
-        <select name="status_id" data-status-select></select>
-        <button class="btn secondary" type="button" data-status-button>Update status</button>
-      </div>
-      <div class="inline">
-        <select name="assigned_staff_id" data-assign-select></select>
-        <button class="btn secondary" type="button" data-assign-button>Assign</button>
-      </div>
+      <p class="muted">Claim assigns you to the ticket. Escalate moves the ticket to another panel. Closing is permanent.</p>
     </section>
+
+    <dialog class="modal" data-subject-modal aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>Edit subject</h4>
+        </div>
+        <div class="modal-body">
+          <label>
+            Subject
+            <input type="text" id="ticket-subject" name="subject" data-subject-input placeholder="Ticket subject" autocomplete="off">
+          </label>
+          <p class="muted">Only staff with the "Edit ticket subject" permission can change this.</p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
+          <button class="btn" type="button" data-subject-save>Save</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal" data-escalate-modal aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>Escalate ticket</h4>
+        </div>
+        <div class="modal-body">
+          <p class="muted">Select the panel to move this ticket to.</p>
+          <div class="permission-grid" data-escalate-panels></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal" data-close-modal aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>Close ticket</h4>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to close this ticket?</p>
+          <p class="muted">This will mark the ticket as closed and generate a transcript automatically.</p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn secondary" type="button" data-modal-cancel>No, go back</button>
+          <button class="btn danger" type="button" data-close-confirm>Yes, close ticket</button>
+        </div>
+      </div>
+    </dialog>
 
     <section class="card">
       <h3>Transcripts</h3>

@@ -118,8 +118,32 @@ const formatRelativeTime = (value) => {
     : formatLongDate(date);
 };
 
+const openModal = (modal) => {
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'false');
+  if (typeof modal.showModal === 'function') {
+    modal.showModal();
+  } else {
+    modal.classList.add('open');
+  }
+};
+
+const closeModal = (modal) => {
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  if (typeof modal.close === 'function') {
+    modal.close();
+  } else {
+    modal.classList.remove('open');
+  }
+};
+
+let currentTicket = null;
+let currentStaff = null;
+
 const renderTicket = (payload) => {
   const { ticket, messages, attachments } = payload;
+  currentTicket = ticket;
   document.querySelector('[data-ticket-title]').textContent = `Ticket #${ticket.public_id}`;
   document.querySelector('[data-ticket-subject]').textContent = ticket.subject || 'Support ticket';
   document.querySelector('[data-ticket-meta]').textContent = `${ticket.panel_name || 'General'} • ${ticket.status_name || 'Open'}`;
@@ -193,60 +217,20 @@ const renderTicket = (payload) => {
     thread.appendChild(article);
   });
 
-  document.querySelector('[data-claim-button]').textContent = ticket.assigned_staff_id ? 'Unclaim' : 'Claim';
-  document.querySelector('[data-claim-button]').dataset.action = ticket.assigned_staff_id ? 'unclaim' : 'claim';
-};
-
-const loadDropdowns = async () => {
-  const statusSelect = document.querySelector('[data-status-select]');
-  const assignSelect = document.querySelector('[data-assign-select]');
-  const statusBtn = document.querySelector('[data-status-button]');
-  const assignBtn = document.querySelector('[data-assign-button]');
-
-  const statusesRes = await fetch('/api/statuses').catch(() => null);
-  const statusesData = statusesRes ? await safeJson(statusesRes) : null;
-
-  if (statusSelect) statusSelect.innerHTML = '';
-  if (statusesRes?.ok && statusesData?.statuses && Array.isArray(statusesData.statuses)) {
-    if (statusSelect) {
-      statusesData.statuses.forEach((status) => {
-        const option = document.createElement('option');
-        option.value = status.id;
-        option.textContent = status.name;
-        statusSelect.appendChild(option);
-      });
-    }
-    if (statusSelect) statusSelect.disabled = false;
-    if (statusBtn) statusBtn.disabled = false;
-  } else {
-    if (statusSelect) statusSelect.disabled = true;
-    if (statusBtn) statusBtn.disabled = true;
+  const claimBtn = document.querySelector('[data-claim-button]');
+  const isClosed = Boolean(ticket.is_closed) || Boolean(ticket.closed_at);
+  if (claimBtn) {
+    const assignedId = Number(ticket.assigned_staff_id || 0) || null;
+    const meId = Number(currentStaff?.id || 0) || null;
+    const isMine = assignedId && meId && assignedId === meId;
+    claimBtn.textContent = isMine ? 'Unclaim' : 'Claim';
+    claimBtn.dataset.action = isMine ? 'unclaim' : 'claim';
   }
 
-  // Staff list for assignment (may be forbidden if the role lacks tickets.assign).
-  if (assignSelect) assignSelect.innerHTML = '';
-  const defaultOption = document.createElement('option');
-  defaultOption.value = '';
-  defaultOption.textContent = 'Unassigned';
-  if (assignSelect) assignSelect.appendChild(defaultOption);
-
-  const staffRes = await fetch('/api/staff/members').catch(() => null);
-  const staffData = staffRes ? await safeJson(staffRes) : null;
-  if (staffRes?.ok && staffData?.staff && Array.isArray(staffData.staff)) {
-    if (assignSelect) {
-      staffData.staff.forEach((member) => {
-        const option = document.createElement('option');
-        option.value = member.id;
-        option.textContent = member.discord_username || member.discord_id;
-        assignSelect.appendChild(option);
-      });
-    }
-    if (assignSelect) assignSelect.disabled = false;
-    if (assignBtn) assignBtn.disabled = false;
-  } else {
-    if (assignSelect) assignSelect.disabled = true;
-    if (assignBtn) assignBtn.disabled = true;
-  }
+  const escalateBtn = document.querySelector('[data-escalate-open]');
+  if (escalateBtn) escalateBtn.disabled = isClosed || escalateBtn.disabled;
+  const closeBtn = document.querySelector('[data-close-open]');
+  if (closeBtn) closeBtn.disabled = isClosed || closeBtn.disabled;
 };
 
 const fetchTicket = async () => {
@@ -263,8 +247,6 @@ const fetchTicket = async () => {
     return;
   }
   renderTicket(data);
-  document.querySelector('[data-status-select]').value = data.ticket.status_id || '';
-  document.querySelector('[data-assign-select]').value = data.ticket.assigned_staff_id || '';
 };
 
 const handleReply = async (event) => {
@@ -295,28 +277,6 @@ const handleClaim = async () => {
   fetchTicket();
 };
 
-const handleStatus = async () => {
-  const id = getTicketId();
-  const statusId = document.querySelector('[data-status-select]').value;
-  await fetch(`/api/staff/tickets/${id}/status`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status_id: statusId }),
-  });
-  fetchTicket();
-};
-
-const handleAssign = async () => {
-  const id = getTicketId();
-  const staffId = document.querySelector('[data-assign-select]').value;
-  await fetch(`/api/staff/tickets/${id}/assign`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ staff_id: staffId || null }),
-  });
-  fetchTicket();
-};
-
 const handleSaveSubject = async () => {
   const id = getTicketId();
   const input = document.querySelector('[data-subject-input]');
@@ -340,7 +300,86 @@ const handleSaveSubject = async () => {
     alert(data.error || 'Failed to update subject');
     return;
   }
+  closeModal(document.querySelector('[data-subject-modal]'));
   fetchTicket();
+};
+
+const handleOpenSubject = () => {
+  const modal = document.querySelector('[data-subject-modal]');
+  const input = modal?.querySelector('[data-subject-input]');
+  if (input) input.value = currentTicket?.subject || '';
+  openModal(modal);
+  setTimeout(() => input?.focus?.(), 0);
+};
+
+const loadEscalatePanels = async () => {
+  const container = document.querySelector('[data-escalate-panels]');
+  if (!container) return;
+  container.innerHTML = '';
+  const res = await fetch('/api/panels').catch(() => null);
+  const data = res ? await safeJson(res) : null;
+  if (!res?.ok || !data?.panels || !Array.isArray(data.panels)) {
+    container.innerHTML = '<p class="muted">Unable to load panels.</p>';
+    return;
+  }
+
+  const currentPanelId = Number(currentTicket?.panel_id || 0) || null;
+  data.panels.forEach((panel) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn secondary perm-option';
+    btn.dataset.escalatePanelId = String(panel.id);
+    btn.textContent = panel.name || `Panel ${panel.id}`;
+    if (currentPanelId && Number(panel.id) === currentPanelId) {
+      btn.disabled = true;
+      btn.title = 'Ticket is already in this panel';
+    }
+    container.appendChild(btn);
+  });
+};
+
+const handleOpenEscalate = async () => {
+  const modal = document.querySelector('[data-escalate-modal]');
+  openModal(modal);
+  await loadEscalatePanels();
+};
+
+const handleEscalateTo = async (panelId) => {
+  const id = getTicketId();
+  if (!id) return;
+  const res = await fetch(`/api/staff/tickets/${id}/escalate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ panel_id: panelId }),
+  });
+  const data = (await safeJson(res)) || {};
+  if (!res.ok) {
+    alert(data.error || 'Failed to escalate ticket');
+    return;
+  }
+  closeModal(document.querySelector('[data-escalate-modal]'));
+  await fetchTicket();
+};
+
+const handleOpenClose = () => {
+  openModal(document.querySelector('[data-close-modal]'));
+};
+
+const handleCloseTicket = async () => {
+  const id = getTicketId();
+  if (!id) return;
+  const btn = document.querySelector('[data-close-confirm]');
+  if (btn) btn.disabled = true;
+  const res = await fetch(`/api/staff/tickets/${id}/close`, { method: 'POST' });
+  if (btn) btn.disabled = false;
+  const data = (await safeJson(res)) || {};
+  if (!res.ok) {
+    alert(data.error || 'Failed to close ticket');
+    return;
+  }
+  closeModal(document.querySelector('[data-close-modal]'));
+  await fetchTicket();
+  await loadTranscripts();
 };
 
 const renderTranscripts = (rows) => {
@@ -436,12 +475,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (replyForm) replyForm.addEventListener('submit', handleReply);
   const claimBtn = document.querySelector('[data-claim-button]');
   if (claimBtn) claimBtn.addEventListener('click', handleClaim);
-  const subjectSaveBtn = document.querySelector('[data-subject-save]');
+  const subjectEditBtn = document.querySelector('[data-subject-edit]');
+  if (subjectEditBtn) subjectEditBtn.addEventListener('click', handleOpenSubject);
+  const subjectSaveBtn = document.querySelector('[data-subject-modal] [data-subject-save]');
   if (subjectSaveBtn) subjectSaveBtn.addEventListener('click', handleSaveSubject);
-  const statusBtn = document.querySelector('[data-status-button]');
-  if (statusBtn) statusBtn.addEventListener('click', handleStatus);
-  const assignBtn = document.querySelector('[data-assign-button]');
-  if (assignBtn) assignBtn.addEventListener('click', handleAssign);
+  const escalateBtn = document.querySelector('[data-escalate-open]');
+  if (escalateBtn) escalateBtn.addEventListener('click', handleOpenEscalate);
+  const closeBtn = document.querySelector('[data-close-open]');
+  if (closeBtn) closeBtn.addEventListener('click', handleOpenClose);
+  const closeConfirmBtn = document.querySelector('[data-close-confirm]');
+  if (closeConfirmBtn) closeConfirmBtn.addEventListener('click', handleCloseTicket);
   const transcriptBtn = document.querySelector('[data-transcript-generate]');
   if (transcriptBtn) transcriptBtn.addEventListener('click', handleGenerateTranscript);
 
@@ -449,24 +492,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   const meRes = await fetch('/api/me').catch(() => null);
   const me = meRes ? await safeJson(meRes) : null;
   const staff = me?.staff || null;
+  currentStaff = staff;
 
   const canClaim = staffHasPermission(staff, 'tickets.claim');
   const canStatus = staffHasPermission(staff, 'tickets.status');
-  const canAssign = staffHasPermission(staff, 'tickets.assign');
+  const canEscalate = staffHasPermission(staff, 'tickets.escalate');
   const canReply = staffHasPermission(staff, 'tickets.reply');
   const canView = staffHasPermission(staff, 'tickets.view');
   const canEditSubject = staffHasPermission(staff, 'tickets.subject');
 
   if (claimBtn) claimBtn.disabled = !canClaim;
-  const subjectInput = document.querySelector('[data-subject-input]');
+  if (subjectEditBtn) subjectEditBtn.disabled = !canEditSubject;
+  const subjectInput = document.querySelector('[data-subject-modal] [data-subject-input]');
   if (subjectInput) subjectInput.disabled = !canEditSubject;
   if (subjectSaveBtn) subjectSaveBtn.disabled = !canEditSubject;
-  const statusSelect = document.querySelector('[data-status-select]');
-  if (statusSelect) statusSelect.disabled = !canStatus;
-  if (statusBtn) statusBtn.disabled = !canStatus;
-  const assignSelect = document.querySelector('[data-assign-select]');
-  if (assignSelect) assignSelect.disabled = !canAssign;
-  if (assignBtn) assignBtn.disabled = !canAssign;
+  if (escalateBtn) escalateBtn.disabled = !canEscalate;
+  if (closeBtn) closeBtn.disabled = !canStatus;
+  if (closeConfirmBtn) closeConfirmBtn.disabled = !canStatus;
   if (replyForm) {
     const textarea = replyForm.querySelector('textarea[name="message"]');
     const file = replyForm.querySelector('input[type="file"][name="attachments"]');
@@ -477,14 +519,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   if (transcriptBtn) transcriptBtn.disabled = !canView;
 
-  try {
-    await loadDropdowns();
-  } catch {}
-  // Ensure dropdown enablement reflects permissions even if the fetch succeeded.
-  if (statusSelect) statusSelect.disabled = !canStatus;
-  if (statusBtn) statusBtn.disabled = !canStatus;
-  if (assignSelect) assignSelect.disabled = !canAssign;
-  if (assignBtn) assignBtn.disabled = !canAssign;
+  // Modal cancel buttons
+  document.querySelectorAll('[data-modal-cancel]').forEach((btn) => {
+    btn.addEventListener('click', () => closeModal(btn.closest('dialog')));
+  });
+
+  // Escalate modal button list handler
+  document.addEventListener('click', (event) => {
+    const panelBtn = event.target.closest('[data-escalate-panel-id]');
+    if (!panelBtn) return;
+    const pid = Number(panelBtn.dataset.escalatePanelId || 0) || null;
+    if (!pid) return;
+    handleEscalateTo(pid);
+  });
+
   try {
     await fetchTicket();
   } catch {}

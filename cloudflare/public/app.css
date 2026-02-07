@@ -650,6 +650,13 @@ a:hover {
   margin-bottom: 12px;
 }
 
+.ticket-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
 .filters {
   display: flex;
   gap: 12px;

@@ -4,6 +4,7 @@ const PERMISSIONS = [
   { id: 'tickets.claim', label: 'Claim/unclaim tickets' },
   { id: 'tickets.assign', label: 'Assign tickets' },
   { id: 'tickets.status', label: 'Change ticket status' },
+  { id: 'tickets.escalate', label: 'Escalate/move tickets' },
   { id: 'tickets.subject', label: 'Edit ticket subject' },
 ];
 
