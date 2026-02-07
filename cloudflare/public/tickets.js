@@ -10,12 +10,14 @@ const renderTickets = (tickets) => {
   }
   tickets.forEach((ticket) => {
     const row = document.createElement('tr');
+    const updatedAt = window.supportFormatDateTime?.(ticket.last_message_at || ticket.updated_at) ||
+      (ticket.last_message_at || ticket.updated_at || '');
     row.innerHTML = `
       <td><a href="/ticket.html?id=${ticket.public_id}">#${ticket.public_id}</a></td>
       <td>${ticket.subject || 'Support ticket'}</td>
       <td>${ticket.panel_name || 'General'}</td>
       <td><span class="pill">${ticket.status_name || 'Open'}</span></td>
-      <td>${ticket.last_message_at || ticket.updated_at || ''}</td>
+      <td>${updatedAt}</td>
     `;
     tbody.appendChild(row);
   });
