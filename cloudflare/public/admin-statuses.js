@@ -9,19 +9,17 @@ const loadStatuses = async () => {
   container.innerHTML = '';
   data.statuses.forEach((status) => {
     const form = document.createElement('form');
-    form.className = 'form inline-form';
+    form.className = 'form status-grid-row';
     form.innerHTML = `
       <input type="text" name="name" value="${status.name || ''}" required>
       <input type="text" name="slug" value="${status.slug || ''}" required>
       <input type="number" name="sort_order" value="${status.sort_order || 0}">
-      <label class="switch">
-        <span>Default open</span>
-        <input type="checkbox" name="is_default_open" value="1" ${status.is_default_open ? 'checked' : ''}>
+      <label class="switch switch-compact" title="Default open">
+        <input type="checkbox" name="is_default_open" value="1" aria-label="Default open" ${status.is_default_open ? 'checked' : ''}>
         <span class="switch-track" aria-hidden="true"></span>
       </label>
-      <label class="switch">
-        <span>Closed</span>
-        <input type="checkbox" name="is_closed" value="1" ${status.is_closed ? 'checked' : ''}>
+      <label class="switch switch-compact" title="Closed">
+        <input type="checkbox" name="is_closed" value="1" aria-label="Closed" ${status.is_closed ? 'checked' : ''}>
         <span class="switch-track" aria-hidden="true"></span>
       </label>
       <button class="btn secondary" type="submit">Update</button>

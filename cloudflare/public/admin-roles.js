@@ -121,6 +121,72 @@ const setupColorTools = (root, fieldName, onChange) => {
   return { applyHex };
 };
 
+const openDialog = (modal) => {
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'false');
+  if (typeof modal.showModal === 'function') modal.showModal();
+  else modal.classList.add('open');
+};
+
+const closeDialog = (modal) => {
+  if (!modal) return;
+  modal.setAttribute('aria-hidden', 'true');
+  if (typeof modal.close === 'function') modal.close();
+  else modal.classList.remove('open');
+};
+
+const wireColorModal = (form, updatePreview) => {
+  const btn = form.querySelector('[data-colors-button]');
+  const modal = form.querySelector('[data-colors-modal]');
+  if (!btn || !modal) return;
+
+  const getVals = () => ({
+    bg: String(form.querySelector('input[name="color_bg"]')?.value || '').trim() || '#3484ff',
+    text: String(form.querySelector('input[name="color_text"]')?.value || '').trim() || '#ffffff',
+  });
+
+  const revertTo = (vals) => {
+    form.querySelector('[data-color-tools="color_bg"]')?.__applyHex?.(vals.bg);
+    form.querySelector('[data-color-tools="color_text"]')?.__applyHex?.(vals.text);
+    if (typeof updatePreview === 'function') updatePreview();
+  };
+
+  btn.addEventListener('click', () => {
+    const { bg, text } = getVals();
+    modal.dataset.initialBg = bg;
+    modal.dataset.initialText = text;
+    // Ensure tool UIs are synced before showing.
+    revertTo({ bg, text });
+    openDialog(modal);
+  });
+
+  const onCancel = () => {
+    const bg = modal.dataset.initialBg || '#3484ff';
+    const text = modal.dataset.initialText || '#ffffff';
+    revertTo({ bg, text });
+    closeDialog(modal);
+  };
+
+  const onApply = () => {
+    const { bg, text } = getVals();
+    modal.dataset.initialBg = bg;
+    modal.dataset.initialText = text;
+    closeDialog(modal);
+  };
+
+  modal.querySelector('[data-colors-cancel]')?.addEventListener('click', onCancel);
+  modal.querySelector('[data-colors-apply]')?.addEventListener('click', onApply);
+
+  // Treat backdrop click / Esc as cancel.
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) onCancel();
+  });
+  modal.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    onCancel();
+  });
+};
+
 const renderAdminToggle = (isAdmin) => {
   const on = Boolean(isAdmin);
   return `
@@ -215,45 +281,58 @@ const renderRoles = (roles) => {
         <input type="text" name="name" value="${role.name || ''}" required>
         <span class="role-pill role-staff" data-role-preview>Preview</span>
       </div>
-      <div class="role-color-row">
-        <div class="color-block" data-color-tools="color_bg">
-          <div class="color-block-title">Badge background</div>
-          <div class="color-tools">
-            <input type="color" name="color_bg" value="${bg}" aria-label="Badge background color">
-            <input type="text" class="mono" data-color-hex value="${bg}" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge background hex">
-            <div class="rgb-row" aria-label="Badge background RGB">
-              <input type="number" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
-              <input type="number" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
-              <input type="number" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
-            </div>
-          </div>
-        </div>
-        <div class="color-block" data-color-tools="color_text">
-          <div class="color-block-title">Badge text</div>
-          <div class="color-tools">
-            <input type="color" name="color_text" value="${text}" aria-label="Badge text color">
-            <input type="text" class="mono" data-color-hex value="${text}" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge text hex">
-            <div class="rgb-row" aria-label="Badge text RGB">
-              <input type="number" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
-              <input type="number" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
-              <input type="number" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
-            </div>
-          </div>
-        </div>
-      </div>
       <input type="hidden" name="permissions" value="${selected.join(', ')}">
       <input type="hidden" name="is_admin" value="${role.is_admin ? '1' : '0'}">
-      <div class="role-form-actions">
-        <div class="permissions-row">
-          <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
-        </div>
-        <div class="inline">
-          <button class="btn secondary small" type="submit">Update</button>
-          <button class="${deleteBtnClass}" type="button" data-delete-role ${deleteBtnDisabled} title="${deleteBtnTitle}">
-            Delete
-          </button>
-        </div>
+      <div class="role-actions-row">
+        <button class="btn secondary small" type="button" data-colors-button>Badge colours</button>
+        <button class="btn secondary small" type="button" data-permissions-button>Permissions</button>
+        <button class="btn secondary small" type="submit">Update</button>
+        <button class="${deleteBtnClass}" type="button" data-delete-role ${deleteBtnDisabled} title="${deleteBtnTitle}">Delete</button>
       </div>
+
+      <dialog class="modal" data-colors-modal aria-hidden="true">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4>Badge colours</h4>
+          </div>
+          <div class="modal-body">
+            <div class="permissions-row" style="justify-content: space-between;">
+              <span class="muted">Preview</span>
+              <span class="role-pill role-staff" data-role-color-preview>Preview</span>
+            </div>
+
+            <div class="color-block" data-color-tools="color_bg">
+              <div class="color-block-title">Badge background</div>
+              <div class="color-tools">
+                <input type="color" name="color_bg" value="${bg}" aria-label="Badge background color">
+                <input type="text" class="mono" name="color_bg_hex" data-color-hex value="${bg}" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge background hex">
+                <div class="rgb-row" aria-label="Badge background RGB">
+                  <input type="number" name="color_bg_r" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
+                  <input type="number" name="color_bg_g" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
+                  <input type="number" name="color_bg_b" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
+                </div>
+              </div>
+            </div>
+
+            <div class="color-block" data-color-tools="color_text" style="margin-top: 8px;">
+              <div class="color-block-title">Badge text</div>
+              <div class="color-tools">
+                <input type="color" name="color_text" value="${text}" aria-label="Badge text color">
+                <input type="text" class="mono" name="color_text_hex" data-color-hex value="${text}" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge text hex">
+                <div class="rgb-row" aria-label="Badge text RGB">
+                  <input type="number" name="color_text_r" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
+                  <input type="number" name="color_text_g" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
+                  <input type="number" name="color_text_b" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn secondary" type="button" data-colors-cancel>Cancel</button>
+            <button class="btn" type="button" data-colors-apply>Apply</button>
+          </div>
+        </div>
+      </dialog>
       ${createModal(selected, role.is_admin)}
     `;
 
@@ -261,16 +340,23 @@ const renderRoles = (roles) => {
       const nameVal = String(form.querySelector('input[name="name"]').value || '').trim();
       const bgVal = String(form.querySelector('input[name="color_bg"]').value || '').trim();
       const textVal = String(form.querySelector('input[name="color_text"]').value || '').trim();
-      const preview = form.querySelector('[data-role-preview]');
-      preview.textContent = nameVal || 'Preview';
-      preview.style.backgroundColor = bgVal || '#3484ff';
-      preview.style.borderColor = bgVal || '#3484ff';
-      preview.style.color = textVal || '#ffffff';
+      const previews = [
+        form.querySelector('[data-role-preview]'),
+        form.querySelector('[data-role-color-preview]'),
+      ].filter(Boolean);
+
+      previews.forEach((preview) => {
+        preview.textContent = nameVal || 'Preview';
+        preview.style.backgroundColor = bgVal || '#3484ff';
+        preview.style.borderColor = bgVal || '#3484ff';
+        preview.style.color = textVal || '#ffffff';
+      });
     };
     form.querySelector('input[name="name"]').addEventListener('input', updatePreview);
     setupColorTools(form, 'color_bg', updatePreview);
     setupColorTools(form, 'color_text', updatePreview);
     updatePreview();
+    wireColorModal(form, updatePreview);
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -371,16 +457,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const nameVal = String(createForm.querySelector('input[name="name"]').value || '').trim();
       const bgVal = String(createForm.querySelector('input[name="color_bg"]').value || '').trim();
       const textVal = String(createForm.querySelector('input[name="color_text"]').value || '').trim();
-      const preview = createForm.querySelector('[data-role-preview]');
-      preview.textContent = nameVal || 'Preview';
-      preview.style.backgroundColor = bgVal || '#3484ff';
-      preview.style.borderColor = bgVal || '#3484ff';
-      preview.style.color = textVal || '#ffffff';
+      const previews = [
+        createForm.querySelector('[data-role-preview]'),
+        createForm.querySelector('[data-role-color-preview]'),
+      ].filter(Boolean);
+      previews.forEach((preview) => {
+        preview.textContent = nameVal || 'Preview';
+        preview.style.backgroundColor = bgVal || '#3484ff';
+        preview.style.borderColor = bgVal || '#3484ff';
+        preview.style.color = textVal || '#ffffff';
+      });
     };
     createForm.querySelector('input[name="name"]').addEventListener('input', updatePreview);
     setupColorTools(createForm, 'color_bg', updatePreview);
     setupColorTools(createForm, 'color_text', updatePreview);
     updatePreview();
+    wireColorModal(createForm, updatePreview);
   }
   loadRoles();
 });

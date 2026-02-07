@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Roles | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207j">
+  <link rel="stylesheet" href="/app.css?v=20260207k">
   <script src="/ui.js" defer></script>
-  <script src="/admin-roles.js?v=20260207j" defer></script>
-  <script src="/admin.js?v=20260207j" defer></script>
+  <script src="/admin-roles.js?v=20260207k" defer></script>
+  <script src="/admin.js?v=20260207k" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -39,36 +39,56 @@
         </div>
         <input type="hidden" name="permissions" value="">
         <input type="hidden" name="is_admin" value="0">
-        <div class="role-color-row">
-          <div class="color-block" data-color-tools="color_bg">
-            <div class="color-block-title">Badge background</div>
-            <div class="color-tools">
-              <input type="color" name="color_bg" value="#3484ff" aria-label="Badge background color">
-              <input type="text" class="mono" data-color-hex value="#3484ff" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge background hex">
-              <div class="rgb-row" aria-label="Badge background RGB">
-                <input type="number" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
-                <input type="number" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
-                <input type="number" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
-              </div>
-            </div>
-          </div>
-          <div class="color-block" data-color-tools="color_text">
-            <div class="color-block-title">Badge text</div>
-            <div class="color-tools">
-              <input type="color" name="color_text" value="#ffffff" aria-label="Badge text color">
-              <input type="text" class="mono" data-color-hex value="#ffffff" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge text hex">
-              <div class="rgb-row" aria-label="Badge text RGB">
-                <input type="number" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
-                <input type="number" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
-                <input type="number" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
-              </div>
-            </div>
-          </div>
-        </div>
         <div class="permissions-row">
+          <button class="btn secondary" type="button" data-colors-button>Badge colours</button>
           <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
         </div>
         <button class="btn" type="submit">Create</button>
+
+        <dialog class="modal" data-colors-modal aria-hidden="true">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4>Badge colours</h4>
+            </div>
+            <div class="modal-body">
+              <div class="permissions-row" style="justify-content: space-between;">
+                <span class="muted">Preview</span>
+                <span class="role-pill role-staff" data-role-color-preview>Preview</span>
+              </div>
+
+              <div class="color-block" data-color-tools="color_bg">
+                <div class="color-block-title">Badge background</div>
+                <div class="color-tools">
+                  <input type="color" name="color_bg" value="#3484ff" aria-label="Badge background color">
+                  <input type="text" class="mono" name="color_bg_hex" data-color-hex value="#3484ff" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge background hex">
+                  <div class="rgb-row" aria-label="Badge background RGB">
+                    <input type="number" name="color_bg_r" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
+                    <input type="number" name="color_bg_g" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
+                    <input type="number" name="color_bg_b" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
+                  </div>
+                </div>
+              </div>
+
+              <div class="color-block" data-color-tools="color_text" style="margin-top: 8px;">
+                <div class="color-block-title">Badge text</div>
+                <div class="color-tools">
+                  <input type="color" name="color_text" value="#ffffff" aria-label="Badge text color">
+                  <input type="text" class="mono" name="color_text_hex" data-color-hex value="#ffffff" placeholder="#RRGGBB" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Badge text hex">
+                  <div class="rgb-row" aria-label="Badge text RGB">
+                    <input type="number" name="color_text_r" min="0" max="255" step="1" data-color-r placeholder="R" aria-label="Red">
+                    <input type="number" name="color_text_g" min="0" max="255" step="1" data-color-g placeholder="G" aria-label="Green">
+                    <input type="number" name="color_text_b" min="0" max="255" step="1" data-color-b placeholder="B" aria-label="Blue">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn secondary" type="button" data-colors-cancel>Cancel</button>
+              <button class="btn" type="button" data-colors-apply>Apply</button>
+            </div>
+          </div>
+        </dialog>
+
         <dialog class="modal" data-permissions-modal aria-hidden="true">
           <div class="modal-content">
             <div class="modal-header">

@@ -709,9 +709,62 @@ a:hover {
   box-shadow: 0 0 0 4px rgba(52, 132, 255, 0.12);
 }
 
+.switch.switch-compact {
+  padding: 0;
+  border: none;
+  background: transparent;
+  justify-content: center;
+}
+
+.switch.switch-compact:focus-within {
+  border-color: transparent;
+  box-shadow: 0 0 0 4px rgba(52, 132, 255, 0.12);
+}
+
+.status-grid-header,
+.status-grid-row {
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 1.2fr)
+    minmax(160px, 1fr)
+    110px
+    110px
+    90px
+    120px;
+  gap: 10px;
+  align-items: center;
+}
+
+.status-grid-header {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 2px 2px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+
+.status-grid-row {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 860px) {
+  .status-grid-header {
+    display: none;
+  }
+  .status-grid-row {
+    grid-template-columns: 1fr;
+  }
+  .status-grid-row .switch.switch-compact {
+    justify-content: flex-start;
+  }
+}
+
 .role-form {
   display: grid;
-  grid-template-columns: minmax(260px, 0.9fr) 1.1fr;
+  grid-template-columns: 1fr auto;
   gap: 12px;
   align-items: center;
   margin-bottom: 14px;
@@ -735,6 +788,18 @@ a:hover {
   justify-content: flex-end;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.role-actions-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.role-actions-row .btn {
+  white-space: nowrap;
 }
 
 .color-block {
@@ -784,26 +849,6 @@ a:hover {
 .is-invalid {
   border-color: rgba(252, 87, 107, 0.9) !important;
   box-shadow: 0 0 0 0.2rem rgba(252, 87, 107, 0.18) !important;
-}
-
-.role-form .role-form-actions {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 10px;
-}
-
-.role-form .role-form-actions .permissions-row {
-  width: 100%;
-}
-
-.role-form .role-form-actions .permissions-row .btn {
-  width: 100%;
-}
-
-.role-form .role-form-actions .inline {
-  margin: 0;
 }
 
 @media (max-width: 860px) {
