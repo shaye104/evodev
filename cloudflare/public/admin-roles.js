@@ -136,7 +136,7 @@ const closeDialog = (modal) => {
 };
 
 const wireColorModal = (form, updatePreview) => {
-  const btn = form.querySelector('[data-colors-button]');
+  const btn = form.querySelector('[data-color-trigger]');
   const modal = form.querySelector('[data-colors-modal]');
   if (!btn || !modal) return;
 
@@ -271,6 +271,7 @@ const renderRoles = (roles) => {
 
     const form = document.createElement('form');
     form.className = 'form role-form';
+    form.dataset.roleId = String(role.id);
     const bg = role.color_bg || '#3484ff';
     const text = role.color_text || '#ffffff';
     const deleteBtnClass = isAdminRole ? 'btn secondary small' : 'btn danger small';
@@ -279,14 +280,12 @@ const renderRoles = (roles) => {
     form.innerHTML = `
       <div class="role-name-row">
         <input type="text" name="name" value="${role.name || ''}" required>
-        <span class="role-pill role-staff" data-role-preview>Preview</span>
+        <button class="role-pill role-staff role-pill-button" type="button" data-role-preview data-color-trigger>Preview</button>
       </div>
       <input type="hidden" name="permissions" value="${selected.join(', ')}">
       <input type="hidden" name="is_admin" value="${role.is_admin ? '1' : '0'}">
       <div class="role-actions-row">
-        <button class="btn secondary small" type="button" data-colors-button>Badge colours</button>
         <button class="btn secondary small" type="button" data-permissions-button>Permissions</button>
-        <button class="btn secondary small" type="submit">Update</button>
         <button class="${deleteBtnClass}" type="button" data-delete-role ${deleteBtnDisabled} title="${deleteBtnTitle}">Delete</button>
       </div>
 
@@ -336,6 +335,14 @@ const renderRoles = (roles) => {
       ${createModal(selected, role.is_admin)}
     `;
 
+    form.dataset.initial = JSON.stringify({
+      name: String(role.name || ''),
+      permissions: selected.slice().sort(),
+      is_admin: Boolean(role.is_admin),
+      color_bg: String(bg || ''),
+      color_text: String(text || ''),
+    });
+
     const updatePreview = () => {
       const nameVal = String(form.querySelector('input[name="name"]').value || '').trim();
       const bgVal = String(form.querySelector('input[name="color_bg"]').value || '').trim();
@@ -357,27 +364,6 @@ const renderRoles = (roles) => {
     setupColorTools(form, 'color_text', updatePreview);
     updatePreview();
     wireColorModal(form, updatePreview);
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      const permissions = String(formData.get('permissions') || '')
-        .split(',')
-        .map((val) => val.trim())
-        .filter(Boolean);
-      await fetch(`/api/admin/roles/${role.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.get('name'),
-          permissions,
-          is_admin: String(formData.get('is_admin') || '') === '1',
-          color_bg: formData.get('color_bg'),
-          color_text: formData.get('color_text'),
-        }),
-      });
-      loadRoles();
-    });
 
     form.querySelector('[data-delete-role]')?.addEventListener('click', async () => {
       const name = String(form.querySelector('input[name="name"]')?.value || role.name || 'this role');
@@ -404,6 +390,65 @@ const loadRoles = async () => {
   }
   const data = await res.json();
   renderRoles(data.roles || []);
+};
+
+const handleSaveAll = async () => {
+  const btn = document.querySelector('[data-save-roles]');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+  }
+
+  const forms = Array.from(document.querySelectorAll('[data-roles-list] form'));
+  for (const form of forms) {
+    if (!form.reportValidity()) continue;
+
+    let initial = null;
+    try {
+      initial = JSON.parse(form.dataset.initial || 'null');
+    } catch {
+      initial = null;
+    }
+
+    const roleId = form.dataset.roleId;
+    const name = String(form.querySelector('input[name="name"]')?.value || '').trim();
+    const isAdmin = String(form.querySelector('input[name="is_admin"]')?.value || '0') === '1';
+    const bg = String(form.querySelector('input[name="color_bg"]')?.value || '').trim();
+    const text = String(form.querySelector('input[name="color_text"]')?.value || '').trim();
+    const permissions = String(form.querySelector('input[name="permissions"]')?.value || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+    const sortedPerms = permissions.slice().sort();
+
+    const changed =
+      !initial ||
+      name !== initial.name ||
+      isAdmin !== initial.is_admin ||
+      bg !== initial.color_bg ||
+      text !== initial.color_text ||
+      JSON.stringify(sortedPerms) !== JSON.stringify((initial.permissions || []).slice().sort());
+
+    if (!changed) continue;
+
+    await fetch(`/api/admin/roles/${roleId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        permissions,
+        is_admin: isAdmin,
+        color_bg: bg,
+        color_text: text,
+      }),
+    });
+  }
+
+  await loadRoles();
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'Save changes';
+  }
 };
 
 const handleCreate = async (event) => {
@@ -447,6 +492,7 @@ const handleCreate = async (event) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('[data-create-role]').addEventListener('submit', handleCreate);
+  document.querySelector('[data-save-roles]')?.addEventListener('click', handleSaveAll);
   const newTicketPerms = document.querySelector('[data-new-ticket-permissions]');
   if (newTicketPerms) newTicketPerms.innerHTML = renderPermissionButtons(TICKET_PERMISSIONS, []);
   const newAdminPerms = document.querySelector('[data-new-admin-permissions]');

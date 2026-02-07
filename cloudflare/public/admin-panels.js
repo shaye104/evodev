@@ -76,6 +76,14 @@ const loadPanels = async () => {
       .map((row) => String(row.role_id));
     const form = document.createElement('form');
     form.className = 'form inline-form';
+    form.dataset.panelId = String(panel.id);
+    form.dataset.initial = JSON.stringify({
+      name: String(panel.name || ''),
+      description: String(panel.description || ''),
+      sort_order: Number(panel.sort_order || 0) || 0,
+      is_active: Boolean(panel.is_active),
+      allowed_role_ids: selected.slice().sort(),
+    });
     form.innerHTML = `
       <input type="text" name="name" value="${panel.name || ''}" required>
       <input type="text" name="description" value="${panel.description || ''}">
@@ -91,7 +99,6 @@ const loadPanels = async () => {
         </button>
         <span class="hint-icon" tabindex="0" data-hint="A deactivated panel is hidden for users when creating a new ticket."></span>
       </div>
-      <button class="btn secondary" type="submit">Update</button>
       <dialog
         class="modal"
         data-permissions-modal
@@ -115,24 +122,60 @@ const loadPanels = async () => {
       </dialog>
     `;
     bindActiveToggle(form);
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      await fetch(`/api/admin/panels/${panel.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.get('name'),
-          description: formData.get('description'),
-          sort_order: Number(formData.get('sort_order') || 0),
-          is_active: String(formData.get('is_active') || '') === '1',
-          allowed_role_ids: parseIds(formData.get('allowed_role_ids')).map((v) => Number(v || 0)).filter(Boolean),
-        }),
-      });
-      loadPanels();
-    });
     container.appendChild(form);
   });
+};
+
+const handleSaveAll = async () => {
+  const btn = document.querySelector('[data-save-panels]');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+  }
+
+  const forms = Array.from(document.querySelectorAll('[data-panels-list] form'));
+  for (const form of forms) {
+    if (!form.reportValidity()) continue;
+
+    let initial = null;
+    try {
+      initial = JSON.parse(form.dataset.initial || 'null');
+    } catch {
+      initial = null;
+    }
+
+    const panelId = form.dataset.panelId;
+    const allowed = parseIds(form.querySelector('input[name="allowed_role_ids"]')?.value || '').sort();
+    const current = {
+      name: String(form.querySelector('input[name="name"]')?.value || ''),
+      description: String(form.querySelector('input[name="description"]')?.value || ''),
+      sort_order: Number(form.querySelector('input[name="sort_order"]')?.value || 0) || 0,
+      is_active: String(form.querySelector('input[name="is_active"]')?.value || '0') === '1',
+      allowed_role_ids: allowed.map((v) => Number(v || 0)).filter(Boolean),
+    };
+
+    const changed =
+      !initial ||
+      current.name !== initial.name ||
+      current.description !== initial.description ||
+      current.sort_order !== initial.sort_order ||
+      current.is_active !== initial.is_active ||
+      JSON.stringify(allowed) !== JSON.stringify((initial.allowed_role_ids || []).slice().sort());
+
+    if (!changed) continue;
+
+    await fetch(`/api/admin/panels/${panelId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(current),
+    });
+  }
+
+  await loadPanels();
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'Save changes';
+  }
 };
 
 const handleCreate = async (event) => {
@@ -159,5 +202,6 @@ const handleCreate = async (event) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('[data-create-panel]').addEventListener('submit', handleCreate);
+  document.querySelector('[data-save-panels]')?.addEventListener('click', handleSaveAll);
   loadPanels();
 });

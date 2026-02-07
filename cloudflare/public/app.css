@@ -767,7 +767,7 @@ a:hover {
   grid-template-columns: 1fr auto;
   gap: 12px;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 .role-name-row {
@@ -780,6 +780,7 @@ a:hover {
 .role-name-row input[type="text"] {
   flex: 1;
   min-width: 0;
+  max-width: 320px;
 }
 
 .role-color-row {
@@ -1054,6 +1055,18 @@ a:hover {
   /* Avoid stretching when used inside grid layouts (e.g. admin staff list). */
   justify-self: start;
   width: fit-content;
+}
+
+.role-pill-button {
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+}
+
+.role-pill-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(52, 132, 255, 0.12);
 }
 
 .role-admin {

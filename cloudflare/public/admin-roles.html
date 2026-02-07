@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Roles | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207k">
+  <link rel="stylesheet" href="/app.css?v=20260207l">
   <script src="/ui.js" defer></script>
-  <script src="/admin-roles.js?v=20260207k" defer></script>
-  <script src="/admin.js?v=20260207k" defer></script>
+  <script src="/admin-roles.js?v=20260207l" defer></script>
+  <script src="/admin.js?v=20260207l" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -35,12 +35,11 @@
       <form class="form" data-create-role>
         <div class="role-name-row">
           <input type="text" name="name" placeholder="Role name" required>
-          <span class="role-pill role-staff" data-role-preview>Preview</span>
+          <button class="role-pill role-staff role-pill-button" type="button" data-role-preview data-color-trigger>Preview</button>
         </div>
         <input type="hidden" name="permissions" value="">
         <input type="hidden" name="is_admin" value="0">
         <div class="permissions-row">
-          <button class="btn secondary" type="button" data-colors-button>Badge colours</button>
           <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
         </div>
         <button class="btn" type="submit">Create</button>
@@ -118,6 +117,9 @@
     <section class="card">
       <h3>Existing roles</h3>
       <div data-roles-list></div>
+      <div class="inline" style="margin: 0;">
+        <button class="btn" type="button" data-save-roles>Save changes</button>
+      </div>
     </section>
   </main>
   <footer class="site-footer">
