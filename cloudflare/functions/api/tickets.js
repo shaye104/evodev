@@ -37,11 +37,12 @@ export const onRequestPost = async ({ env, request }) => {
 
   const panelId = Number(form.get('panel_id') || 0) || null;
   const subject = String(form.get('subject') || '').trim();
-  const email = String(form.get('email') || '').trim();
+  const emailInput = String(form.get('email') || '').trim();
+  const email = emailInput || user.email || '';
   const message = String(form.get('message') || '').trim();
   const notifications = form.get('notifications_enabled') === '1';
 
-  if (!panelId || !subject || !email || !message) {
+  if (!panelId || !subject || !message) {
     return jsonResponse({ error: 'Missing fields' }, { status: 400 });
   }
 
@@ -64,7 +65,7 @@ export const onRequestPost = async ({ env, request }) => {
       statusId,
       user.id,
       user.discord_id,
-      email,
+      email || null,
       subject,
       'web',
       null,

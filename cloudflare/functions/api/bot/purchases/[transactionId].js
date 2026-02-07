@@ -6,7 +6,7 @@ export const onRequestGet = async ({ env, request, params }) => {
   if (guard) return guard;
 
   const purchase = await env.DB.prepare(
-    'SELECT * FROM purchases WHERE transaction_id = ? LIMIT 1'
+    'SELECT * FROM purchases WHERE transaction_id = ? COLLATE NOCASE LIMIT 1'
   )
     .bind(params.transactionId)
     .first();

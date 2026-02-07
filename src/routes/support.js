@@ -70,7 +70,9 @@ function createSupportRouter({ discord }) {
   router.post('/tickets', ensureUser, upload.array('attachments'), async (req, res) => {
     const { panel_id, subject, message, email, notifications_enabled } = req.body;
     const panelId = Number(panel_id || 0) || null;
-    if (!panelId || !subject || !message || !email) {
+    const emailInput = String(email || '').trim();
+    const creatorEmail = emailInput || req.user?.email || '';
+    if (!panelId || !subject || !message) {
       return res.redirect('/tickets/new?error=missing');
     }
 
@@ -78,7 +80,7 @@ function createSupportRouter({ discord }) {
       panel_id: panelId,
       creator_user_id: req.user.id,
       creator_discord_id: req.user.discord_id,
-      creator_email: email,
+      creator_email: creatorEmail,
       subject,
       source: 'web',
     });

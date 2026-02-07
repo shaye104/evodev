@@ -13,9 +13,13 @@ export const onRequestGet = async ({ env, request }) => {
     SELECT tm.*, t.public_id, t.creator_discord_id
     FROM ticket_messages tm
     JOIN tickets t ON tm.ticket_id = t.id
-    WHERE t.source = 'discord'
-      AND tm.author_type = 'staff'
+    LEFT JOIN users u ON t.creator_user_id = u.id
+    WHERE tm.author_type = 'staff'
       AND tm.id > ?
+      AND (
+        t.source = 'discord'
+        OR (t.source = 'web' AND u.notifications_enabled = 1)
+      )
     ORDER BY tm.id ASC
     LIMIT 200
     `
