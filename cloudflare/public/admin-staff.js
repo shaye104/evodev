@@ -76,6 +76,7 @@ const loadStaff = async () => {
       <span class="role-pill ${roleClass}" ${roleStyle}>${roleName}</span>
       <span class="pill">Pay: R$${pay}</span>
       <button class="btn secondary" type="button" data-manage-user>Manage user</button>
+      ${canManagePay ? '<button class="btn secondary" type="button" data-open-bonus>Give bonus</button>' : ''}
 
       <dialog class="modal" data-manage-modal aria-hidden="true">
         <div class="modal-content">
@@ -95,28 +96,6 @@ const loadStaff = async () => {
               </label>
             </div>
 
-            ${
-              canManagePay
-                ? `
-                  <div style="margin-top: 14px; border-top: 1px solid var(--border-soft); padding-top: 14px;">
-                    <h4 style="margin: 0 0 10px;">Pay adjustments</h4>
-                    <div class="form">
-                      <label>
-                        Bonus amount (R$)
-                        <span class="hint-icon" tabindex="0" data-hint="Adds a bonus to this staff member for the current month and sends a notification."></span>
-                        <input type="number" name="bonus_amount" min="1" step="1" placeholder="0">
-                      </label>
-                      <label>
-                        Reason (optional)
-                        <input type="text" name="bonus_reason" placeholder="e.g. Great performance">
-                      </label>
-                      <button class="btn secondary" type="button" data-give-bonus>Give bonus</button>
-                    </div>
-                  </div>
-                `
-                : ''
-            }
-
             <div class="muted" style="margin-top: 12px;">Changes apply immediately.</div>
           </div>
           <div class="modal-actions" style="justify-content: space-between;">
@@ -131,6 +110,37 @@ const loadStaff = async () => {
           </div>
         </div>
       </dialog>
+
+      ${
+        canManagePay
+          ? `
+            <dialog class="modal" data-bonus-modal aria-hidden="true">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4>Give bonus</h4>
+                </div>
+                <div class="modal-body">
+                  <div class="form">
+                    <label>
+                      Bonus amount (R$)
+                      <span class="hint-icon" tabindex="0" data-hint="Adds a bonus to this staff member for the current month and sends a notification."></span>
+                      <input type="number" name="bonus_amount" min="1" step="1" placeholder="0" required>
+                    </label>
+                    <label>
+                      Reason (optional)
+                      <input type="text" name="bonus_reason" placeholder="e.g. Great performance">
+                    </label>
+                  </div>
+                </div>
+                <div class="modal-actions">
+                  <button class="btn secondary" type="button" data-bonus-cancel>Cancel</button>
+                  <button class="btn" type="button" data-bonus-submit>Give bonus</button>
+                </div>
+              </div>
+            </dialog>
+          `
+          : ''
+      }
     `;
 
     const modal = row.querySelector('[data-manage-modal]');
@@ -139,13 +149,21 @@ const loadStaff = async () => {
     const saveBtn = row.querySelector('[data-save-settings]');
     const suspendBtn = row.querySelector('[data-suspend-toggle]');
     const removeBtn = row.querySelector('[data-remove-user]');
-    const bonusBtn = row.querySelector('[data-give-bonus]');
+    const bonusOpenBtn = row.querySelector('[data-open-bonus]');
+    const bonusModal = row.querySelector('[data-bonus-modal]');
+    const bonusCancelBtn = row.querySelector('[data-bonus-cancel]');
+    const bonusSubmitBtn = row.querySelector('[data-bonus-submit]');
 
     if (openBtn) openBtn.addEventListener('click', () => openModal(modal));
     if (closeBtn) closeBtn.addEventListener('click', () => closeModal(modal));
     if (modal) {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal(modal);
+      });
+    }
+    if (bonusModal) {
+      bonusModal.addEventListener('click', (e) => {
+        if (e.target === bonusModal) closeModal(bonusModal);
       });
     }
 
@@ -221,28 +239,34 @@ const loadStaff = async () => {
       });
     }
 
-    if (bonusBtn) {
-      bonusBtn.addEventListener('click', async () => {
-        const amount = Number(row.querySelector('input[name="bonus_amount"]')?.value || 0) || 0;
-        const reason = String(row.querySelector('input[name="bonus_reason"]')?.value || '').trim();
+    if (bonusOpenBtn && bonusModal) bonusOpenBtn.addEventListener('click', () => openModal(bonusModal));
+    if (bonusCancelBtn && bonusModal) bonusCancelBtn.addEventListener('click', () => closeModal(bonusModal));
+
+    if (bonusSubmitBtn && bonusModal) {
+      bonusSubmitBtn.addEventListener('click', async () => {
+        const amount = Number(row.querySelector('[data-bonus-modal] input[name="bonus_amount"]')?.value || 0) || 0;
+        const reason = String(row.querySelector('[data-bonus-modal] input[name="bonus_reason"]')?.value || '').trim();
         if (!amount || amount <= 0) {
           alert('Enter a bonus amount greater than 0');
           return;
         }
-        bonusBtn.disabled = true;
+        bonusSubmitBtn.disabled = true;
         const res = await fetch(`/api/admin/staff/${member.id}/bonus`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ amount, reason }),
         });
-        bonusBtn.disabled = false;
+        bonusSubmitBtn.disabled = false;
         const msg = await res.json().catch(() => ({}));
         if (!res.ok) {
           alert(msg.error || 'Failed to give bonus');
           return;
         }
-        row.querySelector('input[name="bonus_amount"]').value = '';
-        row.querySelector('input[name="bonus_reason"]').value = '';
+        const amountInput = row.querySelector('[data-bonus-modal] input[name="bonus_amount"]');
+        const reasonInput = row.querySelector('[data-bonus-modal] input[name="bonus_reason"]');
+        if (amountInput) amountInput.value = '';
+        if (reasonInput) reasonInput.value = '';
+        closeModal(bonusModal);
         alert('Bonus added and notification sent.');
       });
     }

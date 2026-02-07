@@ -831,6 +831,9 @@ a:hover {
   font-size: 10px;
   font-weight: 700;
   border: 1px solid transparent;
+  /* Avoid stretching when used inside grid layouts (e.g. admin staff list). */
+  justify-self: start;
+  width: fit-content;
 }
 
 .role-admin {
