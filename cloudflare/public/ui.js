@@ -107,11 +107,13 @@
       state.user = data.user;
       state.staff = data.staff;
       updateNav();
+      document.documentElement.classList.add('auth-ready');
       document.dispatchEvent(
         new CustomEvent('auth:ready', { detail: { user: state.user, staff: state.staff } })
       );
     } catch {
       updateNav();
+      document.documentElement.classList.add('auth-ready');
     }
   };
 

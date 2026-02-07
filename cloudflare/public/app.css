@@ -260,12 +260,13 @@ body {
   min-height: 100vh;
 }
 
-/* Prevent auth-gated UI flash before /api/me resolves (ui.js re-enables allowed items). */
-[data-auth] {
+/* Prevent auth-gated UI flash before /api/me resolves.
+   ui.js sets html.auth-ready once it has applied the correct visibility. */
+html:not(.auth-ready) [data-auth] {
   display: none;
 }
 
-[data-auth="guest"] {
+html:not(.auth-ready) [data-auth="guest"] {
   display: inline-flex;
 }
 
