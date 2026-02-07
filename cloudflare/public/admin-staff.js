@@ -26,14 +26,21 @@ const openModal = (modal) => {
   if (!modal) return;
   modal.setAttribute('aria-hidden', 'false');
   if (typeof modal.showModal === 'function') modal.showModal();
-  else modal.classList.add('open');
+  else {
+    // Safari/older browsers without <dialog>.showModal support.
+    modal.setAttribute('open', '');
+    modal.classList.add('open');
+  }
 };
 
 const closeModal = (modal) => {
   if (!modal) return;
   modal.setAttribute('aria-hidden', 'true');
   if (typeof modal.close === 'function') modal.close();
-  else modal.classList.remove('open');
+  else {
+    modal.removeAttribute('open');
+    modal.classList.remove('open');
+  }
 };
 
 const state = {
@@ -154,11 +161,11 @@ const loadStaff = async () => {
                     <label>
                       Bonus amount (R$)
                       <span class="hint-icon" tabindex="0" data-hint="Adds a bonus to this staff member for the current month and sends a notification."></span>
-                      <input type="number" name="bonus_amount" min="1" step="1" placeholder="0" required>
+                      <input type="number" name="bonus_amount" min="1" step="1" placeholder="0" required autocomplete="off">
                     </label>
                     <label>
                       Reason (optional)
-                      <input type="text" name="bonus_reason" placeholder="e.g. Great performance">
+                      <input type="text" name="bonus_reason" placeholder="e.g. Great performance" autocomplete="off">
                     </label>
                   </div>
                 </div>

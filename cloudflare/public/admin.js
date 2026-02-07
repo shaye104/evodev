@@ -7,6 +7,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (typeof modal.showModal === 'function') {
       modal.showModal();
     } else {
+      // Safari/older browsers without <dialog>.showModal support.
+      modal.setAttribute('open', '');
       modal.classList.add('open');
     }
   };
@@ -17,6 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (typeof modal.close === 'function') {
       modal.close();
     } else {
+      modal.removeAttribute('open');
       modal.classList.remove('open');
     }
   };

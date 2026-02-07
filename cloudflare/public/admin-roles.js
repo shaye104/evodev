@@ -125,14 +125,21 @@ const openDialog = (modal) => {
   if (!modal) return;
   modal.setAttribute('aria-hidden', 'false');
   if (typeof modal.showModal === 'function') modal.showModal();
-  else modal.classList.add('open');
+  else {
+    // Safari/older browsers without <dialog>.showModal support.
+    modal.setAttribute('open', '');
+    modal.classList.add('open');
+  }
 };
 
 const closeDialog = (modal) => {
   if (!modal) return;
   modal.setAttribute('aria-hidden', 'true');
   if (typeof modal.close === 'function') modal.close();
-  else modal.classList.remove('open');
+  else {
+    modal.removeAttribute('open');
+    modal.classList.remove('open');
+  }
 };
 
 const wireColorModal = (form, updatePreview) => {

@@ -124,6 +124,8 @@ const openModal = (modal) => {
   if (typeof modal.showModal === 'function') {
     modal.showModal();
   } else {
+    // Safari/older browsers without <dialog>.showModal support.
+    modal.setAttribute('open', '');
     modal.classList.add('open');
   }
 };
@@ -134,6 +136,7 @@ const closeModal = (modal) => {
   if (typeof modal.close === 'function') {
     modal.close();
   } else {
+    modal.removeAttribute('open');
     modal.classList.remove('open');
   }
 };

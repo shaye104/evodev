@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>New Ticket | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207m">
+  <link rel="stylesheet" href="/app.css?v=20260207n">
   <script src="/ui.js" defer></script>
   <script src="/new-ticket.js" defer></script>
 </head>
@@ -25,7 +25,7 @@
   <main class="site-main">
     <section class="card">
       <h1>Open a new ticket</h1>
-      <form class="form" data-ticket-form>
+      <form class="form" data-ticket-form autocomplete="off">
         <label>
           Panel
           <select name="panel_id" data-panel-select required>
@@ -34,11 +34,11 @@
         </label>
         <label>
           Subject
-          <input type="text" name="subject" required>
+          <input type="text" name="subject" required autocomplete="off">
         </label>
         <label>
           Message
-          <textarea name="message" rows="6" required></textarea>
+          <textarea name="message" rows="6" required autocomplete="off"></textarea>
         </label>
         <label>
           Attachments
