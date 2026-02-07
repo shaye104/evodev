@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Staff Dashboard | Evo Support</title>
+  <title>Open Tickets | Evo Support</title>
   <link rel="stylesheet" href="/app.css?v=20260207h">
   <script src="/ui.js" defer></script>
   <script src="/staff.js" defer></script>
@@ -25,14 +25,37 @@
   <main class="site-main">
     <section class="page-header">
       <div>
-        <h1>Staff dashboard</h1>
-        <p>Choose what you want to do.</p>
+        <h1>Open tickets</h1>
+        <p>Only tickets with an open status are shown here.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="btn secondary" href="/staff-transcripts.html">View transcripts</a>
       </div>
     </section>
 
-    <section class="card grid">
-      <a class="tile" href="/staff-open.html">Open tickets</a>
-      <a class="tile" href="/staff-transcripts.html">View transcripts</a>
+    <section class="card">
+      <form class="filters" data-filter-form>
+        <select name="status_filter" data-filter-status>
+          <option value="">All statuses</option>
+        </select>
+        <select name="panel_filter" data-filter-panel>
+          <option value="">All panels</option>
+        </select>
+      </form>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Subject</th>
+            <th>Panel</th>
+            <th>Status</th>
+            <th>Assigned</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody data-ticket-body></tbody>
+      </table>
     </section>
   </main>
   <footer class="site-footer">
@@ -40,3 +63,4 @@
   </footer>
 </body>
 </html>
+

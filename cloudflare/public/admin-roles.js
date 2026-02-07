@@ -4,6 +4,7 @@ const PERMISSIONS = [
   { id: 'tickets.claim', label: 'Claim/unclaim tickets' },
   { id: 'tickets.assign', label: 'Assign tickets' },
   { id: 'tickets.status', label: 'Change ticket status' },
+  { id: 'tickets.subject', label: 'Edit ticket subject' },
 ];
 
 const renderAdminToggle = (isAdmin) => {
@@ -48,9 +49,11 @@ const createModal = (selected, isAdmin) => {
           <h4>Configure permissions</h4>
         </div>
         <div class="modal-body">
-          ${renderAdminToggle(isAdmin)}
           <div class="permission-grid">
             ${renderPermissionButtons(selected)}
+          </div>
+          <div style="margin-top: 12px;">
+            ${renderAdminToggle(isAdmin)}
           </div>
         </div>
         <div class="modal-actions">
@@ -99,7 +102,10 @@ const renderRoles = (roles) => {
         <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
         <span class="muted" data-permissions-summary>${selected.length ? `${selected.length} selected` : 'None selected'}</span>
       </div>
-      <button class="btn secondary" type="submit">Update</button>
+      <div class="inline">
+        <button class="btn secondary small" type="submit">Update</button>
+        <button class="btn danger small" type="button" data-delete-role>Delete</button>
+      </div>
       ${createModal(selected, role.is_admin)}
     `;
 
@@ -136,6 +142,19 @@ const renderRoles = (roles) => {
           color_text: formData.get('color_text'),
         }),
       });
+      loadRoles();
+    });
+
+    form.querySelector('[data-delete-role]')?.addEventListener('click', async () => {
+      const name = String(form.querySelector('input[name="name"]')?.value || role.name || 'this role');
+      if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+
+      const res = await fetch(`/api/admin/roles/${role.id}`, { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || 'Failed to delete role');
+        return;
+      }
       loadRoles();
     });
 

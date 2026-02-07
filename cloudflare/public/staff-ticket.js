@@ -54,16 +54,6 @@ const getRoleInfo = (msg) => {
   return { label: 'User', className: 'role-user' };
 };
 
-const getOrdinal = (value) => {
-  const mod10 = value % 10;
-  const mod100 = value % 100;
-  if (mod100 >= 11 && mod100 <= 13) return `${value}th`;
-  if (mod10 === 1) return `${value}st`;
-  if (mod10 === 2) return `${value}nd`;
-  if (mod10 === 3) return `${value}rd`;
-  return `${value}th`;
-};
-
 const formatClock = (date) => {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
@@ -133,6 +123,8 @@ const renderTicket = (payload) => {
   document.querySelector('[data-ticket-title]').textContent = `Ticket #${ticket.public_id}`;
   document.querySelector('[data-ticket-subject]').textContent = ticket.subject || 'Support ticket';
   document.querySelector('[data-ticket-meta]').textContent = `${ticket.panel_name || 'General'} • ${ticket.status_name || 'Open'}`;
+  const subjectInput = document.querySelector('[data-subject-input]');
+  if (subjectInput) subjectInput.value = ticket.subject || '';
 
   const attachmentMap = new Map();
   (attachments || []).forEach((att) => {
@@ -325,6 +317,32 @@ const handleAssign = async () => {
   fetchTicket();
 };
 
+const handleSaveSubject = async () => {
+  const id = getTicketId();
+  const input = document.querySelector('[data-subject-input]');
+  if (!id || !input) return;
+
+  const subject = String(input.value || '').trim();
+  if (!subject) {
+    alert('Subject cannot be empty');
+    return;
+  }
+  const btn = document.querySelector('[data-subject-save]');
+  if (btn) btn.disabled = true;
+  const res = await fetch(`/api/staff/tickets/${id}/subject`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subject }),
+  });
+  if (btn) btn.disabled = false;
+  const data = (await safeJson(res)) || {};
+  if (!res.ok) {
+    alert(data.error || 'Failed to update subject');
+    return;
+  }
+  fetchTicket();
+};
+
 const renderTranscripts = (rows) => {
   const el = document.querySelector('[data-transcripts-list]');
   if (!el) return;
@@ -418,6 +436,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (replyForm) replyForm.addEventListener('submit', handleReply);
   const claimBtn = document.querySelector('[data-claim-button]');
   if (claimBtn) claimBtn.addEventListener('click', handleClaim);
+  const subjectSaveBtn = document.querySelector('[data-subject-save]');
+  if (subjectSaveBtn) subjectSaveBtn.addEventListener('click', handleSaveSubject);
   const statusBtn = document.querySelector('[data-status-button]');
   if (statusBtn) statusBtn.addEventListener('click', handleStatus);
   const assignBtn = document.querySelector('[data-assign-button]');
@@ -435,8 +455,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const canAssign = staffHasPermission(staff, 'tickets.assign');
   const canReply = staffHasPermission(staff, 'tickets.reply');
   const canView = staffHasPermission(staff, 'tickets.view');
+  const canEditSubject = staffHasPermission(staff, 'tickets.subject');
 
   if (claimBtn) claimBtn.disabled = !canClaim;
+  const subjectInput = document.querySelector('[data-subject-input]');
+  if (subjectInput) subjectInput.disabled = !canEditSubject;
+  if (subjectSaveBtn) subjectSaveBtn.disabled = !canEditSubject;
   const statusSelect = document.querySelector('[data-status-select]');
   if (statusSelect) statusSelect.disabled = !canStatus;
   if (statusBtn) statusBtn.disabled = !canStatus;

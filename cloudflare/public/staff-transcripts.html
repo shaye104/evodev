@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Transcripts | Evo Support</title>
+  <link rel="stylesheet" href="/app.css?v=20260207h">
+  <script src="/ui.js" defer></script>
+  <script src="/staff-transcripts.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <a href="/">Evo Support</a>
+    </div>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/tickets.html" data-auth="user">My Tickets</a>
+      <a href="/staff.html" data-auth="staff">Staff</a>
+      <a href="/admin.html" data-auth="admin">Admin</a>
+      <a class="btn" href="/api/auth/discord" data-auth="guest">Login with Discord</a>
+      <a href="/api/logout" data-auth="user">Logout</a>
+    </nav>
+  </header>
+  <main class="site-main">
+    <section class="page-header">
+      <div>
+        <h1>Transcripts</h1>
+        <p>Saved snapshots of tickets. Generated manually or automatically when a ticket is closed.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="btn secondary" href="/staff-open.html">Open tickets</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <form class="filters" data-filter-form>
+        <select name="panel_filter" data-filter-panel>
+          <option value="">All panels</option>
+        </select>
+        <select name="trigger_filter" data-filter-trigger>
+          <option value="">All triggers</option>
+          <option value="manual">manual</option>
+          <option value="close">close</option>
+        </select>
+      </form>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Ticket</th>
+            <th>Subject</th>
+            <th>Panel</th>
+            <th>Trigger</th>
+            <th>Created</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody data-transcripts-body></tbody>
+      </table>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <span>Need help? Open a ticket and we will get back to you.</span>
+  </footer>
+</body>
+</html>
+

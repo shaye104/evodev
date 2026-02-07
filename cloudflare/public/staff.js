@@ -60,7 +60,8 @@ const fetchTickets = async () => {
     return;
   }
   const data = await res.json();
-  renderTickets(data.tickets || []);
+  const openOnly = (data.tickets || []).filter((t) => !t.is_closed);
+  renderTickets(openOnly);
 };
 
 const initEvents = () => {
@@ -70,6 +71,9 @@ const initEvents = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  // staff.html is now a landing page; staff-open.html uses this script for the tickets table.
+  const table = document.querySelector('[data-ticket-body]');
+  if (!table) return;
   loadFilters().then(fetchTickets);
   document.querySelector('[data-filter-form]').addEventListener('change', fetchTickets);
   initEvents();

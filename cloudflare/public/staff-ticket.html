@@ -34,6 +34,11 @@
     <section class="card">
       <button class="btn secondary" type="button" data-claim-button data-action="claim">Claim</button>
       <div class="inline">
+        <input type="text" data-subject-input placeholder="Ticket subject">
+        <button class="btn secondary" type="button" data-subject-save>Save subject</button>
+      </div>
+      <p class="muted">Only staff with the "Edit ticket subject" permission can change this.</p>
+      <div class="inline">
         <select name="status_id" data-status-select></select>
         <button class="btn secondary" type="button" data-status-button>Update status</button>
       </div>
