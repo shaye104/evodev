@@ -121,10 +121,14 @@ const formatRelativeTime = (value) => {
 const openModal = (modal) => {
   if (!modal) return;
   modal.setAttribute('aria-hidden', 'false');
-  if (typeof modal.showModal === 'function') {
-    modal.showModal();
-  } else {
-    // Safari/older browsers without <dialog>.showModal support.
+  try {
+    if (typeof modal.showModal === 'function') {
+      modal.showModal();
+    } else {
+      throw new Error('showModal not supported');
+    }
+  } catch {
+    // Safari/older browsers can have partial <dialog> support where showModal exists but throws.
     modal.setAttribute('open', '');
     modal.classList.add('open');
   }
@@ -133,9 +137,13 @@ const openModal = (modal) => {
 const closeModal = (modal) => {
   if (!modal) return;
   modal.setAttribute('aria-hidden', 'true');
-  if (typeof modal.close === 'function') {
-    modal.close();
-  } else {
+  try {
+    if (typeof modal.close === 'function') {
+      modal.close();
+    } else {
+      throw new Error('close not supported');
+    }
+  } catch {
     modal.removeAttribute('open');
     modal.classList.remove('open');
   }
