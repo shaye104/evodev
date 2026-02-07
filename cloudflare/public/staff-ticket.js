@@ -316,8 +316,12 @@ const loadEscalatePanels = async () => {
   const container = document.querySelector('[data-escalate-panels]');
   if (!container) return;
   container.innerHTML = '';
-  const res = await fetch('/api/panels').catch(() => null);
+  const res = await fetch('/api/staff/panels').catch(() => null);
   const data = res ? await safeJson(res) : null;
+  if (res?.status === 403) {
+    container.innerHTML = '<p class="muted">You do not have permission to escalate tickets.</p>';
+    return;
+  }
   if (!res?.ok || !data?.panels || !Array.isArray(data.panels)) {
     container.innerHTML = '<p class="muted">Unable to load panels.</p>';
     return;
@@ -358,6 +362,10 @@ const handleEscalateTo = async (panelId) => {
     return;
   }
   closeModal(document.querySelector('[data-escalate-modal]'));
+  if (data.can_access === false) {
+    window.location.href = '/staff-open.html';
+    return;
+  }
   await fetchTicket();
 };
 
@@ -378,8 +386,7 @@ const handleCloseTicket = async () => {
     return;
   }
   closeModal(document.querySelector('[data-close-modal]'));
-  await fetchTicket();
-  await loadTranscripts();
+  window.location.href = '/staff-open.html';
 };
 
 const renderTranscripts = (rows) => {

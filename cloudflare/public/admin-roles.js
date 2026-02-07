@@ -20,7 +20,7 @@ const renderAdminToggle = (isAdmin) => {
       >
         Admin access: ${on ? 'ON' : 'OFF'}
       </button>
-      <span class="muted">Warning: Admins can access all panels and tickets regardless of panel visibility rules.</span>
+      <span class="hint-icon" tabindex="0" data-hint="Warning: Admins can access all panels and tickets regardless of panel visibility rules."></span>
     </div>
   `;
 };

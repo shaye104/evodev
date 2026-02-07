@@ -37,8 +37,8 @@
         <button class="btn secondary small" type="button" data-subject-edit>Edit subject</button>
         <button class="btn secondary small" type="button" data-escalate-open>Escalate</button>
         <button class="btn danger small" type="button" data-close-open>Close ticket</button>
+        <span class="hint-icon" tabindex="0" data-hint="Claim assigns you to the ticket. Escalate moves the ticket to another panel. Closing is permanent."></span>
       </div>
-      <p class="muted">Claim assigns you to the ticket. Escalate moves the ticket to another panel. Closing is permanent.</p>
     </section>
 
     <dialog class="modal" data-subject-modal aria-hidden="true">
@@ -49,9 +49,9 @@
         <div class="modal-body">
           <label>
             Subject
+            <span class="hint-icon" tabindex="0" data-hint="Only staff with the &quot;Edit ticket subject&quot; permission can change this."></span>
             <input type="text" id="ticket-subject" name="subject" data-subject-input placeholder="Ticket subject" autocomplete="off">
           </label>
-          <p class="muted">Only staff with the "Edit ticket subject" permission can change this.</p>
         </div>
         <div class="modal-actions">
           <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
@@ -64,9 +64,9 @@
       <div class="modal-content">
         <div class="modal-header">
           <h4>Escalate ticket</h4>
+          <span class="hint-icon" tabindex="0" data-hint="Select the panel to move this ticket to. If you cannot access the new panel, you will be redirected."></span>
         </div>
         <div class="modal-body">
-          <p class="muted">Select the panel to move this ticket to.</p>
           <div class="permission-grid" data-escalate-panels></div>
         </div>
         <div class="modal-actions">
@@ -79,10 +79,10 @@
       <div class="modal-content">
         <div class="modal-header">
           <h4>Close ticket</h4>
+          <span class="hint-icon" tabindex="0" data-hint="This will mark the ticket as closed and generate a transcript automatically."></span>
         </div>
         <div class="modal-body">
           <p>Are you sure you want to close this ticket?</p>
-          <p class="muted">This will mark the ticket as closed and generate a transcript automatically.</p>
         </div>
         <div class="modal-actions">
           <button class="btn secondary" type="button" data-modal-cancel>No, go back</button>
@@ -92,8 +92,10 @@
     </dialog>
 
     <section class="card">
-      <h3>Transcripts</h3>
-      <p class="muted">Generate a saved snapshot of this ticket (messages + attachments + key metadata).</p>
+      <div class="inline" style="margin-right: 0;">
+        <h3 style="margin: 0;">Transcripts</h3>
+        <span class="hint-icon" tabindex="0" data-hint="Generate a saved snapshot of this ticket (messages + attachments + key metadata)."></span>
+      </div>
       <div class="inline">
         <button class="btn secondary" type="button" data-transcript-generate>Generate transcript</button>
       </div>

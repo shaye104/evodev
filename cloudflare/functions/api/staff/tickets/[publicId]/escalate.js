@@ -26,16 +26,22 @@ export const onRequestPost = async ({ env, request, params }) => {
   if (!panel) return jsonResponse({ error: 'Panel not found' }, { status: 404 });
   if (!panel.is_active) return jsonResponse({ error: 'Panel is not active' }, { status: 409 });
 
-  if (!(await staffCanAccessPanel(env, staff, toPanelId))) {
-    return jsonResponse({ error: 'Forbidden' }, { status: 403 });
-  }
+  // Allow staff to escalate into panels they might not have access to.
+  // If the staff member cannot access the target panel, we unassign them and instruct the UI to redirect.
+  const canAccessNewPanel = await staffCanAccessPanel(env, staff, toPanelId);
 
   const now = nowIso();
-  await env.DB.prepare(
-    'UPDATE tickets SET panel_id = ?, assigned_staff_id = NULL, updated_at = ? WHERE id = ?'
-  )
-    .bind(toPanelId, now, ticket.id)
-    .run();
+  const shouldUnassign = !canAccessNewPanel && Number(ticket.assigned_staff_id || 0) === Number(staff.id || 0);
+
+  if (shouldUnassign) {
+    await env.DB.prepare('UPDATE tickets SET panel_id = ?, assigned_staff_id = NULL, updated_at = ? WHERE id = ?')
+      .bind(toPanelId, now, ticket.id)
+      .run();
+  } else {
+    await env.DB.prepare('UPDATE tickets SET panel_id = ?, updated_at = ? WHERE id = ?')
+      .bind(toPanelId, now, ticket.id)
+      .run();
+  }
 
   await env.DB.prepare(
     `
@@ -57,6 +63,5 @@ export const onRequestPost = async ({ env, request, params }) => {
     )
     .run();
 
-  return jsonResponse({ ok: true });
+  return jsonResponse({ ok: true, can_access: Boolean(canAccessNewPanel) });
 };
-

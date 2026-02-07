@@ -35,8 +35,8 @@
       <form class="form" data-create-panel>
         <label>
           Panel name
+          <span class="hint-icon" tabindex="0" data-hint="Shown to users in the panel dropdown."></span>
           <input type="text" name="name" placeholder="e.g. Bug report" required>
-          <span class="muted">Shown to users in the panel dropdown.</span>
         </label>
         <label>
           Description
@@ -44,21 +44,21 @@
         </label>
         <label>
           Sort order
+          <span class="hint-icon" tabindex="0" data-hint="Lower numbers show first."></span>
           <input type="number" name="sort_order" placeholder="0" value="0">
-          <span class="muted">Lower numbers show first.</span>
         </label>
 
         <input type="hidden" name="allowed_role_ids" value="">
         <div class="permissions-row">
           <button class="btn secondary" type="button" data-permissions-button>Panel visibility (staff)</button>
           <span class="muted" data-permissions-summary>All staff</span>
+          <span class="hint-icon" tabindex="0" data-hint="Leave empty to allow all staff roles. Select roles to restrict which staff can see tickets in this panel."></span>
         </div>
-        <span class="muted">Leave empty to allow all staff roles. Select roles to restrict which staff can see tickets in this panel.</span>
 
         <input type="hidden" name="is_active" value="1">
         <div class="permissions-row">
           <button class="btn danger" type="button" data-active-toggle aria-pressed="true">Deactivate</button>
-          <span class="muted">A deactivated panel is hidden for users when creating a new ticket.</span>
+          <span class="hint-icon" tabindex="0" data-hint="A deactivated panel is hidden for users when creating a new ticket."></span>
         </div>
         <button class="btn" type="submit">Create</button>
 
@@ -73,7 +73,7 @@
           <div class="modal-content">
             <div class="modal-header">
               <h4>Panel visibility (staff)</h4>
-              <p class="muted">Choose which staff roles can see this panel in staff views. Admins can always see all panels.</p>
+              <span class="hint-icon" tabindex="0" data-hint="Choose which staff roles can see this panel in staff views. Admins can always see all panels."></span>
             </div>
             <div class="modal-body permission-grid" data-panel-roles-grid></div>
             <div class="modal-actions">
@@ -87,7 +87,10 @@
 
     <section class="card">
       <h3>Existing panels</h3>
-      <div class="muted" style="margin-bottom: 12px;">Tip: Use Sort order to control display order. Use Panel visibility to restrict staff access.</div>
+      <div class="inline" style="margin-bottom: 12px;">
+        <span class="muted">Tip</span>
+        <span class="hint-icon" tabindex="0" data-hint="Use Sort order to control display order. Use Panel visibility to restrict staff access."></span>
+      </div>
       <div data-panels-list></div>
     </section>
   </main>
