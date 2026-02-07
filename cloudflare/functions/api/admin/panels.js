@@ -1,7 +1,11 @@
 import { jsonResponse, nowIso } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
 import { requireApiPermission, requireApiStaff } from '../../_lib/api.js';
-import { ensurePanelRoleAccessSchema, ensureRoleColorsSchema } from '../../_lib/db.js';
+import {
+  ensurePanelRoleAccessSchema,
+  ensureRoleColorsSchema,
+  ensureRoleSortSchema,
+} from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
@@ -18,11 +22,16 @@ export const onRequestGet = async ({ env, request }) => {
   try {
     await ensureRoleColorsSchema(env);
   } catch {}
+  try {
+    await ensureRoleSortSchema(env);
+  } catch {}
 
   const results = await env.DB.prepare(
     'SELECT * FROM ticket_panels ORDER BY sort_order ASC, name ASC'
   ).all();
-  const roles = await env.DB.prepare('SELECT id, name, is_admin, color_bg, color_text FROM staff_roles ORDER BY name ASC').all();
+  const roles = await env.DB.prepare(
+    'SELECT id, name, is_admin, color_bg, color_text, sort_order FROM staff_roles ORDER BY sort_order ASC, name ASC'
+  ).all();
   const accessRows = await env.DB.prepare('SELECT panel_id, role_id FROM ticket_panel_role_access').all().catch(() => ({ results: [] }));
   return jsonResponse({
     panels: results.results || [],

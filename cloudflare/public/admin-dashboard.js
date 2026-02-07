@@ -46,7 +46,11 @@
       return;
     }
 
-    if (!staff.is_admin && getAnyAdminPerms(staff).length === 0) {
+    const hasAdminUi =
+      staff.is_admin ||
+      getAnyAdminPerms(staff).length > 0 ||
+      hasPermission(staff, 'staff.manage_pay');
+    if (!hasAdminUi) {
       window.location.href = '/staff.html';
       return;
     }
@@ -55,8 +59,12 @@
     tiles.forEach((tile) => {
       const perm = hrefToPerm(tile.getAttribute('href'));
       if (!perm) return;
+      if (perm === 'admin.staff') {
+        tile.style.display =
+          hasPermission(staff, 'admin.staff') || hasPermission(staff, 'staff.manage_pay') ? '' : 'none';
+        return;
+      }
       tile.style.display = hasPermission(staff, perm) ? '' : 'none';
     });
   });
 })();
-

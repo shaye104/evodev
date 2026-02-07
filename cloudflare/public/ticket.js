@@ -13,6 +13,7 @@ const getAvatarUrl = (msg) => {
 };
 
 const getAuthorName = (msg) => {
+  if (msg.author_nickname) return msg.author_nickname;
   if (msg.author_username) return msg.author_username;
   return msg.author_type === 'staff' ? 'Staff' : 'User';
 };

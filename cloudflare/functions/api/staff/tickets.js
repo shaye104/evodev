@@ -1,7 +1,7 @@
 import { jsonResponse } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
 import { requireApiStaff } from '../../_lib/api.js';
-import { ensurePanelRoleAccessSchema } from '../../_lib/db.js';
+import { ensurePanelRoleAccessSchema, ensureStaffNicknamesSchema } from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
@@ -12,6 +12,10 @@ export const onRequestGet = async ({ env, request }) => {
   const statusId = url.searchParams.get('status_id');
   const panelId = url.searchParams.get('panel_id');
   const assignedId = url.searchParams.get('assigned_staff_id');
+
+  try {
+    await ensureStaffNicknamesSchema(env);
+  } catch {}
 
   const clauses = [];
   const values = [];
@@ -52,7 +56,8 @@ export const onRequestGet = async ({ env, request }) => {
   const query = `
     SELECT t.*, p.name AS panel_name, s.name AS status_name, s.is_closed,
       sm.discord_id AS assigned_discord_id,
-      u.discord_username AS assigned_username
+      u.discord_username AS assigned_username,
+      COALESCE(sm.nickname, u.discord_username, sm.discord_id) AS assigned_display_name
     FROM tickets t
     LEFT JOIN ticket_panels p ON t.panel_id = p.id
     LEFT JOIN ticket_statuses s ON t.status_id = s.id

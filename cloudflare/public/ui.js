@@ -25,6 +25,7 @@
     if (staff.is_admin) return true;
     const perms = parsePermissions(staff.permissions);
     if (perms.includes('*')) return true;
+    if (perms.includes('staff.manage_pay')) return true;
     return perms.some((p) => String(p || '').startsWith('admin.'));
   };
 
@@ -113,6 +114,9 @@
       updateNav();
     }
   };
+
+  // Apply a first-pass nav state ASAP (prevents flashes and shows guest actions quickly).
+  updateNav();
 
   document.addEventListener('DOMContentLoaded', fetchMe);
   window.__supportState = state;

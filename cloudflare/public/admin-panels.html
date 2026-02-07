@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panels | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207o">
+  <link rel="stylesheet" href="/app.css?v=20260207q">
   <script src="/ui.js" defer></script>
-  <script src="/admin-panels.js?v=20260207o" defer></script>
-  <script src="/admin.js?v=20260207p" defer></script>
+  <script src="/admin-panels.js?v=20260207q" defer></script>
+  <script src="/admin.js?v=20260207q" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -81,6 +81,13 @@
 
     <section class="card">
       <h3>Existing panels</h3>
+      <div class="list-header-row" aria-hidden="true">
+        <span style="flex: 2 1 200px;">Panel</span>
+        <span style="flex: 3 1 260px;">Description</span>
+        <span>Order</span>
+        <span>Visibility</span>
+        <span>Status</span>
+      </div>
       <div data-panels-list></div>
       <div class="inline" style="margin: 0;">
         <button class="btn" type="button" data-save-panels>Save changes</button>

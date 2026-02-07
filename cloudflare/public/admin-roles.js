@@ -68,6 +68,16 @@ const rgbToHex = (r, g, b) =>
     .map((v) => v.toString(16).padStart(2, '0'))
     .join('');
 
+const toPos = (n) => {
+  const x = Number(n);
+  return Number.isFinite(x) ? x : 999999;
+};
+
+const state = {
+  me: null,
+  actorPos: 999999,
+};
+
 const setupColorTools = (root, fieldName, onChange) => {
   const container = root?.querySelector?.(`[data-color-tools="${fieldName}"]`);
   if (!container) return null;
@@ -263,6 +273,85 @@ const createModal = (selected, isAdmin) => {
   `;
 };
 
+const getRolePos = (role) => toPos(role?.sort_order ?? 999999);
+
+const canManageRole = (role) => {
+  if (!state.me) return false;
+  if (state.me.is_admin) return true;
+  const isAdminRole = Boolean(role?.is_admin) || String(role?.name || '').trim().toLowerCase() === 'admin';
+  if (isAdminRole) return false;
+  return state.actorPos < getRolePos(role);
+};
+
+const canReorderRole = (role) => canManageRole(role);
+
+let draggingForm = null;
+
+const getDragAfterElement = (container, y) => {
+  const els = Array.from(container.querySelectorAll('form.role-form:not(.dragging)'));
+  let closest = { offset: Number.NEGATIVE_INFINITY, element: null };
+  for (const el of els) {
+    const box = el.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      closest = { offset, element: el };
+    }
+  }
+  return closest.element;
+};
+
+const syncSortOrders = () => {
+  const list = document.querySelector('[data-roles-list]');
+  if (!list) return;
+  const forms = Array.from(list.querySelectorAll('form.role-form'));
+  forms.forEach((form, idx) => {
+    const input = form.querySelector('input[name="sort_order"]');
+    if (input) input.value = String(idx + 1);
+  });
+};
+
+const ensureRoleReorderWired = () => {
+  if (window.__evoRoleReorderInit) return;
+  window.__evoRoleReorderInit = true;
+
+  const list = document.querySelector('[data-roles-list]');
+  if (!list) return;
+
+  list.addEventListener('dragover', (e) => {
+    if (!draggingForm) return;
+    e.preventDefault();
+    const afterEl = getDragAfterElement(list, e.clientY);
+
+    // Non-admins can only reorder roles below their own role.
+    if (state.me && !state.me.is_admin) {
+      const forms = Array.from(list.querySelectorAll('form.role-form'));
+      const anchorIdx = forms.findIndex((f) => f.dataset.roleId === String(state.me.role_id));
+      if (anchorIdx < 0) return;
+      const minIdx = anchorIdx + 1;
+
+      const currentIdx = forms.indexOf(draggingForm);
+      const afterIdx = afterEl ? forms.indexOf(afterEl) : forms.length;
+
+      // Clamp movement to the region below the actor role.
+      if (currentIdx < minIdx) return;
+      if (afterIdx < minIdx) {
+        const firstAllowed = forms[minIdx] || null;
+        if (firstAllowed) list.insertBefore(draggingForm, firstAllowed);
+        else list.appendChild(draggingForm);
+        return;
+      }
+    }
+
+    if (!afterEl) list.appendChild(draggingForm);
+    else list.insertBefore(draggingForm, afterEl);
+  });
+
+  list.addEventListener('drop', () => {
+    if (!draggingForm) return;
+    syncSortOrders();
+  });
+};
+
 const renderRoles = (roles) => {
   const list = document.querySelector('[data-roles-list]');
   list.innerHTML = '';
@@ -283,6 +372,10 @@ const renderRoles = (roles) => {
     const form = document.createElement('form');
     form.className = 'form role-form';
     form.dataset.roleId = String(role.id);
+    const rolePos = getRolePos(role);
+    const mayEdit = canManageRole(role);
+    const mayReorder = canReorderRole(role);
+    form.draggable = Boolean(mayReorder);
     const bg = role.color_bg || '#3484ff';
     const text = role.color_text || '#ffffff';
     const deleteBtnClass = isAdminRole ? 'btn secondary small' : 'btn danger small';
@@ -290,21 +383,28 @@ const renderRoles = (roles) => {
     const deleteBtnTitle = isAdminRole ? 'Admin role cannot be deleted.' : 'Delete role';
     form.innerHTML = `
       <div class="role-main">
-        <input type="text" name="name" value="${role.name || ''}" required>
+        <button class="drag-handle" type="button" data-drag-handle aria-label="Drag to reorder" ${
+          mayReorder ? '' : 'disabled'
+        }></button>
+        <input type="text" name="name" value="${role.name || ''}" required ${mayEdit ? '' : 'disabled'}>
         <button
           class="role-pill role-staff role-pill-button"
           type="button"
           data-role-preview
           data-color-trigger
           title="Edit badge colours"
+          ${mayEdit ? '' : 'disabled'}
         >Preview</button>
       </div>
       <div class="role-actions">
-        <button class="btn secondary small" type="button" data-permissions-button>Permissions</button>
-        <button class="${deleteBtnClass}" type="button" data-delete-role ${deleteBtnDisabled} title="${deleteBtnTitle}">Delete</button>
+        <button class="btn secondary small" type="button" data-permissions-button ${mayEdit ? '' : 'disabled'}>Permissions</button>
+        <button class="${deleteBtnClass}" type="button" data-delete-role ${deleteBtnDisabled} ${
+          mayEdit && !isAdminRole ? '' : 'disabled'
+        } title="${deleteBtnTitle}">Delete</button>
       </div>
       <input type="hidden" name="permissions" value="${selected.join(', ')}">
       <input type="hidden" name="is_admin" value="${role.is_admin ? '1' : '0'}">
+      <input type="hidden" name="sort_order" value="${Number(role.sort_order || 0) || 0}">
 
       <dialog class="modal" data-colors-modal aria-hidden="true">
         <div class="modal-content">
@@ -358,6 +458,7 @@ const renderRoles = (roles) => {
       is_admin: Boolean(role.is_admin),
       color_bg: String(bg || ''),
       color_text: String(text || ''),
+      sort_order: Number(role.sort_order || 0) || 0,
     });
 
     const updatePreview = () => {
@@ -395,8 +496,32 @@ const renderRoles = (roles) => {
       loadRoles();
     });
 
+    form.addEventListener('dragstart', (e) => {
+      if (!mayReorder) {
+        e.preventDefault();
+        return;
+      }
+      if (!e.target.closest('[data-drag-handle]')) {
+        e.preventDefault();
+        return;
+      }
+      draggingForm = form;
+      form.classList.add('dragging');
+      try {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(role.id));
+      } catch {}
+    });
+    form.addEventListener('dragend', () => {
+      form.classList.remove('dragging');
+      draggingForm = null;
+      syncSortOrders();
+    });
+
     list.appendChild(form);
   });
+
+  ensureRoleReorderWired();
 };
 
 const loadRoles = async () => {
@@ -406,6 +531,8 @@ const loadRoles = async () => {
     return;
   }
   const data = await res.json();
+  state.me = data.me || null;
+  state.actorPos = state.me && state.me.is_admin ? -1 : toPos(state.me?.role_sort_order ?? 999999);
   renderRoles(data.roles || []);
 };
 
@@ -430,6 +557,7 @@ const handleSaveAll = async () => {
     const roleId = form.dataset.roleId;
     const name = String(form.querySelector('input[name="name"]')?.value || '').trim();
     const isAdmin = String(form.querySelector('input[name="is_admin"]')?.value || '0') === '1';
+    const sortOrder = Number(form.querySelector('input[name="sort_order"]')?.value || 0) || 0;
     const bg = String(form.querySelector('input[name="color_bg"]')?.value || '').trim();
     const text = String(form.querySelector('input[name="color_text"]')?.value || '').trim();
     const permissions = String(form.querySelector('input[name="permissions"]')?.value || '')
@@ -442,6 +570,7 @@ const handleSaveAll = async () => {
       !initial ||
       name !== initial.name ||
       isAdmin !== initial.is_admin ||
+      sortOrder !== Number(initial.sort_order || 0) ||
       bg !== initial.color_bg ||
       text !== initial.color_text ||
       JSON.stringify(sortedPerms) !== JSON.stringify((initial.permissions || []).slice().sort());
@@ -457,6 +586,7 @@ const handleSaveAll = async () => {
         is_admin: isAdmin,
         color_bg: bg,
         color_text: text,
+        sort_order: sortOrder,
       }),
     });
   }

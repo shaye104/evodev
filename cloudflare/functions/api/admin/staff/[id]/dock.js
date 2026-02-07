@@ -37,13 +37,13 @@ export const onRequestPost = async ({ env, request, params }) => {
   } catch {}
 
   const body = await request.json().catch(() => ({}));
-  const amount = Number(body.amount || 0) || 0;
+  const amountRaw = Number(body.amount || 0) || 0;
   const reason = String(body.reason || '').trim();
 
-  if (!Number.isFinite(amount) || amount <= 0) {
+  if (!Number.isFinite(amountRaw) || amountRaw <= 0) {
     return jsonResponse({ error: 'Amount must be a positive number' }, { status: 400 });
   }
-  if (amount > 1000000) {
+  if (amountRaw > 1000000) {
     return jsonResponse({ error: 'Amount too large' }, { status: 400 });
   }
 
@@ -64,7 +64,6 @@ export const onRequestPost = async ({ env, request, params }) => {
     .first();
   if (!target) return jsonResponse({ error: 'Not found' }, { status: 404 });
 
-  // Discord-like hierarchy: cannot adjust pay for staff at/above your role.
   if (!staff.is_admin) {
     const actorPos = getActorPos(staff);
     const targetPos = toPos(target.role_sort_order ?? 999999);
@@ -76,7 +75,9 @@ export const onRequestPost = async ({ env, request, params }) => {
     }
   }
 
+  const amount = -Math.abs(amountRaw);
   const now = nowIso();
+
   await env.DB.prepare(
     `
     INSERT INTO staff_pay_adjustments (staff_id, amount, reason, created_by_user_id, created_by_staff_id, created_at)
@@ -87,8 +88,8 @@ export const onRequestPost = async ({ env, request, params }) => {
     .run();
 
   const message = reason
-    ? `Bonus added: R$${amount}. (${reason})`
-    : `Bonus added: R$${amount}.`;
+    ? `Pay docked: R$${Math.abs(amount)}. (${reason})`
+    : `Pay docked: R$${Math.abs(amount)}.`;
   await env.DB.prepare(
     `
     INSERT INTO staff_notifications (staff_id, type, message, metadata, created_at)
@@ -97,7 +98,7 @@ export const onRequestPost = async ({ env, request, params }) => {
   )
     .bind(
       targetId,
-      'pay.bonus',
+      'pay.dock',
       message,
       JSON.stringify({ amount, reason: reason || null }),
       now
@@ -111,7 +112,7 @@ export const onRequestPost = async ({ env, request, params }) => {
       user?.id || null,
       user?.discord_id || null,
       staff?.is_admin ? 'admin' : 'staff',
-      'staff.pay.bonus',
+      'staff.pay.dock',
       'staff',
       String(targetId),
       JSON.stringify({ amount, reason: reason || null }),
@@ -121,3 +122,4 @@ export const onRequestPost = async ({ env, request, params }) => {
 
   return jsonResponse({ ok: true });
 };
+

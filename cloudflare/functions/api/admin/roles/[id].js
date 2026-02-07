@@ -1,7 +1,21 @@
 import { jsonResponse, nowIso } from '../../../_lib/utils.js';
 import { getUserContext } from '../../../_lib/auth.js';
 import { requireApiPermission, requireApiStaff } from '../../../_lib/api.js';
-import { ensurePanelRoleAccessSchema, ensureRoleColorsSchema } from '../../../_lib/db.js';
+import {
+  ensurePanelRoleAccessSchema,
+  ensureRoleColorsSchema,
+  ensureRoleSortSchema,
+} from '../../../_lib/db.js';
+
+const toPos = (n) => {
+  const x = Number(n);
+  return Number.isFinite(x) ? x : 999999;
+};
+
+const getActorPos = (staff) => {
+  if (!staff || staff.is_admin) return -1;
+  return toPos(staff.role_sort_order ?? staff.role_sort ?? staff.sort_order ?? 999999);
+};
 
 export const onRequestPut = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
@@ -14,8 +28,40 @@ export const onRequestPut = async ({ env, request, params }) => {
   try {
     await ensureRoleColorsSchema(env);
   } catch {}
+  try {
+    await ensureRoleSortSchema(env);
+  } catch {}
+
+  const existing = await env.DB.prepare(
+    'SELECT id, name, is_admin, sort_order FROM staff_roles WHERE id = ? LIMIT 1'
+  )
+    .bind(params.id)
+    .first();
+  if (!existing) return jsonResponse({ error: 'Not found' }, { status: 404 });
+
+  // Discord-like hierarchy: non-admin staff cannot manage roles at/above their own role.
+  if (!staff.is_admin) {
+    const actorPos = getActorPos(staff);
+    const targetPos = toPos(existing.sort_order ?? 999999);
+    if (existing.is_admin) {
+      return jsonResponse({ error: 'Cannot modify Admin role' }, { status: 403 });
+    }
+    if (!(actorPos < targetPos)) {
+      return jsonResponse({ error: 'Cannot modify a role at or above your role' }, { status: 403 });
+    }
+    if (body.is_admin) {
+      return jsonResponse({ error: 'Cannot grant Admin access' }, { status: 403 });
+    }
+    const nextPos = Object.prototype.hasOwnProperty.call(body, 'sort_order')
+      ? toPos(body.sort_order ?? 999999)
+      : targetPos;
+    if (!(actorPos < nextPos)) {
+      return jsonResponse({ error: 'Cannot move a role to be at or above your role' }, { status: 403 });
+    }
+  }
+
   await env.DB.prepare(
-    'UPDATE staff_roles SET name = ?, permissions = ?, is_admin = ?, color_bg = ?, color_text = ? WHERE id = ?'
+    'UPDATE staff_roles SET name = ?, permissions = ?, is_admin = ?, color_bg = ?, color_text = ?, sort_order = ? WHERE id = ?'
   )
     .bind(
       body.name || '',
@@ -23,6 +69,7 @@ export const onRequestPut = async ({ env, request, params }) => {
       body.is_admin ? 1 : 0,
       body.color_bg || null,
       body.color_text || null,
+      Number(body.sort_order || 0) || 0,
       params.id
     )
     .run();
@@ -43,13 +90,25 @@ export const onRequestDelete = async ({ env, request, params }) => {
     (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.roles'));
   if (guard) return guard;
 
-  const role = await env.DB.prepare('SELECT id, name, is_admin FROM staff_roles WHERE id = ? LIMIT 1')
+  try {
+    await ensureRoleSortSchema(env);
+  } catch {}
+
+  const role = await env.DB.prepare('SELECT id, name, is_admin, sort_order FROM staff_roles WHERE id = ? LIMIT 1')
     .bind(params.id)
     .first();
   if (!role) return jsonResponse({ error: 'Not found' }, { status: 404 });
 
   if (role.is_admin || String(role.name || '').trim().toLowerCase() === 'admin') {
     return jsonResponse({ error: 'Admin role cannot be deleted.' }, { status: 403 });
+  }
+
+  if (!staff.is_admin) {
+    const actorPos = getActorPos(staff);
+    const targetPos = toPos(role.sort_order ?? 999999);
+    if (!(actorPos < targetPos)) {
+      return jsonResponse({ error: 'Cannot delete a role at or above your role' }, { status: 403 });
+    }
   }
 
   // Prevent deleting roles that are still referenced.

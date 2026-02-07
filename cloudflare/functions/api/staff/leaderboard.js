@@ -1,7 +1,11 @@
 import { jsonResponse } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
 import { requireApiStaff, requireApiPermission } from '../../_lib/api.js';
-import { ensureStaffPayAdjustmentsSchema, ensureStaffPaySchema } from '../../_lib/db.js';
+import {
+  ensureStaffNicknamesSchema,
+  ensureStaffPayAdjustmentsSchema,
+  ensureStaffPaySchema,
+} from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
@@ -14,6 +18,9 @@ export const onRequestGet = async ({ env, request }) => {
   try {
     await ensureStaffPayAdjustmentsSchema(env);
   } catch {}
+  try {
+    await ensureStaffNicknamesSchema(env);
+  } catch {}
 
   // "Same group" is interpreted as staff with the same role.
   const roleId = staff.role_id || null;
@@ -25,7 +32,7 @@ export const onRequestGet = async ({ env, request }) => {
       sm.discord_id AS discord_id,
       sm.role_id AS role_id,
       sm.pay_per_ticket AS pay_per_ticket,
-      COALESCE(u.discord_username, sm.discord_id) AS display_name,
+      COALESCE(sm.nickname, u.discord_username, sm.discord_id) AS display_name,
       COUNT(DISTINCT tm.ticket_id) AS answered_tickets
     FROM staff_members sm
     LEFT JOIN users u ON sm.user_id = u.id

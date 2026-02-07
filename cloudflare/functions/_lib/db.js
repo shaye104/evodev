@@ -31,6 +31,43 @@ async function ensureRoleColorsSchema(env) {
   } catch {}
 }
 
+async function ensureRoleSortSchema(env) {
+  // Safe to call multiple times.
+  try {
+    await env.DB.prepare('ALTER TABLE staff_roles ADD COLUMN sort_order INTEGER DEFAULT 0').run();
+  } catch {}
+  try {
+    await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_staff_roles_sort_order ON staff_roles (sort_order)').run();
+  } catch {}
+
+  // If the column was just added, existing rows will all be 0 (or NULL in some edge cases).
+  // Seed a stable ordering so hierarchy checks don't lock everything.
+  try {
+    const stats = await env.DB.prepare(
+      `
+      SELECT
+        COUNT(*) AS total,
+        SUM(CASE WHEN sort_order IS NULL OR sort_order = 0 THEN 1 ELSE 0 END) AS zeros
+      FROM staff_roles
+      `
+    ).first();
+    const total = Number(stats?.total || 0) || 0;
+    const zeros = Number(stats?.zeros || 0) || 0;
+    if (total > 0 && zeros === total) {
+      await env.DB.prepare('UPDATE staff_roles SET sort_order = id').run();
+    }
+  } catch {
+    // Non-fatal; ordering can still be set via admin UI later.
+  }
+}
+
+async function ensureStaffNicknamesSchema(env) {
+  // Safe to call multiple times.
+  try {
+    await env.DB.prepare('ALTER TABLE staff_members ADD COLUMN nickname TEXT').run();
+  } catch {}
+}
+
 async function ensureTicketTranscriptsSchema(env) {
   await env.DB.prepare(
     `
@@ -156,10 +193,26 @@ async function getStaffByUserId(env, userId) {
   try {
     await ensureRoleColorsSchema(env);
   } catch {}
+  try {
+    await ensureRoleSortSchema(env);
+  } catch {}
+  try {
+    await ensureStaffNicknamesSchema(env);
+  } catch {}
   return env.DB.prepare(
     `
-    SELECT sm.*, sr.name AS role_name, sr.permissions, sr.is_admin, sr.color_bg, sr.color_text
+    SELECT sm.*,
+      sm.nickname AS nickname,
+      u.discord_username AS discord_username,
+      u.discord_avatar AS discord_avatar,
+      sr.name AS role_name,
+      sr.permissions,
+      sr.is_admin,
+      sr.color_bg,
+      sr.color_text,
+      sr.sort_order AS role_sort_order
     FROM staff_members sm
+    LEFT JOIN users u ON sm.user_id = u.id
     LEFT JOIN staff_roles sr ON sm.role_id = sr.id
     WHERE sm.user_id = ? AND sm.is_active = 1
     LIMIT 1
@@ -174,10 +227,26 @@ async function getStaffByDiscordId(env, discordId) {
   try {
     await ensureRoleColorsSchema(env);
   } catch {}
+  try {
+    await ensureRoleSortSchema(env);
+  } catch {}
+  try {
+    await ensureStaffNicknamesSchema(env);
+  } catch {}
   return env.DB.prepare(
     `
-    SELECT sm.*, sr.name AS role_name, sr.permissions, sr.is_admin, sr.color_bg, sr.color_text
+    SELECT sm.*,
+      sm.nickname AS nickname,
+      u.discord_username AS discord_username,
+      u.discord_avatar AS discord_avatar,
+      sr.name AS role_name,
+      sr.permissions,
+      sr.is_admin,
+      sr.color_bg,
+      sr.color_text,
+      sr.sort_order AS role_sort_order
     FROM staff_members sm
+    LEFT JOIN users u ON sm.user_id = u.id
     LEFT JOIN staff_roles sr ON sm.role_id = sr.id
     WHERE sm.discord_id = ? AND sm.is_active = 1
     LIMIT 1
@@ -251,6 +320,8 @@ export {
   generatePublicId,
   ensurePanelRoleAccessSchema,
   ensureRoleColorsSchema,
+  ensureRoleSortSchema,
+  ensureStaffNicknamesSchema,
   ensureTicketTranscriptsSchema,
   ensureStaffPaySchema,
   ensureStaffNotificationsSchema,

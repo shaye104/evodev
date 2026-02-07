@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Staff | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207o">
+  <link rel="stylesheet" href="/app.css?v=20260207q">
   <script src="/ui.js" defer></script>
   <script src="/admin-staff.js" defer></script>
 </head>
@@ -38,6 +38,11 @@
           <input type="text" name="discord_id" placeholder="User Discord ID (numbers only)" required autocomplete="off">
         </label>
         <label>
+          Nickname (optional)
+          <span class="hint-icon" tabindex="0" data-hint="Shown in staff views (tickets, leaderboards, etc). Leave empty to use their Discord username."></span>
+          <input type="text" name="nickname" placeholder="Optional display name" autocomplete="off">
+        </label>
+        <label>
           Pay per ticket (R$)
           <span class="hint-icon" tabindex="0" data-hint="Used for the staff dashboard earnings tracker. Set to 0 to disable earnings."></span>
           <input type="number" name="pay_per_ticket" placeholder="0" value="0" min="0" step="1">
@@ -53,6 +58,12 @@
 
     <section class="card">
       <h3>Existing staff</h3>
+      <div class="list-header-row" aria-hidden="true">
+        <span style="flex: 2 1 200px;">Staff</span>
+        <span>Role</span>
+        <span>Pay</span>
+        <span>Actions</span>
+      </div>
       <div data-staff-list></div>
     </section>
   </main>
