@@ -1,6 +1,8 @@
 -- Add role color customization
-ALTER TABLE staff_roles ADD COLUMN color_bg TEXT;
-ALTER TABLE staff_roles ADD COLUMN color_text TEXT;
+--
+-- Note: We intentionally do NOT ALTER staff_roles here.
+-- The app applies these columns via a runtime schema ensure to avoid
+-- migration failures on databases where the columns may already exist.
 
 -- Saved ticket transcripts (snapshots)
 CREATE TABLE IF NOT EXISTS ticket_transcripts (
@@ -19,4 +21,3 @@ CREATE TABLE IF NOT EXISTS ticket_transcripts (
 CREATE INDEX IF NOT EXISTS idx_ticket_transcripts_ticket_id ON ticket_transcripts (ticket_id);
 CREATE INDEX IF NOT EXISTS idx_ticket_transcripts_ticket_public_id ON ticket_transcripts (ticket_public_id);
 CREATE INDEX IF NOT EXISTS idx_ticket_transcripts_created_at ON ticket_transcripts (created_at);
-
