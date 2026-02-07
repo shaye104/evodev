@@ -227,13 +227,26 @@
 }
 
 :root {
-  --bg: #121212;
-  --card: #1a1a1a;
-  --accent: #3ccf91;
-  --accent-2: #f2b347;
-  --text: #c6cdd1;
-  --muted: #9aa3a8;
-  --border: #2a2a2a;
+  /* Brand tokens (matched to evodev.uk Payhip theme: whitePrimary) */
+  --bg: #ffffff;
+  --card: #ffffff;
+  --surface: #f6f8fc;
+
+  --accent: #3484ff;
+  --accent-hover: #1f57af;
+
+  --text: #4d4d4d;
+  --text-strong: #1f3550;
+  --muted: #6b7280;
+
+  --border: #dddddd;
+  --border-soft: #eeeeee;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --focus: rgba(52, 132, 255, 0.35);
+
+  --success: #55bc75;
+  --warning: #ffb828;
+  --danger: #fc576b;
 }
 
 * {
@@ -275,7 +288,7 @@ a {
 }
 
 a:hover {
-  color: var(--accent);
+  color: var(--accent-hover);
 }
 
 .site-header {
@@ -284,22 +297,38 @@ a:hover {
   justify-content: space-between;
   padding: 20px 6vw;
   border-bottom: 1px solid var(--border);
-  background: rgba(18, 18, 18, 0.92);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .brand a {
+  font-family: "proxima-nova", "soleil", sans-serif;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.6px;
+  color: var(--text-strong);
 }
 
 .site-nav {
   display: flex;
   gap: 16px;
   align-items: center;
+}
+
+.site-nav a:not(.btn) {
+  font-family: "soleil", sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+  color: var(--accent);
+}
+
+.site-nav a:not(.btn):hover {
+  color: var(--accent-hover);
 }
 
 .site-main {
@@ -314,21 +343,44 @@ a:hover {
 
 .btn {
   background: var(--accent);
-  color: #121212;
+  color: #ffffff;
   padding: 10px 18px;
   border-radius: 999px;
   font-weight: 700;
-  border: none;
+  border: 1px solid var(--accent);
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease,
+    transform 140ms ease, box-shadow 140ms ease;
+}
+
+.btn:hover {
+  background: #ffffff;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem var(--focus);
 }
 
 .btn.secondary {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.btn.secondary:hover {
+  background: #ffffff;
+  color: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .hero {
@@ -345,10 +397,10 @@ a:hover {
 
 .hero-card {
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   padding: 24px;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 30px var(--shadow);
 }
 
 .hero-actions {
@@ -359,10 +411,11 @@ a:hover {
 
 .card {
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
+  box-shadow: 0 10px 30px var(--shadow);
 }
 
 .page-header {
@@ -383,7 +436,7 @@ a:hover {
 .table td {
   text-align: left;
   padding: 10px 8px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .pill {
@@ -391,7 +444,8 @@ a:hover {
   padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  color: var(--accent-2);
+  color: var(--accent-hover);
+  background: rgba(52, 132, 255, 0.08);
 }
 
 .form {
@@ -406,10 +460,22 @@ a:hover {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
+  background: #ffffff;
+  color: var(--text-strong);
 }
 
+.form input:focus,
+.form select:focus,
+.form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem var(--focus);
+}
+
+.form input::placeholder,
+.form textarea::placeholder {
+  color: rgba(77, 77, 77, 0.7);
+}
 .checkbox {
   display: flex;
   align-items: center;
@@ -470,7 +536,7 @@ a:hover {
   padding: 16px;
   border-radius: 12px;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
 }
 
 .message-meta {
@@ -493,7 +559,7 @@ a:hover {
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--border);
-  background: var(--card);
+  background: #ffffff;
 }
 
 .author-info {
@@ -506,7 +572,7 @@ a:hover {
 .author-name {
   font-weight: 700;
   font-size: 13px;
-  color: var(--text);
+  color: var(--text-strong);
 }
 
 .role-pill {
@@ -520,15 +586,15 @@ a:hover {
 }
 
 .role-admin {
-  background: rgba(60, 207, 145, 0.18);
+  background: rgba(52, 132, 255, 0.12);
   color: var(--accent);
-  border-color: rgba(60, 207, 145, 0.45);
+  border-color: rgba(52, 132, 255, 0.35);
 }
 
 .role-staff {
-  background: rgba(242, 179, 71, 0.18);
-  color: var(--accent-2);
-  border-color: rgba(242, 179, 71, 0.45);
+  background: rgba(85, 188, 117, 0.14);
+  color: var(--success);
+  border-color: rgba(85, 188, 117, 0.4);
 }
 
 .role-user {
@@ -566,7 +632,7 @@ a:hover {
   padding: 18px;
   border-radius: 12px;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-soft);
   font-weight: 600;
 }
 
@@ -608,7 +674,7 @@ a:hover {
 }
 
 .highlight {
-  background: rgba(60, 207, 145, 0.1);
+  background: rgba(52, 132, 255, 0.08);
 }
 
 .modal {
@@ -619,7 +685,7 @@ a:hover {
   color: var(--text);
   max-width: none;
   width: min(720px, 90vw);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
 }
 
 .modal[open] {
@@ -629,7 +695,7 @@ a:hover {
 }
 
 .modal::backdrop {
-  background: rgba(10, 20, 30, 0.8);
+  background: rgba(15, 20, 30, 0.35);
 }
 
 .modal-content {
@@ -645,7 +711,7 @@ a:hover {
 }
 
 .modal-header {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-soft);
   padding-bottom: 10px;
   margin-bottom: 12px;
 }
@@ -658,7 +724,7 @@ a:hover {
 
 .permission-grid .perm-option.is-active {
   background: var(--accent) !important;
-  color: #0b141b !important;
+  color: #ffffff !important;
   border-color: transparent !important;
 }
 
@@ -687,46 +753,4 @@ a:hover {
   .site-nav {
     flex-wrap: wrap;
   }
-}
-
-:root {
-  --bg: #121212;
-  --card: #1a1a1a;
-  --accent: #3ccf91;
-  --accent-2: #f2b347;
-  --text: #c6cdd1;
-  --muted: #9aa3a8;
-  --border: #2a2a2a;
-}
-
-body {
-  background: var(--bg) !important;
-  color: var(--text);
-}
-
-.site-header {
-  background: rgba(18, 18, 18, 0.92) !important;
-}
-
-.card,
-.hero-card,
-.message,
-.tile,
-.toast,
-.modal,
-.modal-content {
-  background: var(--card) !important;
-  color: var(--text);
-}
-
-.form input,
-.form select,
-.form textarea {
-  background: var(--card) !important;
-  color: var(--text);
-  border-color: var(--border);
-}
-
-.message-avatar {
-  background: var(--card) !important;
 }
