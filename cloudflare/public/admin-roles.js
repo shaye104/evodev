@@ -6,6 +6,23 @@ const PERMISSIONS = [
   { id: 'tickets.status', label: 'Change ticket status' },
 ];
 
+const renderAdminToggle = (isAdmin) => {
+  const on = Boolean(isAdmin);
+  return `
+    <div class="permissions-row" style="align-items: flex-start;">
+      <button
+        class="btn warning ${on ? '' : 'secondary'}"
+        type="button"
+        data-admin-toggle
+        aria-pressed="${on ? 'true' : 'false'}"
+      >
+        Admin access: ${on ? 'ON' : 'OFF'}
+      </button>
+      <span class="muted">Warning: Admins can access all panels and tickets regardless of panel visibility rules.</span>
+    </div>
+  `;
+};
+
 const renderPermissionButtons = (selected = []) => {
   return PERMISSIONS.map((perm) => {
     const isActive = selected.includes(perm.id);
@@ -23,15 +40,18 @@ const renderPermissionButtons = (selected = []) => {
   }).join('');
 };
 
-const createModal = (selected) => {
+const createModal = (selected, isAdmin) => {
   return `
     <dialog class="modal" data-permissions-modal aria-hidden="true">
       <div class="modal-content">
         <div class="modal-header">
           <h4>Configure permissions</h4>
         </div>
-        <div class="modal-body permission-grid">
-          ${renderPermissionButtons(selected)}
+        <div class="modal-body">
+          ${renderAdminToggle(isAdmin)}
+          <div class="permission-grid">
+            ${renderPermissionButtons(selected)}
+          </div>
         </div>
         <div class="modal-actions">
           <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
@@ -74,26 +94,26 @@ const renderRoles = (roles) => {
         <span class="role-pill role-staff" data-role-preview>Preview</span>
       </div>
       <input type="hidden" name="permissions" value="${selected.join(', ')}">
+      <input type="hidden" name="is_admin" value="${role.is_admin ? '1' : '0'}">
       <div class="permissions-row">
         <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
         <span class="muted" data-permissions-summary>${selected.length ? `${selected.length} selected` : 'None selected'}</span>
       </div>
-      <label class="checkbox">
-        <input type="checkbox" name="is_admin" value="1" ${role.is_admin ? 'checked' : ''}>
-        Admin
-      </label>
       <button class="btn secondary" type="submit">Update</button>
-      ${createModal(selected)}
+      ${createModal(selected, role.is_admin)}
     `;
 
     const updatePreview = () => {
+      const nameVal = String(form.querySelector('input[name="name"]').value || '').trim();
       const bgVal = String(form.querySelector('input[name="color_bg"]').value || '').trim();
       const textVal = String(form.querySelector('input[name="color_text"]').value || '').trim();
       const preview = form.querySelector('[data-role-preview]');
+      preview.textContent = nameVal || 'Preview';
       preview.style.backgroundColor = bgVal || '#3484ff';
       preview.style.borderColor = bgVal || '#3484ff';
       preview.style.color = textVal || '#ffffff';
     };
+    form.querySelector('input[name="name"]').addEventListener('input', updatePreview);
     form.querySelector('input[name="color_bg"]').addEventListener('input', updatePreview);
     form.querySelector('input[name="color_text"]').addEventListener('input', updatePreview);
     updatePreview();
@@ -111,7 +131,7 @@ const renderRoles = (roles) => {
         body: JSON.stringify({
           name: formData.get('name'),
           permissions,
-          is_admin: formData.get('is_admin') === '1',
+          is_admin: String(formData.get('is_admin') || '') === '1',
           color_bg: formData.get('color_bg'),
           color_text: formData.get('color_text'),
         }),
@@ -147,7 +167,7 @@ const handleCreate = async (event) => {
     body: JSON.stringify({
       name: formData.get('name'),
       permissions,
-      is_admin: formData.get('is_admin') === '1',
+      is_admin: String(formData.get('is_admin') || '') === '1',
       color_bg: formData.get('color_bg'),
       color_text: formData.get('color_text'),
     }),
@@ -173,13 +193,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const createForm = document.querySelector('[data-create-role]');
   if (createForm) {
     const updatePreview = () => {
+      const nameVal = String(createForm.querySelector('input[name="name"]').value || '').trim();
       const bgVal = String(createForm.querySelector('input[name="color_bg"]').value || '').trim();
       const textVal = String(createForm.querySelector('input[name="color_text"]').value || '').trim();
       const preview = createForm.querySelector('[data-role-preview]');
+      preview.textContent = nameVal || 'Preview';
       preview.style.backgroundColor = bgVal || '#3484ff';
       preview.style.borderColor = bgVal || '#3484ff';
       preview.style.color = textVal || '#ffffff';
     };
+    createForm.querySelector('input[name="name"]').addEventListener('input', updatePreview);
     createForm.querySelector('input[name="color_bg"]').addEventListener('input', updatePreview);
     createForm.querySelector('input[name="color_text"]').addEventListener('input', updatePreview);
     updatePreview();

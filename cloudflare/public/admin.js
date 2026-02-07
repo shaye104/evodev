@@ -28,6 +28,24 @@ window.addEventListener('DOMContentLoaded', () => {
     button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
   };
 
+  const syncAdminToggleUi = (form, modal, forceValue) => {
+    if (!form || !modal) return;
+    const hidden = form.querySelector('input[name="is_admin"]');
+    const btn = modal.querySelector('[data-admin-toggle]');
+    if (!hidden || !btn) return;
+
+    const nextValue =
+      forceValue !== undefined
+        ? String(forceValue)
+        : String(hidden.value || '0');
+
+    const isOn = nextValue === '1';
+    hidden.value = isOn ? '1' : '0';
+    btn.textContent = `Admin access: ${isOn ? 'ON' : 'OFF'}`;
+    btn.classList.toggle('secondary', !isOn);
+    toggleOption(btn, isOn);
+  };
+
   const getSelectedValues = (modal) =>
     Array.from(modal.querySelectorAll('[data-permission-option].is-active')).map(
       (btn) => btn.dataset.permissionValue
@@ -71,6 +89,13 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!form) return;
       const modal = form.querySelector('[data-permissions-modal]');
       openModal(modal);
+
+      // Capture and sync the admin toggle (if present for this modal).
+      const hiddenAdmin = form.querySelector('input[name="is_admin"]');
+      if (modal && hiddenAdmin) {
+        modal.dataset.initialAdmin = String(hiddenAdmin.value || '0') === '1' ? '1' : '0';
+        syncAdminToggleUi(form, modal, modal.dataset.initialAdmin);
+      }
       return;
     }
 
@@ -78,6 +103,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if (cancelButton) {
       const modal = cancelButton.closest('[data-permissions-modal]');
       restoreModalSelections(modal);
+      const form = cancelButton.closest('form');
+      if (form && modal?.dataset?.initialAdmin !== undefined) {
+        syncAdminToggleUi(form, modal, modal.dataset.initialAdmin);
+      }
       closeModal(modal);
       return;
     }
@@ -97,6 +126,17 @@ window.addEventListener('DOMContentLoaded', () => {
           ? formatSelectedLabel(cfg.selectedLabel, values.length)
           : cfg.emptyLabel;
       }
+
+      // Persist the admin toggle (if present for this modal).
+      const adminBtn = modal.querySelector('[data-admin-toggle]');
+      const adminHidden = form.querySelector('input[name="is_admin"]');
+      if (adminBtn && adminHidden) {
+        const isOn = adminBtn.classList.contains('is-active');
+        adminHidden.value = isOn ? '1' : '0';
+        modal.dataset.initialAdmin = adminHidden.value;
+        syncAdminToggleUi(form, modal, adminHidden.value);
+      }
+
       modal.dataset.initial = JSON.stringify(values);
       closeModal(modal);
       return;
@@ -108,9 +148,25 @@ window.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const adminToggle = event.target.closest('[data-admin-toggle]');
+    if (adminToggle) {
+      toggleOption(adminToggle);
+      const modal = adminToggle.closest('[data-permissions-modal]');
+      const form = adminToggle.closest('form');
+      if (form && modal) {
+        const isOn = adminToggle.classList.contains('is-active');
+        syncAdminToggleUi(form, modal, isOn ? '1' : '0');
+      }
+      return;
+    }
+
     const modal = event.target.closest('[data-permissions-modal]');
     if (modal && event.target === modal) {
       restoreModalSelections(modal);
+      const form = modal.closest('form');
+      if (form && modal?.dataset?.initialAdmin !== undefined) {
+        syncAdminToggleUi(form, modal, modal.dataset.initialAdmin);
+      }
       closeModal(modal);
     }
   });

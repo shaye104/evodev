@@ -35,6 +35,7 @@
       <form class="form" data-create-role>
         <input type="text" name="name" placeholder="Role name" required>
         <input type="hidden" name="permissions" value="">
+        <input type="hidden" name="is_admin" value="0">
         <div class="inline">
           <label>
             Badge background
@@ -50,18 +51,19 @@
           <button class="btn secondary" type="button" data-permissions-button>Configure Permissions</button>
           <span class="muted" data-permissions-summary>None selected</span>
         </div>
-        <label class="checkbox">
-          <input type="checkbox" name="is_admin" value="1">
-          Admin role
-        </label>
-        <div class="muted">Admins can access all panels and tickets regardless of panel visibility rules.</div>
         <button class="btn" type="submit">Create</button>
         <dialog class="modal" data-permissions-modal aria-hidden="true">
           <div class="modal-content">
             <div class="modal-header">
               <h4>Configure permissions</h4>
             </div>
-            <div class="modal-body permission-grid" data-new-permissions></div>
+            <div class="modal-body">
+              <div class="permissions-row" style="align-items: flex-start;">
+                <button class="btn secondary warning" type="button" data-admin-toggle aria-pressed="false">Admin access: OFF</button>
+                <span class="muted">Warning: Admins can access all panels and tickets regardless of panel visibility rules.</span>
+              </div>
+              <div class="permission-grid" data-new-permissions></div>
+            </div>
             <div class="modal-actions">
               <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
               <button class="btn" type="button" data-modal-apply>Apply</button>

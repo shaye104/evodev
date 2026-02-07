@@ -1,5 +1,27 @@
 const getTicketId = () => new URLSearchParams(window.location.search).get('id');
 
+const safeJson = async (res) => {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+};
+
+const staffHasPermission = (staff, permission) => {
+  if (!staff) return false;
+  if (staff.is_admin) return true;
+  if (!staff.permissions) return false;
+  try {
+    const perms = JSON.parse(staff.permissions);
+    if (Array.isArray(perms)) {
+      if (perms.includes('*')) return true;
+      return perms.includes(permission);
+    }
+  } catch {}
+  return false;
+};
+
 const getAvatarUrl = (msg) => {
   const discordId = msg.author_discord_id;
   const avatarHash = msg.author_avatar;
@@ -184,31 +206,55 @@ const renderTicket = (payload) => {
 };
 
 const loadDropdowns = async () => {
-  const [statusesRes, staffRes] = await Promise.all([
-    fetch('/api/statuses'),
-    fetch('/api/admin/staff'),
-  ]);
-  const statusesData = await statusesRes.json();
-  const staffData = await staffRes.json();
   const statusSelect = document.querySelector('[data-status-select]');
-  statusesData.statuses.forEach((status) => {
-    const option = document.createElement('option');
-    option.value = status.id;
-    option.textContent = status.name;
-    statusSelect.appendChild(option);
-  });
-
   const assignSelect = document.querySelector('[data-assign-select]');
+  const statusBtn = document.querySelector('[data-status-button]');
+  const assignBtn = document.querySelector('[data-assign-button]');
+
+  const statusesRes = await fetch('/api/statuses').catch(() => null);
+  const statusesData = statusesRes ? await safeJson(statusesRes) : null;
+
+  if (statusSelect) statusSelect.innerHTML = '';
+  if (statusesRes?.ok && statusesData?.statuses && Array.isArray(statusesData.statuses)) {
+    if (statusSelect) {
+      statusesData.statuses.forEach((status) => {
+        const option = document.createElement('option');
+        option.value = status.id;
+        option.textContent = status.name;
+        statusSelect.appendChild(option);
+      });
+    }
+    if (statusSelect) statusSelect.disabled = false;
+    if (statusBtn) statusBtn.disabled = false;
+  } else {
+    if (statusSelect) statusSelect.disabled = true;
+    if (statusBtn) statusBtn.disabled = true;
+  }
+
+  // Staff list for assignment (may be forbidden if the role lacks tickets.assign).
+  if (assignSelect) assignSelect.innerHTML = '';
   const defaultOption = document.createElement('option');
   defaultOption.value = '';
   defaultOption.textContent = 'Unassigned';
-  assignSelect.appendChild(defaultOption);
-  staffData.staff.forEach((member) => {
-    const option = document.createElement('option');
-    option.value = member.id;
-    option.textContent = member.discord_username || member.discord_id;
-    assignSelect.appendChild(option);
-  });
+  if (assignSelect) assignSelect.appendChild(defaultOption);
+
+  const staffRes = await fetch('/api/staff/members').catch(() => null);
+  const staffData = staffRes ? await safeJson(staffRes) : null;
+  if (staffRes?.ok && staffData?.staff && Array.isArray(staffData.staff)) {
+    if (assignSelect) {
+      staffData.staff.forEach((member) => {
+        const option = document.createElement('option');
+        option.value = member.id;
+        option.textContent = member.discord_username || member.discord_id;
+        assignSelect.appendChild(option);
+      });
+    }
+    if (assignSelect) assignSelect.disabled = false;
+    if (assignBtn) assignBtn.disabled = false;
+  } else {
+    if (assignSelect) assignSelect.disabled = true;
+    if (assignBtn) assignBtn.disabled = true;
+  }
 };
 
 const fetchTicket = async () => {
@@ -219,11 +265,14 @@ const fetchTicket = async () => {
     window.location.href = '/login.html';
     return;
   }
-  const data = await res.json();
+  const data = await safeJson(res);
+  if (!data) {
+    window.location.href = '/login.html';
+    return;
+  }
   renderTicket(data);
   document.querySelector('[data-status-select]').value = data.ticket.status_id || '';
   document.querySelector('[data-assign-select]').value = data.ticket.assigned_staff_id || '';
-  loadTranscripts();
 };
 
 const handleReply = async (event) => {
@@ -324,11 +373,23 @@ const loadTranscripts = async () => {
   if (!id || !el) return;
   el.textContent = 'Loading…';
   const res = await fetch(`/api/staff/tickets/${id}/transcripts`);
-  if (!res.ok) {
-    el.textContent = 'Unable to load transcripts.';
+  if (res.status === 403) {
+    el.textContent = 'You do not have permission to view transcripts (requires View tickets).';
     return;
   }
-  const data = await res.json();
+  if (res.status === 401) {
+    el.textContent = 'Please login to view transcripts.';
+    return;
+  }
+  if (!res.ok) {
+    el.textContent = 'Unable to load transcripts. Please refresh and try again.';
+    return;
+  }
+  const data = await safeJson(res);
+  if (!data) {
+    el.textContent = 'Unable to load transcripts. Please refresh and try again.';
+    return;
+  }
   renderTranscripts(data.transcripts || []);
 };
 
@@ -343,7 +404,7 @@ const handleGenerateTranscript = async () => {
     body: JSON.stringify({ trigger: 'manual' }),
   });
   btn.disabled = false;
-  const data = await res.json().catch(() => ({}));
+  const data = (await safeJson(res)) || {};
   if (!res.ok) {
     alert(data.error || 'Failed to generate transcript');
     return;
@@ -352,14 +413,63 @@ const handleGenerateTranscript = async () => {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadDropdowns();
-  await fetchTicket();
-  await loadTranscripts();
-  document.querySelector('[data-reply-form]').addEventListener('submit', handleReply);
-  document.querySelector('[data-claim-button]').addEventListener('click', handleClaim);
-  document.querySelector('[data-status-button]').addEventListener('click', handleStatus);
-  document.querySelector('[data-assign-button]').addEventListener('click', handleAssign);
-  document
-    .querySelector('[data-transcript-generate]')
-    .addEventListener('click', handleGenerateTranscript);
+  // Bind buttons first so the page still works even if a fetch fails.
+  const replyForm = document.querySelector('[data-reply-form]');
+  if (replyForm) replyForm.addEventListener('submit', handleReply);
+  const claimBtn = document.querySelector('[data-claim-button]');
+  if (claimBtn) claimBtn.addEventListener('click', handleClaim);
+  const statusBtn = document.querySelector('[data-status-button]');
+  if (statusBtn) statusBtn.addEventListener('click', handleStatus);
+  const assignBtn = document.querySelector('[data-assign-button]');
+  if (assignBtn) assignBtn.addEventListener('click', handleAssign);
+  const transcriptBtn = document.querySelector('[data-transcript-generate]');
+  if (transcriptBtn) transcriptBtn.addEventListener('click', handleGenerateTranscript);
+
+  // Use /api/me to hide/disable controls based on role permissions.
+  const meRes = await fetch('/api/me').catch(() => null);
+  const me = meRes ? await safeJson(meRes) : null;
+  const staff = me?.staff || null;
+
+  const canClaim = staffHasPermission(staff, 'tickets.claim');
+  const canStatus = staffHasPermission(staff, 'tickets.status');
+  const canAssign = staffHasPermission(staff, 'tickets.assign');
+  const canReply = staffHasPermission(staff, 'tickets.reply');
+  const canView = staffHasPermission(staff, 'tickets.view');
+
+  if (claimBtn) claimBtn.disabled = !canClaim;
+  const statusSelect = document.querySelector('[data-status-select]');
+  if (statusSelect) statusSelect.disabled = !canStatus;
+  if (statusBtn) statusBtn.disabled = !canStatus;
+  const assignSelect = document.querySelector('[data-assign-select]');
+  if (assignSelect) assignSelect.disabled = !canAssign;
+  if (assignBtn) assignBtn.disabled = !canAssign;
+  if (replyForm) {
+    const textarea = replyForm.querySelector('textarea[name="message"]');
+    const file = replyForm.querySelector('input[type="file"][name="attachments"]');
+    const submit = replyForm.querySelector('button[type="submit"]');
+    if (textarea) textarea.disabled = !canReply;
+    if (file) file.disabled = !canReply;
+    if (submit) submit.disabled = !canReply;
+  }
+  if (transcriptBtn) transcriptBtn.disabled = !canView;
+
+  try {
+    await loadDropdowns();
+  } catch {}
+  // Ensure dropdown enablement reflects permissions even if the fetch succeeded.
+  if (statusSelect) statusSelect.disabled = !canStatus;
+  if (statusBtn) statusBtn.disabled = !canStatus;
+  if (assignSelect) assignSelect.disabled = !canAssign;
+  if (assignBtn) assignBtn.disabled = !canAssign;
+  try {
+    await fetchTicket();
+  } catch {}
+  if (canView) {
+    try {
+      await loadTranscripts();
+    } catch {}
+  } else {
+    const el = document.querySelector('[data-transcripts-list]');
+    if (el) el.textContent = 'You do not have permission to view transcripts (requires View tickets).';
+  }
 });

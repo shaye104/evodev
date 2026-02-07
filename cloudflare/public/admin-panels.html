@@ -55,10 +55,11 @@
         </div>
         <span class="muted">Leave empty to allow all staff roles. Select roles to restrict which staff can see tickets in this panel.</span>
 
-        <label class="checkbox">
-          <input type="checkbox" name="is_active" value="1" checked>
-          Active
-        </label>
+        <input type="hidden" name="is_active" value="1">
+        <div class="permissions-row">
+          <button class="btn danger" type="button" data-active-toggle aria-pressed="true">Deactivate</button>
+          <span class="muted">A deactivated panel is hidden for users when creating a new ticket.</span>
+        </div>
         <button class="btn" type="submit">Create</button>
 
         <dialog

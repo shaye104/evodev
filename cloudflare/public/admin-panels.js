@@ -3,13 +3,18 @@ const renderRoleOptions = (roles = [], selected = []) => {
     .map((role) => {
       const id = String(role.id);
       const isActive = selected.includes(id);
+      const bg = String(role.color_bg || '').trim();
+      const text = String(role.color_text || '').trim() || '#ffffff';
+      const style = bg ? ` style="--role-bg:${bg};--role-text:${text};"` : '';
+      const coloredClass = bg ? 'role-colored' : '';
       return `
         <button
-          class="btn secondary perm-option ${isActive ? 'is-active' : ''}"
+          class="btn secondary perm-option ${coloredClass} ${isActive ? 'is-active' : ''}"
           type="button"
           data-permission-option
           data-permission-value="${id}"
           aria-pressed="${isActive ? 'true' : 'false'}"
+          ${style}
         >
           ${role.name}${role.is_admin ? ' (Admin)' : ''}
         </button>
@@ -23,6 +28,30 @@ const parseIds = (raw) =>
     .split(',')
     .map((val) => val.trim())
     .filter(Boolean);
+
+const syncActiveToggle = (form) => {
+  const hidden = form.querySelector('input[name="is_active"]');
+  const btn = form.querySelector('[data-active-toggle]');
+  if (!hidden || !btn) return;
+  const isActive = String(hidden.value || '0') === '1';
+  btn.textContent = isActive ? 'Deactivate' : 'Activate';
+  btn.classList.toggle('danger', isActive);
+  btn.classList.toggle('success', !isActive);
+  btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+};
+
+const bindActiveToggle = (form) => {
+  if (!form) return;
+  const btn = form.querySelector('[data-active-toggle]');
+  const hidden = form.querySelector('input[name="is_active"]');
+  if (!btn || !hidden) return;
+  btn.addEventListener('click', () => {
+    const isActive = String(hidden.value || '0') === '1';
+    hidden.value = isActive ? '0' : '1';
+    syncActiveToggle(form);
+  });
+  syncActiveToggle(form);
+};
 
 const loadPanels = async () => {
   const res = await fetch('/api/admin/panels');
@@ -58,10 +87,13 @@ const loadPanels = async () => {
           selected.length ? `Restricted: ${selected.length} role(s)` : 'All staff'
         }</span>
       </div>
-      <label class="checkbox">
-        <input type="checkbox" name="is_active" value="1" ${panel.is_active ? 'checked' : ''}>
-        Active
-      </label>
+      <input type="hidden" name="is_active" value="${panel.is_active ? '1' : '0'}">
+      <div class="permissions-row">
+        <button class="btn ${panel.is_active ? 'danger' : 'success'}" type="button" data-active-toggle aria-pressed="${panel.is_active ? 'true' : 'false'}">
+          ${panel.is_active ? 'Deactivate' : 'Activate'}
+        </button>
+        <span class="muted">A deactivated panel is hidden for users when creating a new ticket.</span>
+      </div>
       <button class="btn secondary" type="submit">Update</button>
       <dialog
         class="modal"
@@ -85,6 +117,7 @@ const loadPanels = async () => {
         </div>
       </dialog>
     `;
+    bindActiveToggle(form);
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const formData = new FormData(form);
@@ -95,7 +128,7 @@ const loadPanels = async () => {
           name: formData.get('name'),
           description: formData.get('description'),
           sort_order: Number(formData.get('sort_order') || 0),
-          is_active: formData.get('is_active') === '1',
+          is_active: String(formData.get('is_active') || '') === '1',
           allowed_role_ids: parseIds(formData.get('allowed_role_ids')).map((v) => Number(v || 0)).filter(Boolean),
         }),
       });
@@ -116,7 +149,7 @@ const handleCreate = async (event) => {
       name: formData.get('name'),
       description: formData.get('description'),
       sort_order: Number(formData.get('sort_order') || 0),
-      is_active: formData.get('is_active') === '1',
+      is_active: String(formData.get('is_active') || '') === '1',
       allowed_role_ids: parseIds(formData.get('allowed_role_ids')).map((v) => Number(v || 0)).filter(Boolean),
     }),
   });
@@ -125,10 +158,14 @@ const handleCreate = async (event) => {
   const summary = form.querySelector('[data-permissions-summary]');
   if (hidden) hidden.value = '';
   if (summary) summary.textContent = 'All staff';
+  const activeHidden = form.querySelector('input[name="is_active"]');
+  if (activeHidden) activeHidden.value = '1';
+  syncActiveToggle(form);
   loadPanels();
 };
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('[data-create-panel]').addEventListener('submit', handleCreate);
+  bindActiveToggle(document.querySelector('[data-create-panel]'));
   loadPanels();
 });
