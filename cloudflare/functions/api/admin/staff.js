@@ -1,11 +1,13 @@
 import { jsonResponse, nowIso } from '../../_lib/utils.js';
-import { getUserContext } from '../../_lib/auth.js';
-import { requireApiAdmin } from '../../_lib/api.js';
+import { getUserContext, hasPermission } from '../../_lib/auth.js';
+import { requireApiPermission, requireApiStaff } from '../../_lib/api.js';
 import { ensureRoleColorsSchema, ensureStaffPaySchema } from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
-  const guard = requireApiAdmin(staff);
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.staff'));
   if (guard) return guard;
 
   try {
@@ -31,7 +33,9 @@ export const onRequestGet = async ({ env, request }) => {
 
 export const onRequestPost = async ({ env, request }) => {
   const { user, staff } = await getUserContext(env, request);
-  const guard = requireApiAdmin(staff);
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.staff'));
   if (guard) return guard;
 
   const body = await request.json().catch(() => ({}));
@@ -39,6 +43,7 @@ export const onRequestPost = async ({ env, request }) => {
   try {
     await ensureStaffPaySchema(env);
   } catch {}
+  const canManagePay = Boolean(staff && (staff.is_admin || hasPermission(staff, 'staff.manage_pay')));
   const discordId = String(body.discord_id || '').trim();
   const existingUser = discordId
     ? await env.DB.prepare('SELECT id FROM users WHERE discord_id = ? LIMIT 1')
@@ -46,6 +51,7 @@ export const onRequestPost = async ({ env, request }) => {
         .first()
     : null;
 
+  const nextPay = canManagePay ? Number(body.pay_per_ticket || 0) || 0 : 0;
   const result = await env.DB.prepare(
     'INSERT INTO staff_members (discord_id, role_id, is_active, pay_per_ticket, created_at) VALUES (?, ?, ?, ?, ?)'
   )
@@ -53,7 +59,7 @@ export const onRequestPost = async ({ env, request }) => {
       discordId,
       body.role_id || null,
       body.is_active ? 1 : 0,
-      Number(body.pay_per_ticket || 0) || 0,
+      nextPay,
       now
     )
     .run();

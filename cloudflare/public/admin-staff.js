@@ -36,6 +36,11 @@ const closeModal = (modal) => {
   else modal.classList.remove('open');
 };
 
+const state = {
+  me: null,
+  canManagePay: false,
+};
+
 const loadStaff = async () => {
   const res = await fetch('/api/admin/staff');
   if (!res.ok) {
@@ -43,10 +48,17 @@ const loadStaff = async () => {
     return;
   }
   const data = await res.json();
+  state.me = data.me || null;
+  state.canManagePay = staffHasPermission(state.me, 'staff.manage_pay');
   const list = document.querySelector('[data-staff-list]');
   list.innerHTML = '';
 
-  const canManagePay = staffHasPermission(data.me, 'staff.manage_pay');
+  const canManagePay = state.canManagePay;
+  const createPayInput = document.querySelector('[data-create-staff] input[name="pay_per_ticket"]');
+  if (createPayInput) {
+    createPayInput.disabled = !canManagePay;
+    if (!canManagePay) createPayInput.value = '0';
+  }
 
   data.staff.forEach((member) => {
     const isSuspended = !member.is_active;
@@ -66,50 +78,68 @@ const loadStaff = async () => {
       ? `style="background:${roleBg};border-color:${roleBg};color:${roleText};"`
       : '';
     const roleClass = member.is_admin ? 'role-admin' : 'role-staff';
-    const pay = Number(member.pay_per_ticket || 0) || 0;
+	    const pay = Number(member.pay_per_ticket || 0) || 0;
 
-    row.innerHTML = `
-      <span>
-        ${displayName}
-        ${isSuspended ? '<span class="pill warning" style="margin-left:8px;">Suspended</span>' : ''}
-      </span>
-      <span class="role-pill ${roleClass}" ${roleStyle}>${roleName}</span>
-      <span class="pill">Pay: R$${pay}</span>
-      <button class="btn secondary" type="button" data-manage-user>Manage user</button>
-      ${canManagePay ? '<button class="btn secondary" type="button" data-open-bonus>Give bonus</button>' : ''}
+      const payField = canManagePay
+        ? `
+          <label>
+            <span class="label-row">
+              <span>Pay per ticket (R$)</span>
+              <span class="hint-icon" tabindex="0" data-hint="Used for the staff dashboard earnings tracker. Changes notify the staff member."></span>
+            </span>
+            <input type="number" name="pay_per_ticket" min="0" step="1" value="${pay}" placeholder="0">
+          </label>
+        `
+        : `
+          <label>
+            <span class="label-row">
+              <span>Pay per ticket (R$)</span>
+              <span class="hint-icon" tabindex="0" data-hint="Requires the Manage pay permission."></span>
+            </span>
+            <input type="number" name="pay_per_ticket" min="0" step="1" value="${pay}" placeholder="0" disabled>
+          </label>
+        `;
 
-      <dialog class="modal" data-manage-modal aria-hidden="true">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4>Manage user</h4>
-          </div>
-          <div class="modal-body">
-            <div class="form">
-              <label>
-                Role
-                <select name="role_id" data-role-select>${options}</select>
-              </label>
-              <label>
-                Pay per ticket (R$)
-                <span class="hint-icon" tabindex="0" data-hint="Used for the staff dashboard earnings tracker. Changes notify the staff member."></span>
-                <input type="number" name="pay_per_ticket" min="0" step="1" value="${pay}" placeholder="0">
-              </label>
-            </div>
+	    row.innerHTML = `
+	      <span>
+	        ${displayName}
+	        ${isSuspended ? '<span class="pill warning" style="margin-left:8px;">Suspended</span>' : ''}
+	      </span>
+	      <span class="role-pill ${roleClass}" ${roleStyle}>${roleName}</span>
+	      <span class="pill">Pay: R$${pay}</span>
+	      <button class="btn secondary" type="button" data-manage-user>Manage user</button>
+	      ${canManagePay ? '<button class="btn secondary" type="button" data-open-bonus>Give bonus</button>' : ''}
 
-            <div class="muted" style="margin-top: 12px;">Changes apply immediately.</div>
-          </div>
-          <div class="modal-actions" style="justify-content: space-between;">
-            <button class="btn secondary" type="button" data-modal-cancel>Close</button>
-            <div class="inline" style="margin: 0;">
-              <button class="btn" type="button" data-save-settings>Save changes</button>
-              <button class="btn warning" type="button" data-suspend-toggle>
-                ${isSuspended ? 'Unsuspend' : 'Suspend'}
-              </button>
-              <button class="btn danger" type="button" data-remove-user>Remove</button>
-            </div>
-          </div>
-        </div>
-      </dialog>
+	      <dialog class="modal" data-manage-modal aria-hidden="true">
+	        <div class="modal-content">
+	          <div class="modal-header">
+	            <h4>Manage user</h4>
+	          </div>
+	          <div class="modal-body">
+	            <div class="form">
+	              <label>
+	                Role
+	                <select name="role_id" data-role-select>${options}</select>
+	              </label>
+	              ${payField}
+	            </div>
+
+	            <div class="muted" style="margin-top: 12px;">Changes apply immediately.</div>
+	          </div>
+	          <div class="modal-actions" style="justify-content: space-between;">
+              <div class="inline" style="margin: 0;">
+	              <button class="btn warning" type="button" data-suspend-toggle>
+	                ${isSuspended ? 'Unsuspend' : 'Suspend'}
+	              </button>
+	              <button class="btn danger" type="button" data-remove-user>Remove</button>
+	            </div>
+	            <div class="inline" style="margin: 0;">
+	              <button class="btn secondary" type="button" data-modal-cancel>Close</button>
+	              <button class="btn" type="button" data-save-settings>Save changes</button>
+	            </div>
+	          </div>
+	        </div>
+	      </dialog>
 
       ${
         canManagePay
@@ -167,27 +197,30 @@ const loadStaff = async () => {
       });
     }
 
-    const getModalValues = () => {
-      const roleId = row.querySelector('[data-role-select]')?.value || member.role_id;
-      const payPerTicket = Number(row.querySelector('input[name="pay_per_ticket"]')?.value || 0) || 0;
-      return { roleId, payPerTicket };
-    };
+	    const getModalValues = () => {
+	      const roleId = row.querySelector('[data-role-select]')?.value || member.role_id;
+	      const payInput = row.querySelector('[data-manage-modal] input[name="pay_per_ticket"]');
+	      const payPerTicket = payInput ? Number(payInput.value || 0) || 0 : pay;
+	      const includePay = Boolean(canManagePay && payInput && !payInput.disabled);
+	      return { roleId, payPerTicket, includePay };
+	    };
 
-    if (saveBtn) {
-      saveBtn.addEventListener('click', async () => {
-        saveBtn.disabled = true;
-        const { roleId, payPerTicket } = getModalValues();
-        const res = await fetch(`/api/admin/staff/${member.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+	    if (saveBtn) {
+	      saveBtn.addEventListener('click', async () => {
+	        saveBtn.disabled = true;
+	        const { roleId, payPerTicket, includePay } = getModalValues();
+          const payload = {
             role_id: roleId,
             is_active: Boolean(member.is_active),
-            pay_per_ticket: payPerTicket,
-          }),
-        });
-        saveBtn.disabled = false;
-        if (!res.ok) {
+          };
+          if (includePay) payload.pay_per_ticket = payPerTicket;
+	        const res = await fetch(`/api/admin/staff/${member.id}`, {
+	          method: 'PUT',
+	          headers: { 'Content-Type': 'application/json' },
+	          body: JSON.stringify(payload),
+	        });
+	        saveBtn.disabled = false;
+	        if (!res.ok) {
           const msg = await res.json().catch(() => ({}));
           alert(msg.error || 'Failed to save changes');
           return;
@@ -197,22 +230,23 @@ const loadStaff = async () => {
       });
     }
 
-    if (suspendBtn) {
-      suspendBtn.addEventListener('click', async () => {
-        suspendBtn.disabled = true;
-        const { roleId, payPerTicket } = getModalValues();
-        const nextActive = isSuspended; // if currently suspended => unsuspend => true
-        const res = await fetch(`/api/admin/staff/${member.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+	    if (suspendBtn) {
+	      suspendBtn.addEventListener('click', async () => {
+	        suspendBtn.disabled = true;
+	        const { roleId, payPerTicket, includePay } = getModalValues();
+	        const nextActive = isSuspended; // if currently suspended => unsuspend => true
+          const payload = {
             role_id: roleId,
             is_active: nextActive,
-            pay_per_ticket: payPerTicket,
-          }),
-        });
-        suspendBtn.disabled = false;
-        if (!res.ok) {
+          };
+          if (includePay) payload.pay_per_ticket = payPerTicket;
+	        const res = await fetch(`/api/admin/staff/${member.id}`, {
+	          method: 'PUT',
+	          headers: { 'Content-Type': 'application/json' },
+	          body: JSON.stringify(payload),
+	        });
+	        suspendBtn.disabled = false;
+	        if (!res.ok) {
           const msg = await res.json().catch(() => ({}));
           alert(msg.error || 'Failed to update user status');
           return;
@@ -287,15 +321,18 @@ const loadStaff = async () => {
 const handleCreate = async (event) => {
   event.preventDefault();
   const formData = new FormData(event.target);
+  const payload = {
+    discord_id: formData.get('discord_id'),
+    role_id: formData.get('role_id'),
+    is_active: true,
+  };
+  if (state.canManagePay) {
+    payload.pay_per_ticket = Number(formData.get('pay_per_ticket') || 0) || 0;
+  }
   await fetch('/api/admin/staff', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      discord_id: formData.get('discord_id'),
-      role_id: formData.get('role_id'),
-      is_active: true,
-      pay_per_ticket: Number(formData.get('pay_per_ticket') || 0) || 0,
-    }),
+    body: JSON.stringify(payload),
   });
   event.target.reset();
   loadStaff();

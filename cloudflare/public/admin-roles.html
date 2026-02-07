@@ -57,10 +57,15 @@
               <h4>Configure permissions</h4>
             </div>
             <div class="modal-body">
-              <div class="permission-grid" data-new-permissions></div>
-              <div class="permissions-row" style="align-items: flex-start; margin-top: 12px;">
-                <button class="btn secondary warning" type="button" data-admin-toggle aria-pressed="false">Admin access: OFF</button>
-                <span class="hint-icon" tabindex="0" data-hint="Warning: Admins can access all panels and tickets regardless of panel visibility rules."></span>
+              <div class="permission-grid" data-new-ticket-permissions></div>
+
+              <div style="margin-top: 14px;">
+                <div class="subheading">Admin</div>
+                <div class="permission-grid" data-new-admin-permissions style="margin-top: 10px;"></div>
+                <div class="permissions-row" style="align-items: flex-start; margin-top: 12px;">
+                  <button class="btn secondary warning" type="button" data-admin-toggle aria-pressed="false">Admin access: OFF</button>
+                  <span class="hint-icon" tabindex="0" data-hint="Warning: Admins can access all panels and tickets regardless of panel visibility rules."></span>
+                </div>
               </div>
             </div>
             <div class="modal-actions">

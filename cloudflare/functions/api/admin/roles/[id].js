@@ -1,11 +1,13 @@
 import { jsonResponse, nowIso } from '../../../_lib/utils.js';
 import { getUserContext } from '../../../_lib/auth.js';
-import { requireApiAdmin } from '../../../_lib/api.js';
+import { requireApiPermission, requireApiStaff } from '../../../_lib/api.js';
 import { ensurePanelRoleAccessSchema, ensureRoleColorsSchema } from '../../../_lib/db.js';
 
 export const onRequestPut = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
-  const guard = requireApiAdmin(staff);
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.roles'));
   if (guard) return guard;
 
   const body = await request.json().catch(() => ({}));
@@ -36,7 +38,9 @@ export const onRequestPut = async ({ env, request, params }) => {
 
 export const onRequestDelete = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
-  const guard = requireApiAdmin(staff);
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.roles'));
   if (guard) return guard;
 
   const role = await env.DB.prepare('SELECT id, name, is_admin FROM staff_roles WHERE id = ? LIMIT 1')

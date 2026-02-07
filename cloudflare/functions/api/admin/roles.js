@@ -1,11 +1,13 @@
 import { jsonResponse, nowIso } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
-import { requireApiAdmin } from '../../_lib/api.js';
+import { requireApiPermission, requireApiStaff } from '../../_lib/api.js';
 import { ensureRoleColorsSchema } from '../../_lib/db.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
-  const guard = requireApiAdmin(staff);
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.roles'));
   if (guard) return guard;
 
   try {
@@ -18,7 +20,9 @@ export const onRequestGet = async ({ env, request }) => {
 
 export const onRequestPost = async ({ env, request }) => {
   const { user, staff } = await getUserContext(env, request);
-  const guard = requireApiAdmin(staff);
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.roles'));
   if (guard) return guard;
 
   const body = await request.json().catch(() => ({}));

@@ -1,4 +1,4 @@
-const PERMISSIONS = [
+const TICKET_PERMISSIONS = [
   { id: 'tickets.view', label: 'View tickets' },
   { id: 'tickets.reply', label: 'Reply to tickets' },
   { id: 'tickets.claim', label: 'Claim/unclaim tickets' },
@@ -6,6 +6,14 @@ const PERMISSIONS = [
   { id: 'tickets.status', label: 'Change ticket status' },
   { id: 'tickets.escalate', label: 'Escalate/move tickets' },
   { id: 'tickets.subject', label: 'Edit ticket subject' },
+];
+
+const ADMIN_PERMISSIONS = [
+  { id: 'admin.panels', label: 'Panels' },
+  { id: 'admin.statuses', label: 'Statuses' },
+  { id: 'admin.staff', label: 'Staff' },
+  { id: 'admin.roles', label: 'Roles' },
+  { id: 'admin.audit', label: 'Audit log' },
   { id: 'staff.manage_pay', label: 'Manage pay' },
 ];
 
@@ -26,8 +34,8 @@ const renderAdminToggle = (isAdmin) => {
   `;
 };
 
-const renderPermissionButtons = (selected = []) => {
-  return PERMISSIONS.map((perm) => {
+const renderPermissionButtons = (permissionDefs, selected = []) => {
+  return permissionDefs.map((perm) => {
     const isActive = selected.includes(perm.id);
     return `
       <button
@@ -52,10 +60,17 @@ const createModal = (selected, isAdmin) => {
         </div>
         <div class="modal-body">
           <div class="permission-grid">
-            ${renderPermissionButtons(selected)}
+            ${renderPermissionButtons(TICKET_PERMISSIONS, selected)}
           </div>
-          <div style="margin-top: 12px;">
-            ${renderAdminToggle(isAdmin)}
+
+          <div style="margin-top: 14px;">
+            <div class="subheading">Admin</div>
+            <div class="permission-grid" style="margin-top: 10px;">
+              ${renderPermissionButtons(ADMIN_PERMISSIONS, selected)}
+            </div>
+            <div style="margin-top: 12px;">
+              ${renderAdminToggle(isAdmin)}
+            </div>
           </div>
         </div>
         <div class="modal-actions">
@@ -214,10 +229,10 @@ const handleCreate = async (event) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('[data-create-role]').addEventListener('submit', handleCreate);
-  const newPerms = document.querySelector('[data-new-permissions]');
-  if (newPerms) {
-    newPerms.innerHTML = renderPermissionButtons([]);
-  }
+  const newTicketPerms = document.querySelector('[data-new-ticket-permissions]');
+  if (newTicketPerms) newTicketPerms.innerHTML = renderPermissionButtons(TICKET_PERMISSIONS, []);
+  const newAdminPerms = document.querySelector('[data-new-admin-permissions]');
+  if (newAdminPerms) newAdminPerms.innerHTML = renderPermissionButtons(ADMIN_PERMISSIONS, []);
   const createForm = document.querySelector('[data-create-role]');
   if (createForm) {
     const updatePreview = () => {

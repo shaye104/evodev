@@ -1,11 +1,13 @@
 import { jsonResponse, nowIso } from '../../../_lib/utils.js';
-import { getUserContext } from '../../../_lib/auth.js';
-import { requireApiAdmin } from '../../../_lib/api.js';
+import { getUserContext, hasPermission } from '../../../_lib/auth.js';
+import { requireApiPermission, requireApiStaff } from '../../../_lib/api.js';
 import { ensureStaffNotificationsSchema, ensureStaffPaySchema } from '../../../_lib/db.js';
 
 export const onRequestPut = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
-  const guard = requireApiAdmin(staff);
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.staff'));
   if (guard) return guard;
 
   try {
@@ -25,7 +27,12 @@ export const onRequestPut = async ({ env, request, params }) => {
 
   const nextRoleId = body.role_id || null;
   const nextIsActive = body.is_active ? 1 : 0;
-  const nextPay = Number(body.pay_per_ticket || 0) || 0;
+  const canManagePay = Boolean(staff && (staff.is_admin || hasPermission(staff, 'staff.manage_pay')));
+  const wantsPayChange = Object.prototype.hasOwnProperty.call(body, 'pay_per_ticket');
+  if (wantsPayChange && !canManagePay) {
+    return jsonResponse({ error: 'Permission denied' }, { status: 403 });
+  }
+  const nextPay = wantsPayChange ? (Number(body.pay_per_ticket || 0) || 0) : (Number(existing.pay_per_ticket || 0) || 0);
 
   await env.DB.prepare('UPDATE staff_members SET role_id = ?, is_active = ?, pay_per_ticket = ? WHERE id = ?')
     .bind(
@@ -58,7 +65,7 @@ export const onRequestPut = async ({ env, request, params }) => {
   await env.DB.prepare(
     'INSERT INTO audit_logs (actor_user_id, actor_discord_id, actor_type, action, entity_type, entity_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
   )
-    .bind(user.id, user.discord_id, 'admin', 'staff.update', 'staff', String(params.id), now)
+    .bind(user.id, user.discord_id, staff?.is_admin ? 'admin' : 'staff', 'staff.update', 'staff', String(params.id), now)
     .run();
 
   return jsonResponse({ ok: true });
@@ -66,7 +73,9 @@ export const onRequestPut = async ({ env, request, params }) => {
 
 export const onRequestDelete = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
-  const guard = requireApiAdmin(staff);
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.staff'));
   if (guard) return guard;
 
   const existing = await env.DB.prepare('SELECT id, discord_id, user_id FROM staff_members WHERE id = ? LIMIT 1')
@@ -95,7 +104,7 @@ export const onRequestDelete = async ({ env, request, params }) => {
     .bind(
       user.id,
       user.discord_id,
-      'admin',
+      staff?.is_admin ? 'admin' : 'staff',
       'staff.remove',
       'staff',
       String(existing.id),

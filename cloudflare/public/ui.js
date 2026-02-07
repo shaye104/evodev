@@ -4,6 +4,30 @@
     staff: null,
   };
 
+  const parsePermissions = (value) => {
+    if (!value) return [];
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      if (typeof value === 'string') {
+        return value
+          .split(',')
+          .map((v) => v.trim())
+          .filter(Boolean);
+      }
+      return [];
+    }
+  };
+
+  const hasAdminUiAccess = (staff) => {
+    if (!staff) return false;
+    if (staff.is_admin) return true;
+    const perms = parsePermissions(staff.permissions);
+    if (perms.includes('*')) return true;
+    return perms.some((p) => String(p || '').startsWith('admin.'));
+  };
+
   const parseDateTime = (value) => {
     if (!value) return null;
     if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
@@ -71,7 +95,7 @@
       el.style.display = state.staff ? '' : 'none';
     });
     document.querySelectorAll('[data-auth="admin"]').forEach((el) => {
-      el.style.display = state.staff?.is_admin ? '' : 'none';
+      el.style.display = hasAdminUiAccess(state.staff) ? '' : 'none';
     });
   };
 

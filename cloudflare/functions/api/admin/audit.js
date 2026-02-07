@@ -1,10 +1,12 @@
 import { jsonResponse } from '../../_lib/utils.js';
 import { getUserContext } from '../../_lib/auth.js';
-import { requireApiAdmin } from '../../_lib/api.js';
+import { requireApiPermission, requireApiStaff } from '../../_lib/api.js';
 
 export const onRequestGet = async ({ env, request }) => {
   const { staff } = await getUserContext(env, request);
-  const guard = requireApiAdmin(staff);
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin ? null : requireApiPermission(staff, 'admin.audit'));
   if (guard) return guard;
 
   const logs = await env.DB.prepare(

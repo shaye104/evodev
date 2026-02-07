@@ -693,6 +693,14 @@ a:hover {
   font-size: 14px;
 }
 
+.subheading {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .hint-icon {
   --hint-bg: #ffffff;
   --hint-border: var(--border);

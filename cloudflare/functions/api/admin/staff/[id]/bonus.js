@@ -8,7 +8,11 @@ import {
 
 export const onRequestPost = async ({ env, request, params }) => {
   const { user, staff } = await getUserContext(env, request);
-  const guard = requireApiStaff(staff) || ((staff && staff.is_admin) ? null : requireApiPermission(staff, 'staff.manage_pay'));
+  const guard =
+    requireApiStaff(staff) ||
+    (staff && staff.is_admin
+      ? null
+      : (requireApiPermission(staff, 'admin.staff') || requireApiPermission(staff, 'staff.manage_pay')));
   if (guard) return guard;
 
   try {
