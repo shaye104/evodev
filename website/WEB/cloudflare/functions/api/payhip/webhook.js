@@ -8,6 +8,7 @@ import {
   isAllowedProduct,
   sendPaidWebhookEmbed,
 } from '../../_lib/payhip.js';
+import { ensureAppSettingsSchema } from '../../_lib/db.js';
 
 function cleanValue(value) {
   if (value === undefined || value === null) return null;
@@ -16,7 +17,29 @@ function cleanValue(value) {
 }
 
 export const onRequestPost = async ({ env, request }) => {
-  if (!env.PAYHIP_API_KEY) {
+  await ensureAppSettingsSchema(env);
+
+  const integrationRows = await env.DB.prepare(
+    'SELECT setting_key, setting_value FROM app_settings WHERE setting_key IN (?, ?)'
+  )
+    .bind('PAYHIP_API_KEY', 'DISCORD_WEBHOOK_URL')
+    .all();
+
+  const integration = {};
+  for (const row of integrationRows.results || []) {
+    const key = String(row.setting_key || '').trim();
+    if (!key) continue;
+    integration[key] = row.setting_value == null ? '' : String(row.setting_value);
+  }
+
+  const payhipApiKey = String(
+    integration.PAYHIP_API_KEY || env.PAYHIP_API_KEY || ''
+  ).trim();
+  const discordWebhookUrl = String(
+    integration.DISCORD_WEBHOOK_URL || env.DISCORD_WEBHOOK_URL || ''
+  ).trim();
+
+  if (!payhipApiKey) {
     return jsonResponse(
       { error: 'PAYHIP_API_KEY is not configured' },
       { status: 500 }
@@ -29,7 +52,7 @@ export const onRequestPost = async ({ env, request }) => {
   }
 
   const signature = String(body.signature || '').trim();
-  const expected = await sha256Hex(env.PAYHIP_API_KEY);
+  const expected = await sha256Hex(payhipApiKey);
   if (!safeEqualHex(signature, expected)) {
     return jsonResponse({ error: 'Invalid signature' }, { status: 401 });
   }
@@ -131,7 +154,7 @@ export const onRequestPost = async ({ env, request }) => {
     .run();
 
   if (!alreadySent) {
-    await sendPaidWebhookEmbed(env, order);
+    await sendPaidWebhookEmbed(env, order, { webhookUrl: discordWebhookUrl });
     await env.DB.prepare(
       'UPDATE purchases SET webhook_sent = 1 WHERE transaction_id = ?'
     )

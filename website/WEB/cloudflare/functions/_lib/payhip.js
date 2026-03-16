@@ -128,8 +128,9 @@ function toMoneyString(value, currency) {
   return currency ? `${formatted} ${currency}` : formatted;
 }
 
-async function sendPaidWebhookEmbed(env, order) {
-  if (!env.DISCORD_WEBHOOK_URL) return;
+async function sendPaidWebhookEmbed(env, order, { webhookUrl } = {}) {
+  const targetWebhookUrl = String(webhookUrl || env.DISCORD_WEBHOOK_URL || '').trim();
+  if (!targetWebhookUrl) return;
   const currency = order.currency || '';
   const embed = {
     title: 'New Purchase',
@@ -185,7 +186,7 @@ async function sendPaidWebhookEmbed(env, order) {
   };
 
   try {
-    await fetch(env.DISCORD_WEBHOOK_URL, {
+    await fetch(targetWebhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ embeds: [embed] }),

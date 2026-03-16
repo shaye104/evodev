@@ -96,27 +96,6 @@ async function ensureTicketTranscriptsSchema(env) {
   ).run();
 }
 
-async function ensureTicketReadsSchema(env) {
-  await env.DB.prepare(
-    `
-    CREATE TABLE IF NOT EXISTS ticket_reads (
-      ticket_id INTEGER NOT NULL,
-      reader_type TEXT NOT NULL,
-      reader_id INTEGER NOT NULL,
-      last_read_message_id INTEGER,
-      last_read_at TEXT,
-      PRIMARY KEY (ticket_id, reader_type, reader_id)
-    )
-    `
-  ).run();
-  await env.DB.prepare(
-    'CREATE INDEX IF NOT EXISTS idx_ticket_reads_reader ON ticket_reads (reader_type, reader_id)'
-  ).run();
-  await env.DB.prepare(
-    'CREATE INDEX IF NOT EXISTS idx_ticket_reads_ticket_id ON ticket_reads (ticket_id)'
-  ).run();
-}
-
 async function ensureStaffPaySchema(env) {
   // Safe to call multiple times (ALTER will fail if column already exists).
   try {
@@ -168,6 +147,18 @@ async function ensureStaffPayAdjustmentsSchema(env) {
   ).run();
   await env.DB.prepare(
     'CREATE INDEX IF NOT EXISTS idx_staff_pay_adjustments_created_at ON staff_pay_adjustments (created_at)'
+  ).run();
+}
+
+async function ensureAppSettingsSchema(env) {
+  await env.DB.prepare(
+    `
+    CREATE TABLE IF NOT EXISTS app_settings (
+      setting_key TEXT PRIMARY KEY,
+      setting_value TEXT,
+      updated_at TEXT
+    )
+    `
   ).run();
 }
 
@@ -380,45 +371,6 @@ async function generatePublicId(env) {
   return randomId(8);
 }
 
-async function ensureTicketNotificationStateSchema(env) {
-  // Keep runtime resilient even if older schemas exist (CREATE won't modify existing tables).
-  await env.DB.prepare(
-    `
-    CREATE TABLE IF NOT EXISTS ticket_notification_state (
-      ticket_id INTEGER NOT NULL,
-      recipient_discord_id TEXT NOT NULL,
-      recipient_user_id INTEGER,
-      last_notified_at TEXT,
-      last_notified_message_id INTEGER,
-      last_request_response_at TEXT,
-      PRIMARY KEY (ticket_id, recipient_discord_id)
-    )
-    `
-  ).run();
-
-  // Backfill missing columns if the table existed before we added them.
-  // (We intentionally don't enforce uniqueness via CREATE UNIQUE INDEX because duplicates could exist.)
-  try {
-    await env.DB.prepare('ALTER TABLE ticket_notification_state ADD COLUMN recipient_user_id INTEGER').run();
-  } catch {}
-  try {
-    await env.DB.prepare('ALTER TABLE ticket_notification_state ADD COLUMN last_notified_at TEXT').run();
-  } catch {}
-  try {
-    await env.DB.prepare('ALTER TABLE ticket_notification_state ADD COLUMN last_notified_message_id INTEGER').run();
-  } catch {}
-  try {
-    await env.DB.prepare('ALTER TABLE ticket_notification_state ADD COLUMN last_request_response_at TEXT').run();
-  } catch {}
-
-  await env.DB.prepare(
-    'CREATE INDEX IF NOT EXISTS idx_ticket_notification_state_recipient ON ticket_notification_state (recipient_discord_id)'
-  ).run();
-  await env.DB.prepare(
-    'CREATE INDEX IF NOT EXISTS idx_ticket_notification_state_ticket ON ticket_notification_state (ticket_id)'
-  ).run();
-}
-
 export {
   getUserById,
   getUserByDiscordId,
@@ -433,11 +385,10 @@ export {
   ensureRoleSortSchema,
   ensureStaffNicknamesSchema,
   ensureTicketTranscriptsSchema,
-  ensureTicketReadsSchema,
-  ensureTicketNotificationStateSchema,
   ensureStaffPaySchema,
   ensureStaffNotificationsSchema,
   ensureStaffPayAdjustmentsSchema,
+  ensureAppSettingsSchema,
   staffCanAccessPanel,
   getAccessiblePanelsForStaff,
 };

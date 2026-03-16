@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207ag">
-  <script src="/ui.js?v=20260207ag" defer></script>
-  <script src="/admin-dashboard.js?v=20260207ag" defer></script>
+  <link rel="stylesheet" href="/app.css?v=20260207t">
+  <script src="/ui.js" defer></script>
+  <script src="/admin-dashboard.js" defer></script>
 </head>
-<body class="page-admin">
+<body>
   <header class="site-header">
     <div class="brand">
       <a href="/">Evo Support</a>
@@ -30,72 +30,14 @@
       </div>
     </section>
 
-    <section class="card grid admin-nav" data-auth="admin">
+    <section class="card grid" data-auth="admin">
       <a class="tile" href="/admin-panels.html">Panels</a>
       <a class="tile" href="/admin-statuses.html">Statuses</a>
       <a class="tile" href="/admin-staff.html">Staff</a>
       <a class="tile" href="/admin-roles.html">Roles</a>
+      <a class="tile" href="/admin-integrations.html">Integrations</a>
       <a class="tile" href="/admin-audit.html">Audit log</a>
     </section>
-
-    <section class="admin-puzzle" data-auth="admin">
-      <section class="card compact admin-metrics">
-        <h3 class="card-title">Tickets</h3>
-        <div data-admin-stats-tickets class="muted">Loading…</div>
-      </section>
-
-      <section class="card compact admin-metrics">
-        <h3 class="card-title">Escalations</h3>
-        <div data-admin-stats-escalations class="muted">Loading…</div>
-      </section>
-
-      <section class="card compact admin-metrics">
-        <h3 class="card-title">Payroll</h3>
-        <div data-admin-stats-payroll class="muted">Loading…</div>
-      </section>
-
-      <section class="card compact admin-panels-card">
-        <div class="inline" style="justify-content: space-between; margin: 0;">
-          <h3 class="card-title" style="margin: 0;">Tickets by panel</h3>
-        </div>
-        <table class="table compact" style="margin-top: 10px;">
-          <thead>
-            <tr>
-              <th>Panel</th>
-              <th>Open</th>
-              <th>Total</th>
-              <th>Esc ↑</th>
-              <th>Esc ↓</th>
-            </tr>
-          </thead>
-          <tbody data-admin-stats-panels></tbody>
-        </table>
-      </section>
-
-      <section class="card compact admin-staff-card">
-        <div class="inline" style="justify-content: space-between; margin: 0;">
-          <h3 class="card-title" style="margin: 0;">Staff</h3>
-        </div>
-        <div data-admin-stats-staff-summary class="muted" style="margin-top: 10px;">Loading…</div>
-        <div class="inline" style="margin-top: 10px; margin-bottom: 0;">
-          <button class="btn secondary small" type="button" data-payroll-breakdown-open style="display:none;">View payroll breakdown</button>
-        </div>
-      </section>
-    </section>
-
-    <dialog class="modal" data-payroll-modal aria-hidden="true">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4>Payroll breakdown (this month)</h4>
-        </div>
-        <div class="modal-body">
-          <div data-admin-stats-payroll-table class="muted">Loading…</div>
-        </div>
-        <div class="modal-actions">
-          <button class="btn secondary" type="button" data-modal-cancel>Close</button>
-        </div>
-      </div>
-    </dialog>
   </main>
   <footer class="site-footer">
     <span>Need help? Open a ticket and we will get back to you.</span>

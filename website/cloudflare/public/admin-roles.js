@@ -13,6 +13,7 @@ const ADMIN_PERMISSIONS = [
   { id: 'admin.statuses', label: 'Statuses' },
   { id: 'admin.staff', label: 'Staff' },
   { id: 'admin.roles', label: 'Roles' },
+  { id: 'admin.integrations', label: 'Integrations' },
   { id: 'admin.audit', label: 'Audit log' },
   { id: 'staff.manage_pay', label: 'Manage pay' },
 ];

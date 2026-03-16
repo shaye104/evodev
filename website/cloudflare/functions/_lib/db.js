@@ -150,6 +150,18 @@ async function ensureStaffPayAdjustmentsSchema(env) {
   ).run();
 }
 
+async function ensureAppSettingsSchema(env) {
+  await env.DB.prepare(
+    `
+    CREATE TABLE IF NOT EXISTS app_settings (
+      setting_key TEXT PRIMARY KEY,
+      setting_value TEXT,
+      updated_at TEXT
+    )
+    `
+  ).run();
+}
+
 async function getUserById(env, id) {
   if (!id) return null;
   return env.DB.prepare('SELECT * FROM users WHERE id = ? LIMIT 1')
@@ -376,6 +388,7 @@ export {
   ensureStaffPaySchema,
   ensureStaffNotificationsSchema,
   ensureStaffPayAdjustmentsSchema,
+  ensureAppSettingsSchema,
   staffCanAccessPanel,
   getAccessiblePanelsForStaff,
 };
