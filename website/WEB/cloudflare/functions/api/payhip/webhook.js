@@ -8,7 +8,6 @@ import {
   isAllowedProduct,
   sendPaidWebhookEmbed,
 } from '../../_lib/payhip.js';
-import { ensureAppSettingsSchema } from '../../_lib/db.js';
 
 function cleanValue(value) {
   if (value === undefined || value === null) return null;
@@ -39,27 +38,8 @@ async function logWebhookAudit(env, metadata = {}) {
 
 export const onRequestPost = async ({ env, request }) => {
   const requestId = String(request.headers.get('cf-ray') || '').trim();
-  await ensureAppSettingsSchema(env);
-
-  const integrationRows = await env.DB.prepare(
-    'SELECT setting_key, setting_value FROM app_settings WHERE setting_key IN (?, ?)'
-  )
-    .bind('PAYHIP_API_KEY', 'DISCORD_WEBHOOK_URL')
-    .all();
-
-  const integration = {};
-  for (const row of integrationRows.results || []) {
-    const key = String(row.setting_key || '').trim();
-    if (!key) continue;
-    integration[key] = row.setting_value == null ? '' : String(row.setting_value);
-  }
-
-  const payhipApiKey = String(
-    integration.PAYHIP_API_KEY || env.PAYHIP_API_KEY || ''
-  ).trim();
-  const discordWebhookUrl = String(
-    integration.DISCORD_WEBHOOK_URL || env.DISCORD_WEBHOOK_URL || ''
-  ).trim();
+  const payhipApiKey = String(env.PAYHIP_API_KEY || '').trim();
+  const discordWebhookUrl = String(env.DISCORD_WEBHOOK_URL || '').trim();
 
   if (!payhipApiKey) {
     await logWebhookAudit(env, {

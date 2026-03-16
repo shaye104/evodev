@@ -35,7 +35,6 @@
     if (path.endsWith('/admin-statuses.html') || path === '/admin-statuses.html') return 'admin.statuses';
     if (path.endsWith('/admin-staff.html') || path === '/admin-staff.html') return 'admin.staff';
     if (path.endsWith('/admin-roles.html') || path === '/admin-roles.html') return 'admin.roles';
-    if (path.endsWith('/admin-integrations.html') || path === '/admin-integrations.html') return 'admin.integrations';
     if (path.endsWith('/admin-audit.html') || path === '/admin-audit.html') return 'admin.audit';
     return null;
   };
