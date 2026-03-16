@@ -16,7 +16,29 @@ function cleanValue(value) {
   return str.length === 0 ? null : str;
 }
 
+async function logWebhookAudit(env, metadata = {}) {
+  try {
+    await env.DB.prepare(
+      'INSERT INTO audit_logs (actor_user_id, actor_discord_id, actor_type, action, entity_type, entity_id, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    )
+      .bind(
+        null,
+        null,
+        'system',
+        'payhip.webhook',
+        'purchase',
+        String(metadata.transaction_id || metadata.entity_id || ''),
+        JSON.stringify(metadata),
+        nowIso()
+      )
+      .run();
+  } catch (err) {
+    console.warn(`[payhip] webhook audit log failed: ${String(err?.message || err)}`);
+  }
+}
+
 export const onRequestPost = async ({ env, request }) => {
+  const requestId = String(request.headers.get('cf-ray') || '').trim();
   await ensureAppSettingsSchema(env);
 
   const integrationRows = await env.DB.prepare(
@@ -40,25 +62,52 @@ export const onRequestPost = async ({ env, request }) => {
   ).trim();
 
   if (!payhipApiKey) {
+    await logWebhookAudit(env, {
+      request_id: requestId,
+      reason: 'missing_payhip_api_key',
+    });
     return jsonResponse(
-      { error: 'PAYHIP_API_KEY is not configured' },
+      { error: 'PAYHIP_API_KEY is not configured', debug: { reason: 'missing_payhip_api_key' } },
       { status: 500 }
     );
   }
 
   const body = await request.json().catch(() => null);
   if (!body) {
-    return jsonResponse({ error: 'Invalid JSON body' }, { status: 400 });
-  }
-
-  const signature = String(body.signature || '').trim();
-  const expected = await sha256Hex(payhipApiKey);
-  if (!safeEqualHex(signature, expected)) {
-    return jsonResponse({ error: 'Invalid signature' }, { status: 401 });
+    await logWebhookAudit(env, {
+      request_id: requestId,
+      reason: 'invalid_json',
+    });
+    return jsonResponse(
+      { error: 'Invalid JSON body', debug: { reason: 'invalid_json' } },
+      { status: 400 }
+    );
   }
 
   const eventType = String(body.type || '').trim().toLowerCase();
   const eventStatus = String(body.status || '').trim().toLowerCase();
+  const transactionId = String(body.id || '').trim();
+  const email = String(body.email || '').trim().toLowerCase();
+
+  const signature = String(body.signature || '').trim();
+  const expected = await sha256Hex(payhipApiKey);
+  if (!safeEqualHex(signature, expected)) {
+    await logWebhookAudit(env, {
+      request_id: requestId,
+      transaction_id: transactionId,
+      event_type: eventType,
+      event_status: eventStatus,
+      reason: 'invalid_signature',
+    });
+    return jsonResponse(
+      {
+        error: 'Invalid signature',
+        debug: { reason: 'invalid_signature', event_type: eventType, event_status: eventStatus },
+      },
+      { status: 401 }
+    );
+  }
+
   const isPurchaseEvent =
     eventType === 'paid' ||
     eventType === 'free' ||
@@ -70,17 +119,48 @@ export const onRequestPost = async ({ env, request }) => {
     eventStatus === 'success';
 
   if (!isPurchaseEvent) {
-    return jsonResponse({ ok: true, ignored: true });
+    await logWebhookAudit(env, {
+      request_id: requestId,
+      transaction_id: transactionId,
+      event_type: eventType,
+      event_status: eventStatus,
+      reason: 'ignored_event_type',
+    });
+    return jsonResponse({
+      ok: true,
+      ignored: true,
+      debug: { reason: 'ignored_event_type', event_type: eventType, event_status: eventStatus },
+    });
   }
 
   if (!isAllowedProduct(env, body)) {
-    return jsonResponse({ ok: true, ignored: true });
+    await logWebhookAudit(env, {
+      request_id: requestId,
+      transaction_id: transactionId,
+      event_type: eventType,
+      event_status: eventStatus,
+      reason: 'ignored_product',
+      product_keys: extractProductKeys(body),
+    });
+    return jsonResponse({
+      ok: true,
+      ignored: true,
+      debug: { reason: 'ignored_product', product_keys: extractProductKeys(body) },
+    });
   }
 
-  const transactionId = String(body.id || '').trim();
-  const email = String(body.email || '').trim().toLowerCase();
   if (!transactionId || !email) {
-    return jsonResponse({ error: 'Missing transaction data' }, { status: 400 });
+    await logWebhookAudit(env, {
+      request_id: requestId,
+      transaction_id: transactionId,
+      event_type: eventType,
+      event_status: eventStatus,
+      reason: 'missing_transaction_data',
+    });
+    return jsonResponse(
+      { error: 'Missing transaction data', debug: { reason: 'missing_transaction_data' } },
+      { status: 400 }
+    );
   }
 
   const existing = await env.DB.prepare(
@@ -174,5 +254,22 @@ export const onRequestPost = async ({ env, request }) => {
       .run();
   }
 
-  return jsonResponse({ ok: true });
+  await logWebhookAudit(env, {
+    request_id: requestId,
+    transaction_id: transactionId,
+    event_type: eventType,
+    event_status: eventStatus,
+    reason: alreadySent ? 'upserted_existing' : 'inserted_and_notified',
+    webhook_already_sent: Boolean(alreadySent),
+    product_keys: productKeys,
+  });
+
+  return jsonResponse({
+    ok: true,
+    debug: {
+      reason: alreadySent ? 'upserted_existing' : 'inserted_and_notified',
+      webhook_already_sent: Boolean(alreadySent),
+      transaction_id: transactionId,
+    },
+  });
 };
