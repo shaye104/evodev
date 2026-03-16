@@ -1,0 +1,36 @@
+<%- include('../partials/header', { pageTitle: pageTitle }) %>
+<section class="page-header">
+  <div>
+    <h1>Integrations</h1>
+    <p>Manage Payhip webhook settings used for purchase notifications.</p>
+  </div>
+</section>
+
+<section class="card">
+  <% if (String(query?.saved || '') === '1') { %>
+    <p style="margin-top: 0;">Settings saved.</p>
+  <% } %>
+  <form class="form" method="post" action="/admin/integrations">
+    <label>
+      Payhip API Key
+      <input
+        name="payhip_api_key"
+        value="<%= settings?.PAYHIP_API_KEY || '' %>"
+        placeholder="Webhook signature key from Payhip"
+      >
+    </label>
+    <label>
+      Discord Webhook URL
+      <input
+        name="discord_webhook_url"
+        value="<%= settings?.DISCORD_WEBHOOK_URL || '' %>"
+        placeholder="https://discord.com/api/webhooks/..."
+      >
+    </label>
+    <button type="submit">Save integrations</button>
+  </form>
+  <p style="margin-bottom: 0;">
+    Leave a value blank to fall back to the server environment variable.
+  </p>
+</section>
+<%- include('../partials/footer') %>

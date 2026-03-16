@@ -1,0 +1,93 @@
+const renderTickets = (tickets) => {
+  const tbody = document.querySelector('[data-ticket-body]');
+  tbody.innerHTML = '';
+  if (!tickets.length) {
+    const row = document.createElement('tr');
+    row.innerHTML = '<td colspan="7">No tickets found.</td>';
+    tbody.appendChild(row);
+    return;
+  }
+  tickets.forEach((ticket) => {
+    const row = document.createElement('tr');
+    const updatedAt = window.supportFormatDateTime?.(ticket.last_message_at || ticket.updated_at) ||
+      (ticket.last_message_at || ticket.updated_at || '');
+    const assigned =
+      ticket.assigned_display_name ||
+      ticket.assigned_username ||
+      ticket.assigned_discord_id ||
+      'Unassigned';
+    const href = `/staff-ticket.html?id=${ticket.public_id}`;
+    const unread = Boolean(ticket.unread_for_staff);
+    row.innerHTML = `
+      <td><a href="${href}">#${ticket.public_id}</a></td>
+      <td>${unread ? '<span class="unread-dot" title="Unread messages" aria-label="Unread messages"></span>' : ''}${ticket.subject || 'Support ticket'}</td>
+      <td>${ticket.panel_name || 'General'}</td>
+      <td><span class="pill">${ticket.status_name || 'Open'}</span></td>
+      <td>${assigned}</td>
+      <td>${updatedAt}</td>
+      <td><a class="btn secondary small" href="${href}">View</a></td>
+    `;
+    tbody.appendChild(row);
+  });
+};
+
+const loadFilters = async () => {
+  const [statusesRes, panelsRes] = await Promise.all([
+    fetch('/api/statuses'),
+    fetch('/api/panels'),
+  ]);
+  const statusesData = await statusesRes.json();
+  const panelsData = await panelsRes.json();
+  const statusSelect = document.querySelector('[data-filter-status]');
+  const panelSelect = document.querySelector('[data-filter-panel]');
+
+  statusesData.statuses.forEach((status) => {
+    const option = document.createElement('option');
+    option.value = status.id;
+    option.textContent = status.name;
+    statusSelect.appendChild(option);
+  });
+
+  panelsData.panels.forEach((panel) => {
+    const option = document.createElement('option');
+    option.value = panel.id;
+    option.textContent = panel.name;
+    panelSelect.appendChild(option);
+  });
+};
+
+const fetchTickets = async () => {
+  const statusId = document.querySelector('[data-filter-status]').value;
+  const panelId = document.querySelector('[data-filter-panel]').value;
+  const mine = document.querySelector('[data-filter-mine]')?.checked;
+  const params = new URLSearchParams();
+  if (statusId) params.set('status_id', statusId);
+  if (panelId) params.set('panel_id', panelId);
+  const staffId = window.__supportState?.staff?.id;
+  if (mine && staffId) params.set('assigned_staff_id', staffId);
+  const res = await fetch(`/api/staff/tickets?${params.toString()}`);
+  if (res.status === 403) {
+    window.location.href = '/login.html';
+    return;
+  }
+  const data = await res.json();
+  const openOnly = (data.tickets || []).filter((t) => !t.is_closed);
+  renderTickets(openOnly);
+};
+
+const initEvents = () => {
+  if (!window.EventSource) return;
+  const source = new EventSource('/api/events');
+  source.addEventListener('ticket.updated', () => fetchTickets());
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  // staff.html is now a landing page; staff-open.html uses this script for the tickets table.
+  const table = document.querySelector('[data-ticket-body]');
+  if (!table) return;
+  // Ensure we have staff context for "Claimed by me" filtering as early as possible.
+  document.addEventListener('auth:ready', () => fetchTickets(), { once: true });
+  loadFilters().then(fetchTickets);
+  document.querySelector('[data-filter-form]').addEventListener('change', fetchTickets);
+  initEvents();
+});

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Ticket | Evo Support</title>
+  <link rel="stylesheet" href="/app.css?v=20260207ag">
+  <script src="/ui.js?v=20260207ag" defer></script>
+  <script src="/staff-ticket.js?v=20260207ag" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <a href="/">Evo Support</a>
+    </div>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/tickets.html" data-auth="user">My Tickets</a>
+      <a href="/staff.html" data-auth="staff">Staff</a>
+      <a href="/admin.html" data-auth="admin">Admin</a>
+      <a class="btn" href="/api/auth/discord" data-auth="guest">Login with Discord</a>
+      <a href="/api/logout" data-auth="user">Logout</a>
+    </nav>
+  </header>
+  <main class="site-main">
+    <section class="page-header">
+      <div>
+        <h1 data-ticket-title>Ticket</h1>
+        <p data-ticket-subject></p>
+      </div>
+      <div class="meta" data-ticket-meta></div>
+      <div class="hero-actions">
+        <a class="btn secondary" href="/staff-open.html" data-auth="staff">Back to open tickets</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="ticket-controls" data-ticket-controls>
+        <button class="btn secondary small" type="button" data-claim-button data-action="claim">Claim</button>
+        <button class="btn secondary small" type="button" data-subject-edit>Edit subject</button>
+        <button class="btn secondary small" type="button" data-escalate-open>Escalate</button>
+        <button class="btn warning small" type="button" data-request-response>Request response</button>
+        <button class="btn danger small" type="button" data-close-open>Close ticket</button>
+        <span class="hint-icon" tabindex="0" data-hint="Claim assigns you to the ticket. Escalate moves the ticket to another panel. Closing is permanent."></span>
+      </div>
+    </section>
+
+    <dialog class="modal" data-subject-modal aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>Edit subject</h4>
+        </div>
+        <div class="modal-body">
+          <label>
+            Subject
+            <span class="hint-icon" tabindex="0" data-hint="Only staff with the &quot;Edit ticket subject&quot; permission can change this."></span>
+            <input type="text" id="ticket-subject" name="subject" data-subject-input placeholder="Ticket subject" autocomplete="off">
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
+          <button class="btn" type="button" data-subject-save>Save</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal" data-escalate-modal aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>Escalate ticket</h4>
+          <span class="hint-icon" tabindex="0" data-hint="Select the panel to move this ticket to. If you cannot access the new panel, you will be redirected."></span>
+        </div>
+        <div class="modal-body">
+          <div class="permission-grid" data-escalate-panels></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn secondary" type="button" data-modal-cancel>Cancel</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal" data-close-modal aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4>Close ticket</h4>
+          <span class="hint-icon" tabindex="0" data-hint="This will mark the ticket as closed and generate a transcript automatically."></span>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to close this ticket?</p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn secondary" type="button" data-modal-cancel>No, go back</button>
+          <button class="btn danger" type="button" data-close-confirm>Yes, close ticket</button>
+        </div>
+      </div>
+    </dialog>
+
+    <section class="card">
+      <div class="inline" style="margin-right: 0;">
+        <h3 style="margin: 0;">Transcripts</h3>
+        <span class="hint-icon" tabindex="0" data-hint="Transcripts are generated automatically when a ticket is closed."></span>
+      </div>
+      <div data-transcripts-list class="muted">Loading…</div>
+    </section>
+
+    <section class="thread" data-ticket-thread></section>
+
+    <section class="card">
+      <h3>Reply</h3>
+      <form class="form" data-reply-form autocomplete="off">
+        <textarea name="message" rows="4" required></textarea>
+        <label>
+          Attachments
+          <input type="file" name="attachments" multiple accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.txt,.log,.lua,.json,.md,.rbxm,.rbxmx,.mp4,.webm">
+        </label>
+        <button class="btn" type="submit">Send reply</button>
+      </form>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <span>Need help? Open a ticket and we will get back to you.</span>
+  </footer>
+</body>
+</html>
