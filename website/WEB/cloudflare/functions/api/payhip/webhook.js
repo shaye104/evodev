@@ -57,7 +57,19 @@ export const onRequestPost = async ({ env, request }) => {
     return jsonResponse({ error: 'Invalid signature' }, { status: 401 });
   }
 
-  if (body.type !== 'paid') {
+  const eventType = String(body.type || '').trim().toLowerCase();
+  const eventStatus = String(body.status || '').trim().toLowerCase();
+  const isPurchaseEvent =
+    eventType === 'paid' ||
+    eventType === 'free' ||
+    eventType === 'free_purchase' ||
+    eventType === 'purchase' ||
+    eventStatus === 'paid' ||
+    eventStatus === 'complete' ||
+    eventStatus === 'completed' ||
+    eventStatus === 'success';
+
+  if (!isPurchaseEvent) {
     return jsonResponse({ ok: true, ignored: true });
   }
 

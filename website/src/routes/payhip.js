@@ -31,8 +31,20 @@ function createPayhipRouter({ discord }) {
       return res.status(401).send('Invalid signature.');
     }
 
-    if (body.type !== 'paid') {
-      console.log(`[payhip] ignored event type: ${body.type}`);
+    const eventType = String(body.type || '').trim().toLowerCase();
+    const eventStatus = String(body.status || '').trim().toLowerCase();
+    const isPurchaseEvent =
+      eventType === 'paid' ||
+      eventType === 'free' ||
+      eventType === 'free_purchase' ||
+      eventType === 'purchase' ||
+      eventStatus === 'paid' ||
+      eventStatus === 'complete' ||
+      eventStatus === 'completed' ||
+      eventStatus === 'success';
+
+    if (!isPurchaseEvent) {
+      console.log(`[payhip] ignored event type/status: ${body.type}/${body.status}`);
       return res.status(200).send('Ignored.');
     }
 
