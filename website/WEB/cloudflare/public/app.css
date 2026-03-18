@@ -1357,6 +1357,50 @@ a:hover {
   gap: 10px;
 }
 
+.staff-ticket-toolbar {
+  border-color: #d9e6fb;
+  background: linear-gradient(180deg, #fbfdff 0%, #f4f8ff 100%);
+}
+
+.ticket-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #d7e3f8;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.ticket-action-group-warn {
+  border-color: #f5dc9a;
+  background: #fffaf0;
+}
+
+.ticket-action-group-danger {
+  border-color: #f5bcc4;
+  background: #fff5f7;
+}
+
+.ticket-action-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #617693;
+  margin-right: 2px;
+}
+
+.staff-ticket-toolbar .ticket-controls .btn.secondary.small {
+  color: #355073;
+  border-color: #bfd3f1;
+  background: #f7fbff;
+}
+
+.staff-ticket-toolbar .ticket-controls .btn.secondary.small:hover {
+  background: #edf4ff;
+}
+
 @media (max-width: 860px) {
   .ticket-controls {
     flex-direction: column;
@@ -1366,6 +1410,11 @@ a:hover {
   .ticket-controls-main,
   .ticket-controls-side {
     width: 100%;
+  }
+
+  .ticket-action-group {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .ticket-controls-side .btn {
@@ -1777,6 +1826,15 @@ a:hover {
   font-size: 13px;
   color: #7a889f;
   font-style: italic;
+}
+
+.transcript-card.is-empty {
+  border-style: dashed;
+  background: #fbfdff;
+}
+
+.transcript-card.is-empty .transcript-title {
+  color: #3d5374;
 }
 
 .grid {
