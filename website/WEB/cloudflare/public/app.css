@@ -1700,6 +1700,59 @@ a:hover {
     linear-gradient(180deg, #f8fbff 0%, #ffffff 320px);
 }
 
+.admin-page {
+  background:
+    radial-gradient(900px 330px at 8% 0%, rgba(57, 123, 225, 0.1), transparent 67%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 320px);
+}
+
+.admin-header-shell {
+  margin-bottom: 16px;
+}
+
+.admin-header-shell h1 {
+  margin-bottom: 8px;
+}
+
+.admin-header-shell p {
+  margin: 0;
+  color: #607590;
+  font-size: 1.08rem;
+}
+
+.admin-actions-grid {
+  border-color: #d9e4f6;
+  background: transparent;
+  box-shadow: none;
+  margin-bottom: 18px;
+  padding: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.admin-actions-grid .tile {
+  border: 1px solid #d5e2f7;
+  background: #ffffff;
+  color: #2b4568;
+  font-weight: 700;
+  box-shadow: 0 10px 20px rgba(20, 38, 66, 0.06);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-actions-grid .tile:hover {
+  transform: translateY(-2px);
+  border-color: #6f9de4;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f7ff 100%);
+  box-shadow: 0 18px 30px rgba(20, 38, 66, 0.12);
+}
+
+.admin-actions-grid .tile:hover .tile-arrow {
+  transform: translateX(4px);
+  border-color: #6f9de4;
+}
+
 .staff-hero {
   margin-bottom: 14px;
 }

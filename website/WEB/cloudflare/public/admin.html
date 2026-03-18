@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207t">
-  <script src="/ui.js" defer></script>
-  <script src="/admin-dashboard.js" defer></script>
+  <link rel="stylesheet" href="/app.css?v=20260318e">
+  <script src="/ui.js?v=20260318e" defer></script>
+  <script src="/admin-dashboard.js?v=20260318e" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -22,20 +22,36 @@
       <a href="/api/logout" data-auth="user">Logout</a>
     </nav>
   </header>
-  <main class="site-main">
-    <section class="page-header">
+  <main class="site-main admin-page">
+    <section class="page-header header-shell admin-header-shell">
       <div>
+        <span class="hero-kicker">Admin Workspace</span>
         <h1>Admin</h1>
         <p>Manage panels, staff, and permissions.</p>
       </div>
     </section>
 
-    <section class="card grid" data-auth="admin">
-      <a class="tile" href="/admin-panels.html">Panels</a>
-      <a class="tile" href="/admin-statuses.html">Statuses</a>
-      <a class="tile" href="/admin-staff.html">Staff</a>
-      <a class="tile" href="/admin-roles.html">Roles</a>
-      <a class="tile" href="/admin-audit.html">Audit log</a>
+    <section class="card grid admin-actions-grid" data-auth="admin">
+      <a class="tile" href="/admin-panels.html">
+        <span class="tile-head"><span class="tile-title">Panels</span><span class="tile-arrow" aria-hidden="true">→</span></span>
+        <span class="tile-sub">Configure ticket categories and ownership.</span>
+      </a>
+      <a class="tile" href="/admin-statuses.html">
+        <span class="tile-head"><span class="tile-title">Statuses</span><span class="tile-arrow" aria-hidden="true">→</span></span>
+        <span class="tile-sub">Control workflow states and visibility.</span>
+      </a>
+      <a class="tile" href="/admin-staff.html">
+        <span class="tile-head"><span class="tile-title">Staff</span><span class="tile-arrow" aria-hidden="true">→</span></span>
+        <span class="tile-sub">Manage team members and permissions.</span>
+      </a>
+      <a class="tile" href="/admin-roles.html">
+        <span class="tile-head"><span class="tile-title">Roles</span><span class="tile-arrow" aria-hidden="true">→</span></span>
+        <span class="tile-sub">Define role groups and access presets.</span>
+      </a>
+      <a class="tile" href="/admin-audit.html">
+        <span class="tile-head"><span class="tile-title">Audit log</span><span class="tile-arrow" aria-hidden="true">→</span></span>
+        <span class="tile-sub">Review administrative actions and changes.</span>
+      </a>
     </section>
   </main>
   <footer class="site-footer">
