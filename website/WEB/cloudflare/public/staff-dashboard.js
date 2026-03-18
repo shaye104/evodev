@@ -234,10 +234,8 @@ const renderEarnings = (payload) => {
 
   const answeredKpi = document.querySelector('[data-kpi-answered]');
   const claimedKpi = document.querySelector('[data-kpi-claimed]');
-  const earningsKpi = document.querySelector('[data-kpi-earnings]');
   if (answeredKpi) answeredKpi.textContent = String(answered);
   if (claimedKpi) claimedKpi.textContent = String(claimed);
-  if (earningsKpi) earningsKpi.textContent = `${currency}${earnings}`;
 
   el.innerHTML = `
     <div class="staff-earnings-row staff-earnings-primary">
