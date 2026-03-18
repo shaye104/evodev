@@ -240,18 +240,18 @@ const renderEarnings = (payload) => {
   if (earningsKpi) earningsKpi.textContent = `${currency}${earnings}`;
 
   el.innerHTML = `
-    <div class="inline staff-earnings-pills">
-      <span class="pill">Answered: ${answered}</span>
-      <span class="pill">Claimed: ${claimed}</span>
-      <span class="pill">Bonus: ${currency}${bonus}</span>
+    <div class="staff-earnings-row staff-earnings-primary">
+      <div class="muted">Total earnings (this month)</div>
+      <div class="staff-earnings-total">${currency}${earnings}</div>
     </div>
     <div class="staff-earnings-row">
       <div class="muted">Pay rate</div>
       <div class="staff-pay-rate">${currency}${pay} per ticket</div>
     </div>
-    <div class="staff-earnings-row">
-      <div class="muted">Total earnings (this month)</div>
-      <div class="staff-earnings-total">${currency}${earnings}</div>
+    <div class="inline staff-earnings-pills">
+      <span class="pill">Answered: ${answered}</span>
+      <span class="pill">Claimed: ${claimed}</span>
+      <span class="pill">Bonus: ${currency}${bonus}</span>
     </div>
   `;
 };

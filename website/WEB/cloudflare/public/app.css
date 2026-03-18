@@ -1694,12 +1694,12 @@ a:hover {
 
 .staff-hero-card {
   width: 100%;
-  border: 1px solid #d8e5fa;
+  border: 1px solid #d4e2f8;
   border-radius: 18px;
   padding: 20px;
   background:
-    linear-gradient(160deg, #ffffff 0%, #f4f8ff 54%, #eef4ff 100%);
-  box-shadow: 0 14px 30px rgba(17, 42, 89, 0.08);
+    linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+  box-shadow: 0 12px 24px rgba(17, 42, 89, 0.07);
   display: grid;
   grid-template-columns: minmax(300px, 1.5fr) minmax(260px, 1fr);
   gap: 16px;
@@ -1719,29 +1719,31 @@ a:hover {
 }
 
 .staff-kpi {
-  border: 1px solid #c8daf7;
+  border: 1px solid #cddcf6;
   border-radius: 12px;
-  padding: 12px 10px;
-  background: linear-gradient(180deg, #2e66c2 0%, #3d78d6 100%);
-  color: #ffffff;
+  padding: 12px 11px;
+  background: linear-gradient(180deg, #fafdff 0%, #eef4ff 100%);
+  color: #24436a;
   min-height: 82px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 6px;
 }
 
 .staff-kpi-label {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(231, 242, 255, 0.92);
+  color: #4f6d97;
 }
 
 .staff-kpi-value {
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   line-height: 1.1;
   letter-spacing: -0.02em;
+  color: #214777;
 }
 
 .welcome-title {
@@ -1758,13 +1760,13 @@ a:hover {
 .staff-actions-grid {
   margin-bottom: 18px;
   padding: 14px;
-  border-color: #d8e5fa;
+  border-color: #d4e2f8;
   background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
   box-shadow: 0 10px 24px rgba(16, 44, 95, 0.06);
 }
 
 .staff-actions-grid .tile {
-  border: 1px solid #c8daf7;
+  border: 1px solid #c6d8f6;
   background: #ffffff;
   color: #2b4568;
   font-weight: 700;
@@ -1777,14 +1779,39 @@ a:hover {
 
 .staff-actions-grid .tile:hover {
   transform: translateY(-1px);
-  border-color: #8fb2ea;
+  border-color: #7aa4e8;
   box-shadow: 0 14px 26px rgba(20, 38, 66, 0.1);
 }
 
+.tile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .tile-title {
-  font-size: 1.42rem;
+  font-size: 1.36rem;
   font-weight: 800;
   line-height: 1.2;
+}
+
+.tile-arrow {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid #d3e1f8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: #356dc8;
+  transition: transform 140ms ease, border-color 140ms ease;
+}
+
+.staff-actions-grid .tile:hover .tile-arrow {
+  transform: translateX(2px);
+  border-color: #7aa4e8;
 }
 
 .tile-sub {
@@ -1794,8 +1821,10 @@ a:hover {
 }
 
 .staff-month-header {
-  margin-top: 8px;
+  margin-top: 4px;
   margin-bottom: 14px;
+  padding-top: 6px;
+  border-top: 1px solid #deebfd;
 }
 
 .staff-month-title {
@@ -1813,7 +1842,7 @@ a:hover {
 }
 
 .staff-stats-grid .card {
-  border-color: #d8e5fa;
+  border-color: #d4e2f8;
   box-shadow: 0 12px 24px rgba(16, 44, 95, 0.07);
 }
 
@@ -1831,14 +1860,34 @@ a:hover {
   margin-top: 10px;
 }
 
+.staff-earnings-primary {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
 .staff-pay-rate {
   font-weight: 800;
-  font-size: 18px;
+  font-size: 17px;
+  color: #4b5f7d;
 }
 
 .staff-earnings-total {
   font-weight: 900;
-  font-size: 24px;
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #20457a;
+}
+
+.staff-earnings-pills {
+  margin-top: 14px;
+  gap: 8px;
+}
+
+.staff-earnings-pills .pill {
+  color: #38587f;
+  background: #edf3fe;
+  border-color: #c8daf7;
 }
 
 @media (max-width: 980px) {
