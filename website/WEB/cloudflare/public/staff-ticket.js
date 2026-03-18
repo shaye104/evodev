@@ -251,6 +251,7 @@ const renderTicket = (payload) => {
     const isMine = assignedId && meId && assignedId === meId;
     claimBtn.textContent = isMine ? 'Unclaim' : 'Claim';
     claimBtn.dataset.action = isMine ? 'unclaim' : 'claim';
+    claimBtn.className = isMine ? 'btn secondary small' : 'btn small';
   }
 
   const escalateBtn = document.querySelector('[data-escalate-open]');
@@ -433,11 +434,14 @@ const handleCloseTicket = async () => {
 
 const renderTranscripts = (rows) => {
   const el = document.querySelector('[data-transcripts-list]');
+  const card = document.querySelector('.transcript-card');
   if (!el) return;
   if (!rows.length) {
+    card?.classList.add('is-empty');
     el.textContent = 'No transcripts yet.';
     return;
   }
+  card?.classList.remove('is-empty');
   const id = getTicketId();
   const formatTime = (v) => window.supportFormatDateTime?.(v) || v || '';
   el.innerHTML = `

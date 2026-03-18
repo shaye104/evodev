@@ -1339,9 +1339,39 @@ a:hover {
 
 .ticket-controls {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.ticket-controls-main {
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+}
+
+.ticket-controls-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 860px) {
+  .ticket-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ticket-controls-main,
+  .ticket-controls-side {
+    width: 100%;
+  }
+
+  .ticket-controls-side .btn {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .filters {
@@ -1741,6 +1771,12 @@ a:hover {
 
 .transcript-title {
   margin: 0;
+}
+
+.transcript-card.is-empty [data-transcripts-list] {
+  font-size: 13px;
+  color: #7a889f;
+  font-style: italic;
 }
 
 .grid {
