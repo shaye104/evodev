@@ -16,8 +16,6 @@
     <nav class="site-nav">
       <a href="/">Home</a>
       <a href="/tickets.html" data-auth="user">My Tickets</a>
-      <a href="/staff.html" data-auth="staff">Staff</a>
-      <a href="/admin.html" data-auth="admin">Admin</a>
       <a class="btn" href="/api/auth/discord" data-auth="guest">Login with Discord</a>
       <a href="/api/logout" data-auth="user">Logout</a>
     </nav>
@@ -26,9 +24,9 @@
     <section class="page-header tickets-header">
       <div>
         <h1>Your tickets</h1>
-        <p>Track your requests and replies.</p>
+        <p>Follow updates, reply quickly, and keep everything in one place.</p>
       </div>
-      <a class="btn" href="/new-ticket.html">New Ticket</a>
+      <a class="btn" href="/new-ticket.html">Open New Ticket</a>
     </section>
 
     <section class="ticket-summary" data-ticket-summary>
@@ -41,11 +39,11 @@
         <strong class="summary-value" data-summary-open>0</strong>
       </article>
       <article class="summary-card">
-        <span class="summary-label">Awaiting You</span>
+        <span class="summary-label">Waiting On You</span>
         <strong class="summary-value" data-summary-awaiting>0</strong>
       </article>
       <article class="summary-card">
-        <span class="summary-label">Closed</span>
+        <span class="summary-label">Resolved</span>
         <strong class="summary-value" data-summary-closed>0</strong>
       </article>
     </section>

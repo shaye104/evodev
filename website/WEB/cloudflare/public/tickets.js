@@ -64,7 +64,7 @@ const renderTickets = (tickets) => {
       <td>${escapeHtml(ticket.panel_name || 'General')}</td>
       <td><span class="pill ${statusTone}">${escapeHtml(statusName)}</span></td>
       <td class="ticket-updated-cell">${escapeHtml(updatedAt)}</td>
-      <td><a class="btn secondary small ticket-view-btn" href="${href}">View</a></td>
+      <td><a class="btn secondary small ticket-view-btn" href="${href}">Open</a></td>
     `;
     tbody.appendChild(row);
   });
