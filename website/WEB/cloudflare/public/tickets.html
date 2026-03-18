@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Your Tickets | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207ag">
-  <script src="/ui.js?v=20260207ag" defer></script>
-  <script src="/tickets.js?v=20260207ag" defer></script>
+  <link rel="stylesheet" href="/app.css?v=20260318a">
+  <script src="/ui.js?v=20260318a" defer></script>
+  <script src="/tickets.js?v=20260318a" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -22,28 +22,50 @@
       <a href="/api/logout" data-auth="user">Logout</a>
     </nav>
   </header>
-  <main class="site-main">
-    <section class="page-header">
+  <main class="site-main tickets-page">
+    <section class="page-header tickets-header">
       <div>
         <h1>Your tickets</h1>
         <p>Track your requests and replies.</p>
       </div>
       <a class="btn" href="/new-ticket.html">New Ticket</a>
     </section>
-    <section class="card">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Subject</th>
-            <th>Panel</th>
-            <th>Status</th>
-            <th>Updated</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody data-ticket-body></tbody>
-      </table>
+
+    <section class="ticket-summary" data-ticket-summary>
+      <article class="summary-card">
+        <span class="summary-label">Total</span>
+        <strong class="summary-value" data-summary-total>0</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Open</span>
+        <strong class="summary-value" data-summary-open>0</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Awaiting You</span>
+        <strong class="summary-value" data-summary-awaiting>0</strong>
+      </article>
+      <article class="summary-card">
+        <span class="summary-label">Closed</span>
+        <strong class="summary-value" data-summary-closed>0</strong>
+      </article>
+    </section>
+
+    <section class="card ticket-table-card">
+      <div class="table-shell">
+        <table class="table ticket-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Subject</th>
+              <th>Panel</th>
+              <th>Status</th>
+              <th>Updated</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody data-ticket-body></tbody>
+        </table>
+      </div>
     </section>
   </main>
   <footer class="site-footer">
