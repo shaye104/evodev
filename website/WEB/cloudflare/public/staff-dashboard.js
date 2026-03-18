@@ -231,6 +231,14 @@ const renderEarnings = (payload) => {
   const answered = Number(me.answered_tickets || 0) || 0;
   const bonus = Number(me.bonus_total || 0) || 0;
   const earnings = Number(me.earnings || 0) || 0;
+
+  const answeredKpi = document.querySelector('[data-kpi-answered]');
+  const claimedKpi = document.querySelector('[data-kpi-claimed]');
+  const earningsKpi = document.querySelector('[data-kpi-earnings]');
+  if (answeredKpi) answeredKpi.textContent = String(answered);
+  if (claimedKpi) claimedKpi.textContent = String(claimed);
+  if (earningsKpi) earningsKpi.textContent = `${currency}${earnings}`;
+
   el.innerHTML = `
     <div class="inline staff-earnings-pills">
       <span class="pill">Answered: ${answered}</span>

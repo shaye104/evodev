@@ -1689,7 +1689,59 @@ a:hover {
 }
 
 .staff-hero {
-  margin-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.staff-hero-card {
+  width: 100%;
+  border: 1px solid #d8e5fa;
+  border-radius: 18px;
+  padding: 20px;
+  background:
+    linear-gradient(160deg, #ffffff 0%, #f4f8ff 54%, #eef4ff 100%);
+  box-shadow: 0 14px 30px rgba(17, 42, 89, 0.08);
+  display: grid;
+  grid-template-columns: minmax(300px, 1.5fr) minmax(260px, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.staff-hero-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.staff-hero-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.staff-kpi {
+  border: 1px solid #c8daf7;
+  border-radius: 12px;
+  padding: 12px 10px;
+  background: linear-gradient(180deg, #2e66c2 0%, #3d78d6 100%);
+  color: #ffffff;
+  min-height: 82px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.staff-kpi-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(231, 242, 255, 0.92);
+}
+
+.staff-kpi-value {
+  font-size: 1.35rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .welcome-title {
@@ -1705,22 +1757,40 @@ a:hover {
 
 .staff-actions-grid {
   margin-bottom: 18px;
-  padding: 18px;
+  padding: 14px;
+  border-color: #d8e5fa;
+  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+  box-shadow: 0 10px 24px rgba(16, 44, 95, 0.06);
 }
 
 .staff-actions-grid .tile {
-  border: 1px solid #dbe6f7;
-  background: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
+  border: 1px solid #c8daf7;
+  background: #ffffff;
   color: #2b4568;
   font-weight: 700;
-  box-shadow: 0 8px 18px rgba(20, 38, 66, 0.05);
+  box-shadow: 0 8px 16px rgba(20, 38, 66, 0.05);
   transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .staff-actions-grid .tile:hover {
   transform: translateY(-1px);
-  border-color: #b7ceef;
-  box-shadow: 0 12px 24px rgba(20, 38, 66, 0.08);
+  border-color: #8fb2ea;
+  box-shadow: 0 14px 26px rgba(20, 38, 66, 0.1);
+}
+
+.tile-title {
+  font-size: 1.42rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.tile-sub {
+  font-size: 0.96rem;
+  color: #607590;
+  font-weight: 600;
 }
 
 .staff-month-header {
@@ -1742,9 +1812,15 @@ a:hover {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
+.staff-stats-grid .card {
+  border-color: #d8e5fa;
+  box-shadow: 0 12px 24px rgba(16, 44, 95, 0.07);
+}
+
 .staff-card-title {
   margin-top: 0;
   margin-bottom: 10px;
+  color: #2c4468;
 }
 
 .staff-earnings-pills {
@@ -1763,6 +1839,21 @@ a:hover {
 .staff-earnings-total {
   font-weight: 900;
   font-size: 24px;
+}
+
+@media (max-width: 980px) {
+  .staff-hero-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .staff-hero-kpis {
+    grid-template-columns: 1fr;
+  }
+  .tile-title {
+    font-size: 1.2rem;
+  }
 }
 
 .meta {

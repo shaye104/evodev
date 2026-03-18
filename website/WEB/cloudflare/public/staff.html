@@ -25,16 +25,38 @@
   </header>
   <main class="site-main staff-page">
     <section class="page-header staff-hero">
-      <div>
-        <span class="hero-kicker">Staff Workspace</span>
-        <h1 class="welcome-title">Hello <span data-welcome-name>there</span></h1>
-        <p class="welcome-sub">Choose what you want to do.</p>
+      <div class="staff-hero-card">
+        <div class="staff-hero-main">
+          <span class="hero-kicker">Staff Workspace</span>
+          <h1 class="welcome-title">Hello <span data-welcome-name>there</span></h1>
+          <p class="welcome-sub">Choose what you want to do.</p>
+        </div>
+        <div class="staff-hero-kpis">
+          <article class="staff-kpi">
+            <span class="staff-kpi-label">Answered</span>
+            <strong class="staff-kpi-value" data-kpi-answered>0</strong>
+          </article>
+          <article class="staff-kpi">
+            <span class="staff-kpi-label">Claimed</span>
+            <strong class="staff-kpi-value" data-kpi-claimed>0</strong>
+          </article>
+          <article class="staff-kpi">
+            <span class="staff-kpi-label">This Month</span>
+            <strong class="staff-kpi-value" data-kpi-earnings>R$0</strong>
+          </article>
+        </div>
       </div>
     </section>
 
     <section class="card grid staff-actions-grid" data-auth="staff">
-      <a class="tile" href="/staff-open.html">Open tickets</a>
-      <a class="tile" href="/staff-transcripts.html">View transcripts</a>
+      <a class="tile" href="/staff-open.html">
+        <span class="tile-title">Open tickets</span>
+        <span class="tile-sub">Handle live requests and respond quickly.</span>
+      </a>
+      <a class="tile" href="/staff-transcripts.html">
+        <span class="tile-title">View transcripts</span>
+        <span class="tile-sub">Review closed tickets and conversation history.</span>
+      </a>
     </section>
 
     <section class="page-header staff-month-header" data-auth="staff">
