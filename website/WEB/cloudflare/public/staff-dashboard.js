@@ -232,11 +232,6 @@ const renderEarnings = (payload) => {
   const bonus = Number(me.bonus_total || 0) || 0;
   const earnings = Number(me.earnings || 0) || 0;
 
-  const answeredKpi = document.querySelector('[data-kpi-answered]');
-  const claimedKpi = document.querySelector('[data-kpi-claimed]');
-  if (answeredKpi) answeredKpi.textContent = String(answered);
-  if (claimedKpi) claimedKpi.textContent = String(claimed);
-
   el.innerHTML = `
     <div class="staff-earnings-row staff-earnings-primary">
       <div class="muted">Total earnings (this month)</div>

@@ -1701,7 +1701,7 @@ a:hover {
     linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
   box-shadow: 0 18px 36px rgba(17, 42, 89, 0.08);
   display: grid;
-  grid-template-columns: minmax(300px, 1.5fr) minmax(260px, 1fr);
+  grid-template-columns: 1fr;
   gap: 16px;
   align-items: stretch;
 }
@@ -1710,43 +1710,6 @@ a:hover {
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-.staff-hero-kpis {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  padding: 8px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, #ecf3ff 0%, #e7f0ff 100%);
-}
-
-.staff-kpi {
-  border: 1px solid rgba(121, 163, 229, 0.28);
-  border-radius: 12px;
-  padding: 12px 11px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(244, 249, 255, 0.92) 100%);
-  color: #24436a;
-  min-height: 76px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-}
-
-.staff-kpi-label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #4f6d97;
-}
-
-.staff-kpi-value {
-  font-size: 1.5rem;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: #214777;
 }
 
 .welcome-title {
@@ -1886,9 +1849,6 @@ a:hover {
 }
 
 @media (max-width: 620px) {
-  .staff-hero-kpis {
-    grid-template-columns: 1fr;
-  }
   .tile-title {
     font-size: 1.2rem;
   }
