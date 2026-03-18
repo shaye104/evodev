@@ -366,18 +366,6 @@ a:hover {
   z-index: 10;
 }
 
-.brand-promo {
-  background: linear-gradient(90deg, #b33b3b 0%, #cb4b4b 100%);
-  color: #ffffff;
-  text-align: center;
-  font-family: "proxima-nova", "soleil", sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 10px 16px;
-}
-
 .brand a {
   font-family: "proxima-nova", "soleil", sans-serif;
   font-size: 20px;
@@ -582,38 +570,45 @@ a:hover {
 
 .home-page {
   background:
-    radial-gradient(860px 340px at 8% 0%, rgba(52, 132, 255, 0.2), transparent 67%),
-    radial-gradient(750px 320px at 95% 4%, rgba(31, 87, 175, 0.18), transparent 70%),
-    linear-gradient(180deg, #f0f5ff 0%, #ffffff 290px);
+    radial-gradient(900px 320px at 5% 0%, rgba(57, 123, 225, 0.12), transparent 68%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 300px);
 }
 
 .hero-brand {
   position: relative;
-  padding: 28px;
-  border-radius: 20px;
-  border: 1px solid rgba(31, 53, 80, 0.1);
+  padding: 30px;
+  border-radius: 22px;
+  border: 1px solid #dce7f8;
   background:
-    linear-gradient(138deg, rgba(17, 61, 143, 0.94) 0%, rgba(43, 103, 201, 0.9) 58%, rgba(70, 139, 255, 0.86) 100%),
-    radial-gradient(420px 190px at 85% 0%, rgba(255, 255, 255, 0.23), transparent 60%);
-  box-shadow: 0 22px 44px rgba(17, 44, 87, 0.22);
-  color: #ffffff;
+    linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+  box-shadow: 0 18px 40px rgba(16, 44, 95, 0.1);
+  color: var(--text-strong);
   overflow: hidden;
+}
+
+.hero-brand::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 7px;
+  background: linear-gradient(90deg, #2a63c2 0%, #4c8eff 100%);
 }
 
 .hero-brand::after {
   content: "";
   position: absolute;
-  right: -76px;
-  top: -92px;
-  width: 260px;
-  height: 260px;
+  right: -54px;
+  top: -44px;
+  width: 190px;
+  height: 190px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  filter: blur(2px);
+  background: radial-gradient(circle at 30% 30%, rgba(76, 142, 255, 0.2), rgba(76, 142, 255, 0));
 }
 
 .hero-brand .hero-kicker {
-  color: rgba(230, 241, 255, 0.9);
+  color: #3b5f95;
 }
 
 .hero-brand .hero-text {
@@ -622,36 +617,36 @@ a:hover {
 }
 
 .hero-brand .hero-text h1 {
-  color: #ffffff;
+  color: #1f3550;
 }
 
 .hero-brand .hero-text p {
-  color: rgba(233, 244, 255, 0.95);
+  color: #4e6281;
 }
 
 .hero-brand .btn {
-  background: #ffffff;
-  color: #245fbf;
-  border-color: rgba(255, 255, 255, 0.85);
+  background: #2a63c2;
+  color: #ffffff;
+  border-color: #2a63c2;
 }
 
 .hero-brand .btn:hover {
-  background: #245fbf;
-  color: #ffffff;
-  border-color: #ffffff;
+  background: #ffffff;
+  color: #2a63c2;
+  border-color: #2a63c2;
 }
 
 .hero-brand .hero-card {
   position: relative;
   z-index: 1;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: rgba(15, 41, 87, 0.26);
-  box-shadow: none;
+  border: 1px solid #d7e5fb;
+  background: #f2f7ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .hero-brand .hero-card h3,
 .hero-brand .hero-card li {
-  color: #eef6ff;
+  color: #29466d;
 }
 
 .hero-actions {
@@ -816,9 +811,8 @@ a:hover {
 
 .tickets-page {
   background:
-    radial-gradient(900px 350px at 10% 0%, rgba(52, 132, 255, 0.2), transparent 65%),
-    radial-gradient(700px 260px at 95% 0%, rgba(31, 87, 175, 0.14), transparent 68%),
-    linear-gradient(180deg, #eff5ff 0%, #ffffff 300px);
+    radial-gradient(900px 340px at 12% 0%, rgba(57, 123, 225, 0.12), transparent 66%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 320px);
 }
 
 .tickets-header h1 {
@@ -831,7 +825,7 @@ a:hover {
 .tickets-header p {
   margin: 0;
   font-size: 1.12rem;
-  color: #5b6f89;
+  color: #607590;
 }
 
 .ticket-summary {
@@ -842,11 +836,21 @@ a:hover {
 }
 
 .summary-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 250, 255, 0.95) 100%);
-  border: 1px solid rgba(31, 53, 80, 0.13);
+  background: #ffffff;
+  border: 1px solid #dce7f8;
   border-radius: 14px;
   padding: 14px 16px;
-  box-shadow: 0 8px 18px rgba(20, 38, 66, 0.08);
+  box-shadow: 0 8px 18px rgba(20, 38, 66, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(42, 99, 194, 0.85), rgba(76, 142, 255, 0.85));
 }
 
 .summary-label {
@@ -867,13 +871,9 @@ a:hover {
 }
 
 .ticket-table-card {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(243, 249, 255, 0.96) 100%
-  );
-  border-color: rgba(31, 53, 80, 0.14);
-  box-shadow: 0 18px 36px rgba(20, 38, 66, 0.11);
+  background: #ffffff;
+  border-color: #dce7f8;
+  box-shadow: 0 14px 28px rgba(20, 38, 66, 0.08);
 }
 
 .table-shell {
@@ -900,7 +900,7 @@ a:hover {
 }
 
 .ticket-table tbody tr:hover {
-  background: rgba(52, 132, 255, 0.1);
+  background: rgba(52, 132, 255, 0.07);
 }
 
 .ticket-id-cell {
