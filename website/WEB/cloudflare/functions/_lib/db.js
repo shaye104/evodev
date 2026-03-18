@@ -96,6 +96,55 @@ async function ensureTicketTranscriptsSchema(env) {
   ).run();
 }
 
+async function ensureTicketReadsSchema(env) {
+  await env.DB.prepare(
+    `
+    CREATE TABLE IF NOT EXISTS ticket_reads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_id INTEGER NOT NULL,
+      reader_type TEXT NOT NULL,
+      reader_id INTEGER NOT NULL,
+      last_read_message_id INTEGER,
+      last_read_at TEXT
+    )
+    `
+  ).run();
+  await env.DB.prepare(
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_ticket_reads_unique ON ticket_reads (ticket_id, reader_type, reader_id)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_reads_ticket_id ON ticket_reads (ticket_id)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_reads_reader ON ticket_reads (reader_type, reader_id)'
+  ).run();
+}
+
+async function ensureTicketNotificationStateSchema(env) {
+  await env.DB.prepare(
+    `
+    CREATE TABLE IF NOT EXISTS ticket_notification_state (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_id INTEGER NOT NULL,
+      recipient_discord_id TEXT NOT NULL,
+      recipient_user_id INTEGER,
+      last_notified_at TEXT,
+      last_notified_message_id INTEGER,
+      last_request_response_at TEXT
+    )
+    `
+  ).run();
+  await env.DB.prepare(
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_ticket_notification_state_unique ON ticket_notification_state (ticket_id, recipient_discord_id)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_notification_state_ticket_id ON ticket_notification_state (ticket_id)'
+  ).run();
+  await env.DB.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_ticket_notification_state_request_at ON ticket_notification_state (last_request_response_at)'
+  ).run();
+}
+
 async function ensureStaffPaySchema(env) {
   // Safe to call multiple times (ALTER will fail if column already exists).
   try {
@@ -385,6 +434,8 @@ export {
   ensureRoleSortSchema,
   ensureStaffNicknamesSchema,
   ensureTicketTranscriptsSchema,
+  ensureTicketReadsSchema,
+  ensureTicketNotificationStateSchema,
   ensureStaffPaySchema,
   ensureStaffNotificationsSchema,
   ensureStaffPayAdjustmentsSchema,
