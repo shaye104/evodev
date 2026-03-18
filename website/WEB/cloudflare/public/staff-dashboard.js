@@ -248,11 +248,11 @@ const renderEarnings = (payload) => {
       <div class="muted">Pay rate</div>
       <div class="staff-pay-rate">${currency}${pay} per ticket</div>
     </div>
-    <div class="inline staff-earnings-pills">
-      <span class="pill">Answered: ${answered}</span>
-      <span class="pill">Claimed: ${claimed}</span>
-      <span class="pill">Bonus: ${currency}${bonus}</span>
-    </div>
+    ${bonus > 0 ? `
+    <div class="staff-earnings-row">
+      <div class="muted">Bonus earned</div>
+      <div class="staff-pay-rate">${currency}${bonus}</div>
+    </div>` : ''}
   `;
 };
 
