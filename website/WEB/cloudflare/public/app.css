@@ -400,6 +400,12 @@ a:hover {
   flex: 1 0 auto;
 }
 
+.shell-page {
+  background:
+    radial-gradient(900px 330px at 8% 0%, rgba(57, 123, 225, 0.1), transparent 67%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 320px);
+}
+
 .page-admin .site-main {
   padding-top: 18px;
   padding-bottom: 24px;
@@ -827,6 +833,15 @@ a:hover {
   padding: 20px;
   background: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
   box-shadow: 0 14px 30px rgba(17, 42, 89, 0.07);
+}
+
+.page-header.header-shell h1 {
+  margin-bottom: 8px;
+}
+
+.page-header.header-shell p {
+  margin: 0;
+  color: #607590;
 }
 
 .tickets-header {
