@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Staff Dashboard | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260207ag">
-  <script src="/ui.js?v=20260207ag" defer></script>
-  <script src="/staff.js?v=20260207ag" defer></script>
-  <script src="/staff-dashboard.js?v=20260207ag" defer></script>
+  <link rel="stylesheet" href="/app.css?v=20260318c">
+  <script src="/ui.js?v=20260318c" defer></script>
+  <script src="/staff.js?v=20260318c" defer></script>
+  <script src="/staff-dashboard.js?v=20260318c" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -23,33 +23,34 @@
       <a href="/api/logout" data-auth="user">Logout</a>
     </nav>
   </header>
-  <main class="site-main">
-    <section class="page-header">
+  <main class="site-main staff-page">
+    <section class="page-header staff-hero">
       <div>
+        <span class="hero-kicker">Staff Workspace</span>
         <h1 class="welcome-title">Hello <span data-welcome-name>there</span></h1>
         <p class="welcome-sub">Choose what you want to do.</p>
       </div>
     </section>
 
-    <section class="card grid" data-auth="staff">
+    <section class="card grid staff-actions-grid" data-auth="staff">
       <a class="tile" href="/staff-open.html">Open tickets</a>
       <a class="tile" href="/staff-transcripts.html">View transcripts</a>
     </section>
 
-    <section class="page-header" style="margin-top: 24px;" data-auth="staff">
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <h3 style="margin: 0;">This month</h3>
+    <section class="page-header staff-month-header" data-auth="staff">
+      <div class="staff-month-title">
+        <h3>This month</h3>
         <span class="hint-icon" tabindex="0" data-hint="Leaderboard shows staff in your role (group) and how many tickets they replied to this calendar month. Earnings are based on the tickets you claimed this month multiplied by your pay rate set by admins."></span>
       </div>
     </section>
 
-    <section class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));" data-auth="staff">
+    <section class="grid staff-stats-grid" data-auth="staff">
       <section class="card">
-        <h3 style="margin-top: 0;">Leaderboard</h3>
+        <h3 class="staff-card-title">Leaderboard</h3>
         <div data-leaderboard class="muted">Loading…</div>
       </section>
       <section class="card">
-        <h3 style="margin-top: 0;">Your earnings</h3>
+        <h3 class="staff-card-title">Your earnings</h3>
         <div data-earnings class="muted">Loading…</div>
       </section>
     </section>

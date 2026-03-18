@@ -232,18 +232,18 @@ const renderEarnings = (payload) => {
   const bonus = Number(me.bonus_total || 0) || 0;
   const earnings = Number(me.earnings || 0) || 0;
   el.innerHTML = `
-    <div class="inline" style="margin-right: 0;">
+    <div class="inline staff-earnings-pills">
       <span class="pill">Answered: ${answered}</span>
       <span class="pill">Claimed: ${claimed}</span>
       <span class="pill">Bonus: ${currency}${bonus}</span>
     </div>
-    <div style="margin-top: 10px;">
+    <div class="staff-earnings-row">
       <div class="muted">Pay rate</div>
-      <div style="font-weight: 800; font-size: 18px;">${currency}${pay} per ticket</div>
+      <div class="staff-pay-rate">${currency}${pay} per ticket</div>
     </div>
-    <div style="margin-top: 10px;">
+    <div class="staff-earnings-row">
       <div class="muted">Total earnings (this month)</div>
-      <div style="font-weight: 900; font-size: 24px;">${currency}${earnings}</div>
+      <div class="staff-earnings-total">${currency}${earnings}</div>
     </div>
   `;
 };
