@@ -6,7 +6,6 @@ import {
   extractProductNames,
   extractDiscordIdFromPayload,
   isAllowedProduct,
-  sendPaidWebhookEmbed,
 } from '../../_lib/payhip.js';
 
 function cleanValue(value) {
@@ -39,7 +38,6 @@ async function logWebhookAudit(env, metadata = {}) {
 export const onRequestPost = async ({ env, request }) => {
   const requestId = String(request.headers.get('cf-ray') || '').trim();
   const payhipApiKey = String(env.PAYHIP_API_KEY || '').trim();
-  const discordWebhookUrl = String(env.DISCORD_WEBHOOK_URL || '').trim();
 
   if (!payhipApiKey) {
     await logWebhookAudit(env, {
@@ -144,10 +142,11 @@ export const onRequestPost = async ({ env, request }) => {
   }
 
   const existing = await env.DB.prepare(
-    'SELECT webhook_sent FROM purchases WHERE transaction_id = ? LIMIT 1'
+    'SELECT transaction_id, webhook_sent FROM purchases WHERE transaction_id = ? LIMIT 1'
   )
     .bind(transactionId)
     .first();
+  const existedBefore = Boolean(existing?.transaction_id);
   const alreadySent = existing?.webhook_sent === 1;
 
   const productKeys = extractProductKeys(body);
@@ -225,21 +224,12 @@ export const onRequestPost = async ({ env, request }) => {
     )
     .run();
 
-  if (!alreadySent) {
-    await sendPaidWebhookEmbed(env, order, { webhookUrl: discordWebhookUrl });
-    await env.DB.prepare(
-      'UPDATE purchases SET webhook_sent = 1 WHERE transaction_id = ?'
-    )
-      .bind(transactionId)
-      .run();
-  }
-
   await logWebhookAudit(env, {
     request_id: requestId,
     transaction_id: transactionId,
     event_type: eventType,
     event_status: eventStatus,
-    reason: alreadySent ? 'upserted_existing' : 'inserted_and_notified',
+    reason: existedBefore ? 'upserted_for_bot' : 'inserted_for_bot',
     webhook_already_sent: Boolean(alreadySent),
     product_keys: productKeys,
   });
@@ -247,7 +237,7 @@ export const onRequestPost = async ({ env, request }) => {
   return jsonResponse({
     ok: true,
     debug: {
-      reason: alreadySent ? 'upserted_existing' : 'inserted_and_notified',
+      reason: existedBefore ? 'upserted_for_bot' : 'inserted_for_bot',
       webhook_already_sent: Boolean(alreadySent),
       transaction_id: transactionId,
     },
