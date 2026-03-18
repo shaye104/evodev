@@ -413,12 +413,12 @@ a:hover {
 }
 
 .btn {
-  background: var(--accent);
+  background: #2f6fd0;
   color: #ffffff;
   padding: 10px 18px;
   border-radius: 999px;
   font-weight: 700;
-  border: 1px solid var(--accent);
+  border: 1px solid #2f6fd0;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -434,8 +434,8 @@ a:hover {
 
 .btn:hover {
   background: #ffffff;
-  color: var(--accent);
-  border-color: var(--accent);
+  color: #2f6fd0;
+  border-color: #2f6fd0;
 }
 
 .btn:active {
@@ -821,6 +821,18 @@ a:hover {
     linear-gradient(180deg, #f8fbff 0%, #ffffff 320px);
 }
 
+.header-shell {
+  border: 1px solid #d9e4f6;
+  border-radius: 18px;
+  padding: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+  box-shadow: 0 14px 30px rgba(17, 42, 89, 0.07);
+}
+
+.tickets-header {
+  margin-bottom: 16px;
+}
+
 .tickets-header h1 {
   margin-bottom: 8px;
   font-size: clamp(34px, 4vw, 52px);
@@ -856,7 +868,7 @@ a:hover {
   position: absolute;
   inset: 0 0 auto 0;
   height: 4px;
-  background: linear-gradient(90deg, rgba(42, 99, 194, 0.85), rgba(76, 142, 255, 0.85));
+  background: linear-gradient(90deg, rgba(77, 121, 191, 0.85), rgba(126, 163, 221, 0.85));
 }
 
 .summary-label {
@@ -1694,12 +1706,6 @@ a:hover {
 
 .staff-hero-card {
   width: 100%;
-  border: 1px solid #d9e4f6;
-  border-radius: 18px;
-  padding: 20px;
-  background:
-    linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
-  box-shadow: 0 18px 36px rgba(17, 42, 89, 0.08);
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
