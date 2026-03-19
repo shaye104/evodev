@@ -1,5 +1,7 @@
 (() => {
-  const embedMode = new URLSearchParams(window.location.search).get("embed") === "1";
+  const embedParam = new URLSearchParams(window.location.search).get("embed") === "1";
+  const insideIframe = window.self !== window.top;
+  const embedMode = embedParam || insideIframe;
   if (embedMode) {
     document.documentElement.classList.add("embedded-mode");
     if (document.body) {

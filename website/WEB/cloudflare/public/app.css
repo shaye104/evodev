@@ -287,6 +287,40 @@ body.embedded .card {
   margin-bottom: 0;
 }
 
+body.embedded .ticket-header-shell,
+body.embedded .staff-ticket-toolbar,
+body.embedded .ticket-back-link,
+body.embedded .conversation-title {
+  display: none !important;
+}
+
+body.embedded .shell-page {
+  padding: 10px;
+}
+
+body.embedded .conversation-card {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
+
+body.embedded .thread {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  gap: 8px;
+}
+
+body.embedded .message {
+  border-radius: 12px;
+  border-color: #d8e5f7;
+}
+
+body.embedded .reply-card {
+  border-radius: 14px;
+}
+
 /* Prevent auth-gated UI flash before /api/me resolves.
    ui.js sets html.auth-ready once it has applied the correct visibility. */
 html:not(.auth-ready) [data-auth]:not([data-auth="guest"]) {
