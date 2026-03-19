@@ -1360,26 +1360,27 @@ a:hover {
 .staff-ticket-toolbar {
   border-color: #d9e6fb;
   background: linear-gradient(180deg, #fbfdff 0%, #f4f8ff 100%);
+  padding: 14px 16px;
 }
 
 .ticket-action-group {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 6px 8px;
   border: 1px solid #d7e3f8;
   border-radius: 12px;
   background: #ffffff;
 }
 
 .ticket-action-group-warn {
-  border-color: #f5dc9a;
-  background: #fffaf0;
+  border-color: #d7e3f8;
+  background: #ffffff;
 }
 
 .ticket-action-group-danger {
-  border-color: #f5bcc4;
-  background: #fff5f7;
+  border-color: #d7e3f8;
+  background: #ffffff;
 }
 
 .ticket-action-label {
@@ -1391,6 +1392,14 @@ a:hover {
   margin-right: 2px;
 }
 
+.ticket-action-group-warn .ticket-action-label {
+  color: #8c6300;
+}
+
+.ticket-action-group-danger .ticket-action-label {
+  color: #9d3340;
+}
+
 .staff-ticket-toolbar .ticket-controls .btn.secondary.small {
   color: #355073;
   border-color: #bfd3f1;
@@ -1399,6 +1408,20 @@ a:hover {
 
 .staff-ticket-toolbar .ticket-controls .btn.secondary.small:hover {
   background: #edf4ff;
+}
+
+.ticket-back-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3f5f88;
+  text-decoration: none;
+  padding: 2px 0;
+  border-bottom: 1px solid transparent;
+}
+
+.ticket-back-link:hover {
+  color: #2a63c2;
+  border-bottom-color: rgba(42, 99, 194, 0.45);
 }
 
 @media (max-width: 860px) {
@@ -1417,9 +1440,8 @@ a:hover {
     justify-content: flex-start;
   }
 
-  .ticket-controls-side .btn {
-    width: 100%;
-    text-align: center;
+  .ticket-controls-side {
+    justify-content: flex-start;
   }
 }
 
@@ -1679,8 +1701,8 @@ a:hover {
   padding: 14px 16px;
   border-radius: 14px;
   background: #ffffff;
-  border: 1px solid #dce7f8;
-  box-shadow: 0 8px 18px rgba(20, 38, 66, 0.05);
+  border: 1px solid #c8daf6;
+  box-shadow: 0 10px 24px rgba(20, 38, 66, 0.08);
 }
 
 .message-meta {
@@ -1791,6 +1813,8 @@ a:hover {
 
 .reply-card {
   border-color: #dce7f8;
+  background: #fbfdff;
+  box-shadow: none;
 }
 
 .reply-title {
@@ -1831,6 +1855,7 @@ a:hover {
 .transcript-card.is-empty {
   border-style: dashed;
   background: #fbfdff;
+  padding: 14px 16px;
 }
 
 .transcript-card.is-empty .transcript-title {
