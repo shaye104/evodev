@@ -1348,7 +1348,7 @@ a:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .ticket-controls-side {
@@ -1360,17 +1360,18 @@ a:hover {
 .staff-ticket-toolbar {
   border-color: #d9e6fb;
   background: linear-gradient(180deg, #fbfdff 0%, #f4f8ff 100%);
-  padding: 12px 16px;
+  padding: 11px 16px;
 }
 
 .ticket-action-group {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 2px 0;
+  padding: 1px 0;
   border: none;
   border-radius: 0;
   background: transparent;
+  line-height: 1;
 }
 
 .ticket-action-group-warn {
@@ -1388,7 +1389,7 @@ a:hover {
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #6b7f9b;
+  color: #7a8ca8;
   margin-right: 4px;
 }
 
@@ -1398,6 +1399,21 @@ a:hover {
 
 .ticket-action-group-danger .ticket-action-label {
   color: #9d3340;
+}
+
+.ticket-action-group + .ticket-action-group {
+  position: relative;
+  padding-left: 12px;
+}
+
+.ticket-action-group + .ticket-action-group::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: #d9e3f4;
 }
 
 .staff-ticket-toolbar .ticket-controls .btn.secondary.small {
@@ -1413,22 +1429,23 @@ a:hover {
 .ticket-back-link {
   font-size: 12px;
   font-weight: 600;
-  color: #7083a0;
+  color: #7f91ab;
   text-decoration: none;
   padding: 0;
   border-bottom: 1px solid transparent;
-  opacity: 0.82;
+  opacity: 0.72;
 }
 
 .ticket-back-link:hover {
-  color: #4b6387;
-  border-bottom-color: rgba(75, 99, 135, 0.35);
+  color: #5f7697;
+  border-bottom-color: rgba(95, 118, 151, 0.35);
   opacity: 1;
 }
 
 .ticket-controls-side {
-  padding-left: 12px;
+  padding-left: 10px;
   border-left: 1px solid #d6e1f3;
+  line-height: 1;
 }
 
 @media (max-width: 860px) {
@@ -1445,6 +1462,14 @@ a:hover {
   .ticket-action-group {
     width: auto;
     justify-content: flex-start;
+  }
+
+  .ticket-action-group + .ticket-action-group {
+    padding-left: 0;
+  }
+
+  .ticket-action-group + .ticket-action-group::before {
+    display: none;
   }
 
   .ticket-controls-side {
@@ -1824,6 +1849,7 @@ a:hover {
   border-color: #dce7f8;
   background: #fbfdff;
   box-shadow: none;
+  padding: 18px 20px;
 }
 
 .reply-title {
@@ -1845,6 +1871,13 @@ a:hover {
 .reply-submit {
   min-width: 130px;
   justify-content: center;
+  background: #3e75cf;
+  border-color: #3e75cf;
+}
+
+.reply-submit:hover {
+  background: #3264b6;
+  border-color: #3264b6;
 }
 
 .transcript-title-row {
