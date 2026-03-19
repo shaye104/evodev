@@ -28,7 +28,7 @@
   shadow.innerHTML = `
     <style>
       :host, * { box-sizing: border-box; font-family: Inter, ui-sans-serif, -apple-system, Segoe UI, sans-serif; }
-      .wrap { position: fixed; right: 18px; bottom: 18px; z-index: 2147483000; }
+      .wrap { position: fixed; right: 16px; bottom: 16px; z-index: 2147483000; }
       .launcher {
         appearance: none;
         border: 1px solid #d1deef;
@@ -67,36 +67,59 @@
         border: 0;
       }
       .panel {
-        width: min(420px, calc(100vw - 24px)); height: min(680px, calc(100vh - 90px));
-        background: #fff; border: 1px solid #d7e3f8; border-radius: 16px;
-        box-shadow: 0 18px 48px rgba(17, 32, 59, 0.34); overflow: hidden;
-        display: none; flex-direction: column; margin-top: 10px;
+        width: min(380px, calc(100vw - 16px));
+        height: min(740px, calc(100vh - 24px));
+        background: linear-gradient(180deg, #eff4ff 0%, #f7faff 9%, #ffffff 100%);
+        border: 1px solid #cbdcf4;
+        border-radius: 26px;
+        box-shadow: 0 22px 56px rgba(15, 34, 67, 0.34);
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+        margin-top: 10px;
       }
       .panel.open { display: flex; }
       .head {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 10px 12px; border-bottom: 1px solid #e3ecfb; background: #f8fbff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #d9e6fb;
+        background: linear-gradient(180deg, #2f6fd0 0%, #3273d4 100%);
       }
-      .title { margin: 0; font-size: 14px; font-weight: 800; color: #1f3550; }
+      .title {
+        margin: 0;
+        font-size: 15px;
+        letter-spacing: 0.01em;
+        font-weight: 800;
+        color: #ffffff;
+      }
       .close {
-        appearance: none; border: 0; background: transparent; color: #64748b;
-        font-size: 18px; line-height: 1; padding: 2px 6px; border-radius: 8px; cursor: pointer;
+        appearance: none;
+        border: 0;
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+        font-size: 18px;
+        line-height: 1;
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        cursor: pointer;
       }
-      .close:hover { background: #eaf1ff; color: #2a63c2; }
-      .frame-wrap { flex: 1; background: #fff; }
+      .close:hover { background: rgba(255, 255, 255, 0.28); }
+      .frame-wrap {
+        flex: 1;
+        background: #ffffff;
+      }
       iframe { width: 100%; height: 100%; border: 0; background: #fff; }
-      .foot {
-        padding: 8px 12px; border-top: 1px solid #e3ecfb; background: #f8fbff;
-        font-size: 12px;
-      }
-      .foot a { color: #466ca2; text-decoration: none; }
-      .foot a:hover { text-decoration: underline; }
       @media (max-width: 760px) {
-        .wrap { right: 10px; left: 10px; bottom: 10px; }
+        .wrap { right: 8px; left: 8px; bottom: 8px; }
         .launcher { margin-left: auto; display: flex; }
         .panel {
           width: 100%;
-          height: min(74vh, 620px);
+          height: min(88vh, 720px);
+          border-radius: 22px;
         }
       }
     </style>
@@ -116,9 +139,6 @@
           <button class="close" type="button" aria-label="Close chat">×</button>
         </div>
         <div class="frame-wrap"><iframe title="Evo Support Chat"></iframe></div>
-        <div class="foot"><a href="${escapeHtml(cfg.portalUrl)}" target="_blank" rel="noopener">${escapeHtml(
-          cfg.openPortalLabel
-        )}</a></div>
       </section>
     </div>
   `;

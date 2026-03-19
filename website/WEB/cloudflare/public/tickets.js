@@ -18,7 +18,7 @@ const embedMode = new URLSearchParams(window.location.search).get('embed') === '
 const setHistoryVisible = (visible) => {
   const summary = document.querySelector('[data-ticket-summary]');
   const tableCard = document.querySelector('[data-ticket-table-card]');
-  if (summary) summary.hidden = !visible;
+  if (summary) summary.hidden = true;
   if (tableCard) tableCard.hidden = !visible;
 };
 
@@ -82,7 +82,7 @@ const renderTickets = (tickets) => {
   if (!tickets.length) {
     const row = document.createElement('tr');
     row.className = 'ticket-row-empty';
-    row.innerHTML = '<td colspan="6">No tickets yet. Open one to get support started.</td>';
+    row.innerHTML = `<td colspan="6">${embedMode ? 'No chat history yet. Start a new chat to begin.' : 'No tickets yet. Open one to get support started.'}</td>`;
     tbody.appendChild(row);
     return;
   }
@@ -93,14 +93,16 @@ const renderTickets = (tickets) => {
     const statusTone = getStatusTone(statusName);
     const updatedAt = window.supportFormatDateTime?.(ticket.last_message_at || ticket.updated_at) ||
       (ticket.last_message_at || ticket.updated_at || '');
-    const href = `/ticket.html?id=${ticket.public_id}`;
+    const href = embedMode
+      ? `/ticket.html?id=${ticket.public_id}&embed=1`
+      : `/ticket.html?id=${ticket.public_id}`;
     row.innerHTML = `
-      <td class="ticket-id-cell"><a href="${href}" class="ticket-id-link">#${escapeHtml(ticket.public_id)}</a></td>
-      <td class="ticket-subject-cell">${escapeHtml(ticket.subject || 'Support ticket')}</td>
-      <td>${escapeHtml(ticket.panel_name || 'General')}</td>
-      <td><span class="pill ${statusTone}">${escapeHtml(statusName)}</span></td>
-      <td class="ticket-updated-cell">${escapeHtml(updatedAt)}</td>
-      <td><a class="btn secondary small ticket-view-btn" href="${href}">Open</a></td>
+      <td class="ticket-id-cell" data-label="Ticket"><a href="${href}" class="ticket-id-link">#${escapeHtml(ticket.public_id)}</a></td>
+      <td class="ticket-subject-cell" data-label="Subject">${escapeHtml(ticket.subject || 'Support ticket')}</td>
+      <td data-label="Panel">${escapeHtml(ticket.panel_name || 'General')}</td>
+      <td data-label="Status"><span class="pill ${statusTone}">${escapeHtml(statusName)}</span></td>
+      <td class="ticket-updated-cell" data-label="Updated">${escapeHtml(updatedAt)}</td>
+      <td data-label="Action"><a class="btn secondary small ticket-view-btn" href="${href}">${embedMode ? 'Continue' : 'Open'}</a></td>
     `;
     tbody.appendChild(row);
   });
