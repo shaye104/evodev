@@ -116,6 +116,19 @@
     if (e.key === "Escape" && isOpen) closePanel();
   });
 
-  document.body.appendChild(host);
-})();
+  const mount = () => {
+    if (!document.body) return false;
+    document.body.appendChild(host);
+    return true;
+  };
 
+  if (!mount()) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+        mount();
+      },
+      { once: true }
+    );
+  }
+})();
