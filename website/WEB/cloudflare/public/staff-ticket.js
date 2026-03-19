@@ -432,77 +432,6 @@ const handleCloseTicket = async () => {
   window.location.href = '/staff-open.html';
 };
 
-const renderTranscripts = (rows) => {
-  const el = document.querySelector('[data-transcripts-list]');
-  const card = document.querySelector('.transcript-card');
-  if (!el) return;
-  if (!rows.length) {
-    card?.classList.add('is-empty');
-    el.textContent = 'No transcripts yet.';
-    return;
-  }
-  card?.classList.remove('is-empty');
-  const id = getTicketId();
-  const formatTime = (v) => window.supportFormatDateTime?.(v) || v || '';
-  el.innerHTML = `
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Created</th>
-          <th>Trigger</th>
-          <th>Download</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows
-          .map((t) => {
-            const created = formatTime(t.created_at);
-            const trigger = t.trigger || 'manual';
-            const htmlUrl = `/api/staff/tickets/${id}/transcripts/${t.id}?format=html`;
-            const jsonUrl = `/api/staff/tickets/${id}/transcripts/${t.id}?format=json`;
-            return `
-              <tr>
-                <td>${created}</td>
-                <td>${trigger}</td>
-                <td class="inline">
-                  <a class="btn secondary" target="_blank" rel="noopener" href="${htmlUrl}">HTML</a>
-                  <a class="btn secondary" target="_blank" rel="noopener" href="${jsonUrl}">JSON</a>
-                </td>
-              </tr>
-            `;
-          })
-          .join('')}
-      </tbody>
-    </table>
-  `;
-};
-
-const loadTranscripts = async () => {
-  const id = getTicketId();
-  const el = document.querySelector('[data-transcripts-list]');
-  if (!id || !el) return;
-  el.textContent = 'Loading…';
-  const res = await fetch(`/api/staff/tickets/${id}/transcripts`);
-  if (res.status === 403) {
-    el.textContent = 'You do not have permission to view transcripts (requires View tickets).';
-    return;
-  }
-  if (res.status === 401) {
-    el.textContent = 'Please login to view transcripts.';
-    return;
-  }
-  if (!res.ok) {
-    el.textContent = 'Unable to load transcripts. Please refresh and try again.';
-    return;
-  }
-  const data = await safeJson(res);
-  if (!data) {
-    el.textContent = 'Unable to load transcripts. Please refresh and try again.';
-    return;
-  }
-  renderTranscripts(data.transcripts || []);
-};
-
 const handleRequestResponse = async () => {
   const id = getTicketId();
   const btn = document.querySelector('[data-request-response]');
@@ -557,7 +486,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const canStatus = staffHasPermission(staff, 'tickets.status');
   const canEscalate = staffHasPermission(staff, 'tickets.escalate');
   const canReply = staffHasPermission(staff, 'tickets.reply');
-  const canView = staffHasPermission(staff, 'tickets.view');
   const canEditSubject = staffHasPermission(staff, 'tickets.subject');
   const canRequestResponse = staffHasPermission(staff, 'tickets.request_response');
 
@@ -578,8 +506,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (file) file.disabled = !canReply;
     if (submit) submit.disabled = !canReply;
   }
-  // Transcripts are generated automatically on close; staff can still view/download if permitted.
-
   // Modal cancel buttons
   document.querySelectorAll('[data-modal-cancel]').forEach((btn) => {
     btn.addEventListener('click', () => closeModal(btn.closest('dialog')));
@@ -597,12 +523,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     await fetchTicket();
   } catch {}
-  if (canView) {
-    try {
-      await loadTranscripts();
-    } catch {}
-  } else {
-    const el = document.querySelector('[data-transcripts-list]');
-    if (el) el.textContent = 'You do not have permission to view transcripts (requires View tickets).';
-  }
 });

@@ -1662,7 +1662,17 @@ a:hover {
 .thread {
   display: grid;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 0;
+}
+
+.conversation-card {
+  border-color: #d5e3f7;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
+}
+
+.conversation-title {
+  margin: 0 0 12px;
+  color: #2a4468;
 }
 
 .message {
@@ -1812,30 +1822,6 @@ a:hover {
 .reply-submit:hover {
   background: #3264b6;
   border-color: #3264b6;
-}
-
-.transcript-title-row {
-  margin-right: 0;
-}
-
-.transcript-title {
-  margin: 0;
-}
-
-.transcript-card.is-empty [data-transcripts-list] {
-  font-size: 13px;
-  color: #7a889f;
-  font-style: italic;
-}
-
-.transcript-card.is-empty {
-  border-style: dashed;
-  background: #fbfdff;
-  padding: 10px 14px;
-}
-
-.transcript-card.is-empty .transcript-title {
-  color: #3d5374;
 }
 
 .grid {
