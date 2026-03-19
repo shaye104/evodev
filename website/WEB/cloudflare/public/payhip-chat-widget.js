@@ -30,9 +30,41 @@
       :host, * { box-sizing: border-box; font-family: Inter, ui-sans-serif, -apple-system, Segoe UI, sans-serif; }
       .wrap { position: fixed; right: 18px; bottom: 18px; z-index: 2147483000; }
       .launcher {
-        appearance: none; border: 0; border-radius: 999px; cursor: pointer;
-        background: #2f6fd0; color: #fff; padding: 12px 16px; font-weight: 700; font-size: 14px;
-        box-shadow: 0 14px 34px rgba(18, 38, 69, 0.28);
+        appearance: none;
+        border: 1px solid #d1deef;
+        border-radius: 999px;
+        cursor: pointer;
+        background: #ffffff;
+        color: #2f6fd0;
+        width: 56px;
+        height: 56px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 14px 34px rgba(18, 38, 69, 0.22);
+        transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+      }
+      .launcher:hover {
+        transform: translateY(-1px);
+        border-color: #aac2e4;
+        box-shadow: 0 16px 36px rgba(18, 38, 69, 0.26);
+      }
+      .launcher:active { transform: translateY(0); }
+      .launcher svg {
+        width: 25px;
+        height: 25px;
+        display: block;
+      }
+      .sr-only {
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
       .panel {
         width: min(420px, calc(100vw - 24px)); height: min(680px, calc(100vh - 90px));
@@ -61,7 +93,7 @@
       .foot a:hover { text-decoration: underline; }
       @media (max-width: 760px) {
         .wrap { right: 10px; left: 10px; bottom: 10px; }
-        .launcher { width: 100%; }
+        .launcher { margin-left: auto; display: flex; }
         .panel {
           width: 100%;
           height: min(74vh, 620px);
@@ -69,7 +101,15 @@
       }
     </style>
     <div class="wrap">
-      <button class="launcher" type="button" aria-expanded="false">${escapeHtml(cfg.launcherLabel)}</button>
+      <button class="launcher" type="button" aria-expanded="false" aria-label="${escapeHtml(cfg.launcherLabel)}">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5.5 6.5h13a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H11l-4.5 3v-3H5.5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9" cy="12" r="1" fill="currentColor"/>
+          <circle cx="12" cy="12" r="1" fill="currentColor"/>
+          <circle cx="15" cy="12" r="1" fill="currentColor"/>
+        </svg>
+        <span class="sr-only">${escapeHtml(cfg.launcherLabel)}</span>
+      </button>
       <section class="panel" aria-hidden="true">
         <div class="head">
           <h3 class="title">${escapeHtml(cfg.panelTitle)}</h3>
