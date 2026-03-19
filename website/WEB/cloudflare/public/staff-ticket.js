@@ -182,7 +182,7 @@ const renderTicket = (payload) => {
   })();
   messages.forEach((msg) => {
     const article = document.createElement('article');
-    article.className = 'message';
+    article.className = `message ${msg.author_type === 'staff' ? 'message-staff' : 'message-user'}`;
     const meta = document.createElement('div');
     meta.className = 'message-meta';
     const author = document.createElement('div');

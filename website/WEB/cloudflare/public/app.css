@@ -1683,6 +1683,64 @@ a:hover {
   box-shadow: 0 10px 24px rgba(20, 38, 66, 0.08);
 }
 
+.conversation-card .thread {
+  gap: 10px;
+}
+
+.conversation-card .message {
+  max-width: min(760px, 78%);
+  border-radius: 18px;
+  box-shadow: 0 6px 14px rgba(20, 38, 66, 0.08);
+}
+
+.conversation-card .message-user {
+  margin-right: auto;
+  background: #ffffff;
+  border-color: #d8e4f7;
+}
+
+.conversation-card .message-staff {
+  margin-left: auto;
+  background: linear-gradient(180deg, #3d7cda 0%, #2f6fd0 100%);
+  border-color: #2f6fd0;
+}
+
+.conversation-card .message-staff .author-name,
+.conversation-card .message-staff .message-time,
+.conversation-card .message-staff .message-body,
+.conversation-card .message-staff .read-receipt {
+  color: #ffffff;
+}
+
+.conversation-card .message-staff .read-receipt {
+  opacity: 0.84;
+}
+
+.conversation-card .message-staff .role-pill {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.conversation-card .message-staff .attachments a {
+  color: #e8f1ff;
+}
+
+.conversation-card .message .message-avatar {
+  width: 26px;
+  height: 26px;
+}
+
+.conversation-card .message .role-pill {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .conversation-card .message {
+    max-width: 100%;
+  }
+}
+
 .message-meta {
   display: flex;
   justify-content: space-between;
