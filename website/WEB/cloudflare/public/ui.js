@@ -1,4 +1,16 @@
 (() => {
+  const embedMode = new URLSearchParams(window.location.search).get("embed") === "1";
+  if (embedMode) {
+    document.documentElement.classList.add("embedded-mode");
+    if (document.body) {
+      document.body.classList.add("embedded");
+    } else {
+      document.addEventListener("DOMContentLoaded", () => document.body.classList.add("embedded"), {
+        once: true,
+      });
+    }
+  }
+
   const state = {
     user: null,
     staff: null,

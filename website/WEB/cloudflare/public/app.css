@@ -262,6 +262,31 @@ body {
   flex-direction: column;
 }
 
+body.embedded {
+  background: transparent;
+  min-height: auto;
+}
+
+body.embedded .site-header,
+body.embedded .site-footer {
+  display: none;
+}
+
+body.embedded .site-main {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 12px;
+}
+
+body.embedded .shell-page {
+  gap: 12px;
+}
+
+body.embedded .card {
+  margin-bottom: 12px;
+}
+
 /* Prevent auth-gated UI flash before /api/me resolves.
    ui.js sets html.auth-ready once it has applied the correct visibility. */
 html:not(.auth-ready) [data-auth]:not([data-auth="guest"]) {
