@@ -13,6 +13,42 @@ const getStatusTone = (statusName) => {
   return 'status-open';
 };
 
+const embedMode = new URLSearchParams(window.location.search).get('embed') === '1';
+
+const setHistoryVisible = (visible) => {
+  const summary = document.querySelector('[data-ticket-summary]');
+  const tableCard = document.querySelector('[data-ticket-table-card]');
+  if (summary) summary.hidden = !visible;
+  if (tableCard) tableCard.hidden = !visible;
+};
+
+const setEmbedHubState = (mode) => {
+  const hub = document.querySelector('[data-embed-hub]');
+  const login = hub?.querySelector('[data-embed-login]');
+  const actions = hub?.querySelector('[data-embed-actions]');
+  if (!hub || !login || !actions) return;
+  if (!embedMode) {
+    hub.hidden = true;
+    return;
+  }
+  hub.hidden = false;
+  login.hidden = mode !== 'login';
+  actions.hidden = mode !== 'actions';
+};
+
+const updateEmbedPrimaryAction = (tickets) => {
+  const primary = document.querySelector('[data-embed-primary-action]');
+  if (!embedMode || !primary) return;
+  const active = (tickets || []).find((t) => getStatusTone(t.status_name) !== 'status-closed');
+  if (active?.public_id) {
+    primary.textContent = 'Continue chat';
+    primary.href = `/ticket.html?id=${active.public_id}&embed=1`;
+  } else {
+    primary.textContent = 'Open ticket';
+    primary.href = '/new-ticket.html?embed=1';
+  }
+};
+
 const updateSummary = (tickets) => {
   const totalEl = document.querySelector('[data-summary-total]');
   const openEl = document.querySelector('[data-summary-open]');
@@ -70,25 +106,59 @@ const renderTickets = (tickets) => {
   });
 };
 
-const fetchTickets = async () => {
+const fetchTickets = async (options = {}) => {
+  const { allowUnauthed = false } = options;
   const res = await fetch('/api/tickets');
-  if (!res.ok) {
+  if (res.status === 401) {
+    if (allowUnauthed) return null;
     window.location.href = '/login.html';
-    return;
+    return null;
+  }
+  if (!res.ok) {
+    return null;
   }
   const data = await res.json();
-  renderTickets(data.tickets || []);
+  const tickets = data.tickets || [];
+  renderTickets(tickets);
+  updateEmbedPrimaryAction(tickets);
+  return tickets;
 };
 
 const initEvents = () => {
   if (!window.EventSource) return;
   const source = new EventSource('/api/events');
   source.addEventListener('ticket.updated', () => {
-    fetchTickets();
+    fetchTickets({ allowUnauthed: embedMode });
   });
 };
 
+const initEmbedFlow = async () => {
+  if (!embedMode) return;
+
+  const historyBtn = document.querySelector('[data-embed-history-action]');
+  if (historyBtn) {
+    historyBtn.addEventListener('click', () => {
+      setHistoryVisible(true);
+      document.querySelector('[data-ticket-table-card]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  setHistoryVisible(false);
+  const meRes = await fetch('/api/me').catch(() => null);
+  const me = meRes?.ok ? await meRes.json().catch(() => null) : null;
+  if (!me?.user) {
+    setEmbedHubState('login');
+    return;
+  }
+  setEmbedHubState('actions');
+  await fetchTickets({ allowUnauthed: true });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-  fetchTickets();
+  if (embedMode) {
+    initEmbedFlow();
+  } else {
+    fetchTickets();
+  }
   initEvents();
 });

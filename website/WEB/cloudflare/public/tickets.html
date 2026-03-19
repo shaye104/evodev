@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Your Tickets | Evo Support</title>
-  <link rel="stylesheet" href="/app.css?v=20260319f">
-  <script src="/ui.js?v=20260319f" defer></script>
-  <script src="/tickets.js?v=20260319f" defer></script>
+  <link rel="stylesheet" href="/app.css?v=20260319g">
+  <script src="/ui.js?v=20260319g" defer></script>
+  <script src="/tickets.js?v=20260319g" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -32,6 +32,22 @@
       <a class="btn" href="/new-ticket.html">Open New Ticket</a>
     </section>
 
+    <section class="card embed-chat-hub" data-embed-hub hidden>
+      <div data-embed-login hidden>
+        <h2>Live chat requires login</h2>
+        <p>Verify with Discord to open a ticket or continue an existing chat.</p>
+        <a class="btn" href="/api/auth/discord">Login with Discord</a>
+      </div>
+      <div data-embed-actions hidden>
+        <h2>How can we help?</h2>
+        <p>Select what you want to do.</p>
+        <div class="embed-chat-actions">
+          <a class="btn" href="/new-ticket.html?embed=1" data-embed-primary-action>Open ticket</a>
+          <button class="btn secondary" type="button" data-embed-history-action>View history</button>
+        </div>
+      </div>
+    </section>
+
     <section class="ticket-summary" data-ticket-summary>
       <article class="summary-card">
         <span class="summary-label">Total</span>
@@ -51,7 +67,7 @@
       </article>
     </section>
 
-    <section class="card ticket-table-card">
+    <section class="card ticket-table-card" data-ticket-table-card>
       <div class="table-shell">
         <table class="table ticket-table">
           <thead>
