@@ -18,8 +18,12 @@ const embedMode = new URLSearchParams(window.location.search).get('embed') === '
 const setHistoryVisible = (visible) => {
   const summary = document.querySelector('[data-ticket-summary]');
   const tableCard = document.querySelector('[data-ticket-table-card]');
+  const embedList = document.querySelector('[data-embed-history-list]');
+  const tableShell = document.querySelector('.ticket-table-card .table-shell');
   if (summary) summary.hidden = true;
   if (tableCard) tableCard.hidden = !visible;
+  if (embedMode && embedList) embedList.hidden = !visible;
+  if (embedMode && tableShell) tableShell.hidden = true;
 };
 
 const setEmbedHubState = (mode) => {
@@ -28,6 +32,10 @@ const setEmbedHubState = (mode) => {
   const actions = hub?.querySelector('[data-embed-actions]');
   if (!hub || !login || !actions) return;
   if (!embedMode) {
+    hub.hidden = true;
+    return;
+  }
+  if (mode === 'hidden') {
     hub.hidden = true;
     return;
   }
@@ -74,6 +82,46 @@ const updateSummary = (tickets) => {
 };
 
 const renderTickets = (tickets) => {
+  if (embedMode) {
+    const embedList = document.querySelector('[data-embed-history-list]');
+    const tbody = document.querySelector('[data-ticket-body]');
+    if (tbody) tbody.innerHTML = '';
+    if (!embedList) return;
+    embedList.innerHTML = '';
+    updateSummary(tickets);
+
+    if (!tickets.length) {
+      embedList.innerHTML = '<div class="embed-history-empty">No chat history yet. Start a new chat to begin.</div>';
+      return;
+    }
+
+    tickets.forEach((ticket) => {
+      const statusName = ticket.status_name || 'Open';
+      const statusTone = getStatusTone(statusName);
+      const updatedAt = window.supportFormatDateTime?.(ticket.last_message_at || ticket.updated_at) ||
+        (ticket.last_message_at || ticket.updated_at || '');
+      const href = `/ticket.html?id=${ticket.public_id}&embed=1`;
+      const item = document.createElement('a');
+      item.className = 'embed-thread';
+      item.href = href;
+      item.innerHTML = `
+        <div class="embed-thread-avatar" aria-hidden="true"></div>
+        <div class="embed-thread-body">
+          <div class="embed-thread-top">
+            <strong class="embed-thread-title">${escapeHtml(ticket.subject || `Ticket #${ticket.public_id}`)}</strong>
+            <span class="embed-thread-time">${escapeHtml(updatedAt)}</span>
+          </div>
+          <div class="embed-thread-bottom">
+            <span class="embed-thread-id">#${escapeHtml(ticket.public_id)}</span>
+            <span class="pill ${statusTone}">${escapeHtml(statusName)}</span>
+          </div>
+        </div>
+      `;
+      embedList.appendChild(item);
+    });
+    return;
+  }
+
   const tbody = document.querySelector('[data-ticket-body]');
   if (!tbody) return;
   tbody.innerHTML = '';
@@ -140,6 +188,7 @@ const initEmbedFlow = async () => {
   const historyBtn = document.querySelector('[data-embed-history-action]');
   if (historyBtn) {
     historyBtn.addEventListener('click', () => {
+      setEmbedHubState('hidden');
       setHistoryVisible(true);
       document.querySelector('[data-ticket-table-card]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });

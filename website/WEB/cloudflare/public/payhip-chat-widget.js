@@ -67,8 +67,8 @@
         border: 0;
       }
       .panel {
-        width: min(380px, calc(100vw - 16px));
-        height: min(740px, calc(100vh - 24px));
+        width: min(540px, calc(100vw - 32px));
+        height: min(680px, calc(100vh - 44px));
         background: linear-gradient(180deg, #eff4ff 0%, #f7faff 9%, #ffffff 100%);
         border: 1px solid #cbdcf4;
         border-radius: 26px;
@@ -118,7 +118,7 @@
         .launcher { margin-left: auto; display: flex; }
         .panel {
           width: 100%;
-          height: min(88vh, 720px);
+          height: min(84vh, 700px);
           border-radius: 22px;
         }
       }
