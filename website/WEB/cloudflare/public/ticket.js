@@ -137,7 +137,7 @@ const renderTicket = (payload) => {
   thread.innerHTML = '';
   messages.forEach((msg) => {
     const article = document.createElement('article');
-    article.className = 'message';
+    article.className = `message ${msg.author_type === 'staff' ? 'message-staff' : 'message-user'}`;
     const meta = document.createElement('div');
     meta.className = 'message-meta';
     const author = document.createElement('div');
@@ -251,4 +251,14 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchTicket();
   const form = document.querySelector('[data-reply-form]');
   if (form) form.addEventListener('submit', handleReply);
+  const fileInput = document.querySelector('#ticket-attachments');
+  const fileName = document.querySelector('[data-attachment-file-name]');
+  if (fileInput && fileName) {
+    fileInput.addEventListener('change', () => {
+      const count = Number(fileInput.files?.length || 0);
+      if (count === 0) fileName.textContent = 'No files attached';
+      else if (count === 1) fileName.textContent = fileInput.files[0].name;
+      else fileName.textContent = `${count} files attached`;
+    });
+  }
 });

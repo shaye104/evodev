@@ -313,12 +313,103 @@ body.embedded .thread {
 }
 
 body.embedded .message {
-  border-radius: 12px;
+  max-width: 84%;
+  border-radius: 18px;
   border-color: #d8e5f7;
+  box-shadow: 0 8px 18px rgba(20, 38, 66, 0.08);
+  padding: 10px 12px;
+}
+
+body.embedded .message-user {
+  margin-right: auto;
+  background: #ffffff;
+}
+
+body.embedded .message-staff {
+  margin-left: auto;
+  background: linear-gradient(180deg, #3d7cda 0%, #2f6fd0 100%);
+  border-color: #2f6fd0;
+}
+
+body.embedded .message .message-avatar,
+body.embedded .message .role-pill {
+  display: none;
+}
+
+body.embedded .message .author-name {
+  font-size: 12px;
+}
+
+body.embedded .message .message-meta {
+  margin-bottom: 4px;
+}
+
+body.embedded .message-user .message-meta {
+  justify-content: flex-start;
+}
+
+body.embedded .message-staff .message-meta {
+  justify-content: flex-end;
+}
+
+body.embedded .message-staff .author-name,
+body.embedded .message-staff .message-time,
+body.embedded .message-staff .message-body,
+body.embedded .message-staff .attachments a {
+  color: #ffffff;
 }
 
 body.embedded .reply-card {
   border-radius: 14px;
+  padding: 10px 12px;
+}
+
+body.embedded .reply-title {
+  display: none;
+}
+
+.attachment-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.attachment-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid #b9cff0;
+  background: #f4f8ff;
+  color: #2f6fd0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.attachment-icon-btn:hover {
+  background: #eaf2ff;
+  border-color: #8fb2e6;
+  color: #245fbb;
+}
+
+.attachment-icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.attachment-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.attachment-file-name {
+  font-size: 0.92rem;
+  color: #5f7391;
 }
 
 /* Prevent auth-gated UI flash before /api/me resolves.
