@@ -265,6 +265,12 @@ body {
 body.embedded {
   background: transparent;
   min-height: auto;
+  height: 100%;
+  overflow: hidden;
+}
+
+html.embedded-mode {
+  height: 100%;
 }
 
 body.embedded .site-header,
@@ -277,10 +283,16 @@ body.embedded .site-main {
   width: 100%;
   margin: 0;
   padding: 0;
+  height: 100%;
 }
 
 body.embedded .shell-page {
-  gap: 0;
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
 }
 
 body.embedded .card {
@@ -308,8 +320,11 @@ body.embedded .conversation-card {
 body.embedded .thread {
   border: 0;
   background: transparent;
-  padding: 0;
+  padding: 2px 0 4px;
   gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 body.embedded .message {
@@ -337,11 +352,19 @@ body.embedded .message .role-pill {
 }
 
 body.embedded .message .author-name {
-  font-size: 12px;
+  font-size: 11px;
+  color: #6f84a2;
+  font-weight: 700;
 }
 
 body.embedded .message .message-meta {
   margin-bottom: 4px;
+}
+
+body.embedded .message .message-time {
+  font-size: 11px;
+  color: #7d91ad;
+  font-weight: 600;
 }
 
 body.embedded .message-user .message-meta {
@@ -361,11 +384,23 @@ body.embedded .message-staff .attachments a {
 
 body.embedded .reply-card {
   border-radius: 14px;
-  padding: 10px 12px;
+  padding: 8px 10px;
+  flex: 0 0 auto;
+  border-color: #d8e5f7;
+  box-shadow: 0 8px 14px rgba(20, 38, 66, 0.08);
+  background: #fafdff;
 }
 
 body.embedded .reply-title {
   display: none;
+}
+
+body.embedded .reply-form textarea {
+  min-height: 88px;
+  max-height: 126px;
+  border-radius: 14px;
+  border-color: #c9daf3;
+  background: #ffffff;
 }
 
 .attachment-picker {
@@ -410,6 +445,21 @@ body.embedded .reply-title {
 .attachment-file-name {
   font-size: 0.92rem;
   color: #5f7391;
+}
+
+body.embedded .reply-submit {
+  min-height: 38px;
+  padding: 8px 24px;
+  font-size: 1rem;
+  font-weight: 700;
+  opacity: 0.72;
+  transform: scale(0.96);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+body.embedded .reply-form.has-draft .reply-submit {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* Prevent auth-gated UI flash before /api/me resolves.

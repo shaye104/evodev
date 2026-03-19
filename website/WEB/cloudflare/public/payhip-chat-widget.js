@@ -67,7 +67,7 @@
         border: 0;
       }
       .panel {
-        width: min(430px, calc(100vw - 24px));
+        width: min(400px, calc(100vw - 20px));
         height: min(700px, calc(100vh - 30px));
         background: linear-gradient(180deg, #eff4ff 0%, #f7faff 9%, #ffffff 100%);
         border: 1px solid #cbdcf4;

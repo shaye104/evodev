@@ -251,6 +251,14 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchTicket();
   const form = document.querySelector('[data-reply-form]');
   if (form) form.addEventListener('submit', handleReply);
+  const textarea = document.querySelector('[data-reply-form] textarea[name="message"]');
+  if (form && textarea) {
+    const syncDraftState = () => {
+      form.classList.toggle('has-draft', Boolean(String(textarea.value || '').trim()));
+    };
+    textarea.addEventListener('input', syncDraftState);
+    syncDraftState();
+  }
   const fileInput = document.querySelector('#ticket-attachments');
   const fileName = document.querySelector('[data-attachment-file-name]');
   if (fileInput && fileName) {
